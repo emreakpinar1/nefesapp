@@ -116,6 +116,8 @@ tr:last-child td{border-bottom:0}
 .field input[type=number],.field input[type=time]{font-family:var(--f-display);font-weight:600;font-size:18px;font-variant-numeric:tabular-nums}
 .field textarea{resize:vertical;min-height:72px;font-family:var(--f-body)}
 .preset{display:grid;grid-template-columns:minmax(0,1.6fr) repeat(4,minmax(0,1fr)) auto;gap:8px;align-items:stretch;padding:10px 0;border-top:1px solid var(--line)}
+.preset .f-wide{grid-column:1/-1}
+.preset .f-wide textarea{min-height:60px}
 .preset:first-child{border-top:0}
 .p-tools{display:flex;gap:4px;align-items:center}
 .icon-btn{width:36px;height:36px;border-radius:50%;background:var(--bg);display:grid;place-items:center}
@@ -503,6 +505,8 @@ function renderPresets(){
     <div class="preset" data-i="${i}">
       <div class="field f-name"><label for="pn${i}">Ad</label><input id="pn${i}" data-k="name" maxlength="18" value="${esc(p.name)}"></div>
       ${NUMS.map(([k, lab, min]) => `<div class="field"><label for="p${k}${i}">${lab}</label><input id="p${k}${i}" data-k="${k}" type="number" min="${min}" max="60" value="${p[k]}"></div>`).join('')}
+      <div class="field f-wide"><label for="ps${i}">Kısa açıklama</label><input id="ps${i}" data-k="short" maxlength="70" value="${esc(p.short || '')}" placeholder="Boş bırakırsan varsayılan metin gösterilir"></div>
+      <div class="field f-wide"><label for="pd${i}">Ne işe yarar?</label><textarea id="pd${i}" data-k="desc" maxlength="600" placeholder="Boş bırakırsan varsayılan metin gösterilir">${esc(p.desc || '')}</textarea></div>
       <div class="p-tools">
         <button class="icon-btn" data-act="up" aria-label="Yukarı taşı" ${i === 0 ? 'disabled' : ''}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 15 6-6 6 6"/></svg></button>
         <button class="icon-btn" data-act="down" aria-label="Aşağı taşı" ${i === draft.length-1 ? 'disabled' : ''}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
@@ -514,7 +518,7 @@ function renderPresets(){
 $('pList').addEventListener('input', e => {
   const row = e.target.closest('.preset'); if(!row) return;
   const p = draft[+row.dataset.i], k = e.target.dataset.k;
-  p[k] = k === 'name' ? e.target.value : Math.max(0, Math.min(60, parseInt(e.target.value, 10) || 0));
+  p[k] = (k === 'name' || k === 'short' || k === 'desc') ? e.target.value : Math.max(0, Math.min(60, parseInt(e.target.value, 10) || 0));
 });
 $('pList').addEventListener('click', e => {
   const b = e.target.closest('button[data-act]'); if(!b) return;
@@ -530,7 +534,7 @@ $('pSave').addEventListener('click', async () => {
   const msg = $('pMsg'); msg.textContent = '';
   const bad = draft.find(p => !p.name.trim() || p.inhale < 1 || p.exhale < 1);
   if(bad){ msg.textContent = `"${bad.name || 'Adsız'}" için ad boş olamaz; nefes al ve ver en az 1 saniye olmalı.`; return }
-  const clean = draft.map(p => ({ id: p.id, name: p.name.trim(), inhale: p.inhale, hold: p.hold, exhale: p.exhale, hold2: p.hold2 }));
+  const clean = draft.map(p => ({ id: p.id, name: p.name.trim(), short: (p.short || '').trim(), desc: (p.desc || '').trim(), inhale: p.inhale, hold: p.hold, exhale: p.exhale, hold2: p.hold2 }));
   try{ await FS.setDoc(cfgRef, { presets: clean, updatedAt: FS.serverTimestamp() }, { merge: true }); toast('Hazır egzersizler yayınlandı') }
   catch(e){ msg.textContent = saveErr(e) }
 });

@@ -26,6 +26,7 @@
   --green:#84AE48; --green-strong:#557F26; --green-ink:#22340D; --green-soft:#D8E6C2;
   --dark:#2B3328; --dark-ink:#EEF2E8;
   --hatch:#C9D0C0; --bad:#A63D0C;
+  --breath-bg:linear-gradient(160deg,#3F5C42 0%,#2D4532 100%); --breath-ink:#EEF4E6; --breath-muted:#B3C4AC; --breath-lime:#C6E39A;
   --shadow:0 1px 2px rgba(40,48,38,.05), 0 6px 18px rgba(40,48,38,.06);
   --f-display:"Lexend",ui-rounded,"SF Pro Rounded",system-ui,sans-serif;
   --f-body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
@@ -37,6 +38,7 @@
   --hero:#33422A; --hero-ink:#DCEBC6;
   --green:#9CC963; --green-strong:#AED47C; --green-ink:#DCEBC6; --green-soft:#2C3824;
   --dark:#DDE3D6; --dark-ink:#1B1E19; --hatch:#343A30; --bad:#F0A070;
+  --breath-bg:linear-gradient(160deg,#2A3F2D 0%,#1E2D21 100%); --breath-ink:#E6EEDD; --breath-muted:#9DB098; --breath-lime:#B4D883;
   --shadow:0 1px 2px rgba(0,0,0,.25), 0 6px 18px rgba(0,0,0,.2);
   color-scheme:dark }
 
@@ -162,6 +164,30 @@ h1,h2,h3{font-family:var(--f-display);margin:0;font-weight:500;letter-spacing:-.
 .ex .go svg{width:18px;height:18px}
 .ex.active{outline:2px solid var(--green);outline-offset:-2px}
 .view.narrow{max-width:680px;width:100%;margin:0 auto}
+.ex .short{display:block;font-size:13px;color:var(--muted);margin-top:2px;line-height:1.35}
+.info-card p{margin:0 0 10px;line-height:1.55}
+.info-card .src{font-size:12px;color:var(--muted)}
+.link-btn{display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:14px;color:var(--green-strong)}
+.link-btn svg{width:16px;height:16px}
+.learn{display:flex;align-items:center;gap:12px;text-align:left;width:100%}
+.learn .txt{flex:1;min-width:0}
+.learn b{font-family:var(--f-display);font-weight:500;font-size:16px;display:block}
+.learn small{color:var(--muted);font-size:13px}
+.sheet{position:fixed;inset:0;z-index:15;background:rgba(20,24,18,.45);display:flex;align-items:flex-end;justify-content:center}
+.sheet-card{background:var(--surface);width:min(640px,100%);max-height:88vh;overflow:auto;border-radius:28px 28px 0 0;
+  padding:20px max(20px,env(safe-area-inset-right,0px)) calc(28px + env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px))}
+@media (min-width:960px){.sheet{align-items:center}.sheet-card{border-radius:28px;max-height:84vh}}
+.sheet-h{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px;position:sticky;top:-20px;background:var(--surface);padding:6px 0}
+.sheet-h h2{font-size:20px}
+.sheet-body{line-height:1.6;max-width:62ch}
+.sheet-body h3{font-size:16px;margin:18px 0 6px}
+.sheet-body p{margin:0 0 10px}
+.sheet-body ul{margin:0 0 10px;padding-left:20px}
+.sheet-body li{margin-bottom:6px}
+.sheet-body .warn{background:#EFE1CF;color:#5A3A12;border-radius:16px;padding:12px 14px;font-size:14px;margin:14px 0}
+:root[data-theme="dark"] .sheet-body .warn{background:#3A2C1C;color:#F0D3AE}
+.sheet-body .src{font-size:12px;color:var(--muted)}
+.sheet-body .src a{color:inherit}
 body.dragging-list{user-select:none;-webkit-user-select:none}
 .ex.active .go{background:var(--green);color:#16181A}
 .ex-list{display:flex;flex-direction:column;gap:10px}
@@ -179,22 +205,22 @@ body.dragging-list{user-select:none;-webkit-user-select:none}
 .chip[aria-pressed="true"]{background:var(--hero);color:var(--hero-ink)}
 .chip[aria-pressed="true"] span{color:inherit;opacity:.7}
 .chip:disabled{cursor:default}
-.breath{background:var(--surface);border-radius:28px;padding:18px 18px 20px;position:relative;overflow:hidden;box-shadow:var(--shadow)}
-.breath::before{content:"";position:absolute;inset:0;background:repeating-radial-gradient(circle at 50% 50%,transparent 0 22px,var(--soft) 22px 23px);pointer-events:none;opacity:.9}
+.breath{background:var(--breath-bg);color:var(--breath-ink);border-radius:28px;padding:18px 18px 20px;position:relative;overflow:hidden;box-shadow:var(--shadow)}
+.breath::before{content:"";position:absolute;inset:0;background:repeating-radial-gradient(circle at 50% 50%,transparent 0 22px,rgba(255,255,255,.045) 22px 23px);pointer-events:none}
 .b-head{display:flex;justify-content:space-between;align-items:center;position:relative}
-.b-head .lbl{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
-.tag2{background:var(--hero);color:var(--hero-ink);border-radius:999px;padding:6px 12px;font-family:var(--f-display);font-weight:600;font-size:13px;font-variant-numeric:tabular-nums}
+.b-head .lbl{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--breath-muted);font-weight:700}
+.tag2{background:rgba(255,255,255,.14);color:var(--breath-ink);border-radius:999px;padding:6px 12px;font-family:var(--f-display);font-weight:600;font-size:13px;font-variant-numeric:tabular-nums}
 .stage{position:relative;width:min(270px,68vw);aspect-ratio:1;max-width:100%;margin:10px auto 4px}
 .stage svg.ringp{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
-.ringp .trk{stroke:var(--line)}
-.ringp .prg{stroke:var(--green)}
-.blob{position:absolute;inset:14%;border-radius:50%;background:radial-gradient(circle at 38% 32%,#E8F1D8,#BCD898 55%,#93BA5C);transform:scale(.55);box-shadow:0 10px 36px rgba(110,150,60,.22)}
-.blob::after{content:"";position:absolute;inset:-9%;border-radius:50%;border:1.5px dashed rgba(110,150,60,.4)}
+.ringp .trk{stroke:rgba(255,255,255,.14)}
+.ringp .prg{stroke:var(--breath-lime)}
+.blob{position:absolute;inset:14%;border-radius:50%;background:radial-gradient(circle at 38% 32%,#EEF6DF,#C6E39A 55%,#9CC566);transform:scale(.55);box-shadow:0 0 50px rgba(198,227,154,.25)}
+.blob::after{content:"";position:absolute;inset:-9%;border-radius:50%;border:1.5px dashed rgba(198,227,154,.45)}
 .b-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#16181A;pointer-events:none}
 .count{font-family:var(--f-display);font-weight:600;font-size:60px;line-height:1;font-variant-numeric:tabular-nums}
 .phase-name{font-family:var(--f-display);font-weight:500;font-size:16px;margin-top:4px}
 .b-foot{display:flex;justify-content:space-between;align-items:flex-end;position:relative;margin-top:6px}
-.b-foot .k{font-size:12px;color:var(--muted)}
+.b-foot .k{font-size:12px;color:var(--breath-muted)}
 .b-foot .v{font-family:var(--f-display);font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
 .b-foot .r{text-align:right}
 .strip{display:flex;gap:6px}
@@ -209,7 +235,7 @@ body.dragging-list{user-select:none;-webkit-user-select:none}
 .session{display:flex;flex-direction:column;gap:14px}
 .compact-name{display:none}
 /* ana sayfadaki küçük sürüm */
-.session.compact{gap:0;background:var(--surface);border-radius:26px;box-shadow:var(--shadow);overflow:hidden}
+.session.compact{gap:0;background:var(--breath-bg);color:var(--breath-ink);border-radius:26px;box-shadow:var(--shadow);overflow:hidden}
 .session.compact .breath{display:grid;grid-template-columns:150px minmax(0,1fr);grid-template-areas:"stage head" "stage foot";column-gap:12px;row-gap:10px;align-items:center;padding:12px 16px 4px 10px;box-shadow:none;border-radius:0;background:transparent}
 .session.compact .breath::before{opacity:.6}
 .session.compact .b-head{grid-area:head;flex-direction:column;align-items:flex-start;gap:6px;align-self:end}
@@ -222,9 +248,11 @@ body.dragging-list{user-select:none;-webkit-user-select:none}
 .session.compact .phase-name{font-size:11px;margin-top:2px}
 .session.compact .strip{display:none}
 .session.compact .controls{gap:12px;padding:6px 16px 14px;justify-content:flex-end;margin-top:-6px}
-.session.compact .controls button{width:42px;height:42px;box-shadow:none;background:var(--soft)}
+.session.compact .controls button{width:42px;height:42px;box-shadow:none;background:rgba(255,255,255,.12);color:var(--breath-ink)}
 .session.compact .controls button svg{width:18px;height:18px}
-.session.compact .controls .play{width:54px;height:54px;background:var(--green);box-shadow:0 6px 16px rgba(110,150,60,.25)}
+.session.compact .controls .play{width:54px;height:54px;background:var(--breath-lime);color:#1F2B17;box-shadow:none}
+.compact-tag{display:none}
+.session.compact .compact-tag{display:block;font-size:12px;color:var(--breath-muted);line-height:1.35;margin-top:-2px}
 .session.compact .controls .play svg{width:22px;height:22px}
 .controls button{width:56px;height:56px;border-radius:50%;background:var(--surface);display:grid;place-items:center;box-shadow:var(--shadow)}
 .controls button svg{width:22px;height:22px}
@@ -403,6 +431,11 @@ body.running .nav .center span.c::after{content:"";position:absolute;inset:-6px;
       <div class="sec-h"><h2>Egzersizler</h2><a href="#nefes">Süreleri ayarla</a></div>
       <p class="hint" style="margin:-4px 2px 2px">Bir egzersize dokunarak seç, yukarıdaki kartta başlat. Sırayı değiştirmek için soldaki tutamaktan sürükle.</p>
       <div class="ex-list" id="exList"></div>
+      <button class="card learn" data-open-info>
+        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.4-9.3-9A5.3 5.3 0 0 1 12 6.5 5.3 5.3 0 0 1 21.3 12C19 16.6 12 21 12 21z"/></svg></span>
+        <span class="txt"><b>Nefes egzersizleri ne işe yarar?</b><small>Sağlığa faydaları ve dikkat edilmesi gerekenler</small></span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg>
+      </button>
       <a class="card next-card" href="#hatirlatici">
         <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></span>
         <span class="txt"><span class="k" id="homeNextK">Hatırlatıcı kapalı</span><span class="v" id="homeNextV" style="display:block">Hatırlatma kur</span></span>
@@ -424,7 +457,7 @@ body.running .nav .center span.c::after{content:"";position:absolute;inset:-6px;
       <nav class="presets" id="presets" aria-label="Hazır egzersizler"></nav>
       <div id="nefesSlot"><div class="session" id="sessionBox">
       <section class="breath" aria-live="polite">
-        <div class="b-head"><span class="lbl" id="status">Hazır</span><span class="compact-name" id="sessName">Rahatla</span><span class="tag2" id="pattern">4 · 7 · 8</span></div>
+        <div class="b-head"><span class="lbl" id="status">Hazır</span><span class="compact-name" id="sessName">Rahatla</span><span class="compact-tag" id="sessTag"></span><span class="tag2" id="pattern">4 · 7 · 8</span></div>
         <div class="stage">
           <svg class="ringp" viewBox="0 0 100 100" aria-hidden="true">
             <circle class="trk" cx="50" cy="50" r="47" fill="none" stroke-width="2.5"/>
@@ -447,6 +480,11 @@ body.running .nav .center span.c::after{content:"";position:absolute;inset:-6px;
       </div></div>
     </div>
     <div class="col">
+      <section class="card info-card">
+        <div class="card-h"><h2 id="infoTitle">Bu egzersiz ne işe yarar?</h2></div>
+        <p id="infoText"></p>
+        <button class="link-btn" data-open-info>Nefes egzersizlerinin faydaları <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button>
+      </section>
       <section class="card">
         <div class="card-h"><h2>Süreleri ayarla</h2><span class="note">saniye</span></div>
         <div class="rows" id="rows"></div>
@@ -636,6 +674,30 @@ body.running .nav .center span.c::after{content:"";position:absolute;inset:-6px;
   </ul>
 </nav>
 
+<div class="sheet" id="infoSheet" hidden role="dialog" aria-modal="true" aria-labelledby="sheetT">
+  <div class="sheet-card">
+    <div class="sheet-h"><h2 id="sheetT">Nefes egzersizleri ne işe yarar?</h2><button class="round" id="sheetClose" aria-label="Kapat" style="box-shadow:none;background:var(--soft)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+    <div class="sheet-body">
+      <p>Nefes, vücudun bilinçli olarak kontrol edebildiğimiz birkaç otomatik işlevinden biri. Nefesi yavaşlatmak ve özellikle nefes vermeyi uzatmak, vücudun dinlenme ve toparlanma sistemini (parasempatik sinir sistemi) öne çıkarır. Bunun sonucunda kalp atışı yavaşlar, kaslar gevşer ve zihin sakinleşir.</p>
+      <h3>Araştırmalar ne söylüyor?</h3>
+      <ul>
+        <li><b>Stres ve kaygı:</b> Stanford Üniversitesi'nin 2023 çalışmasında, bir ay boyunca günde 5 dakika nefes egzersizi yapanların ruh hali iyileşti ve kaygı düzeyleri düştü. Nefes vermenin uzun olduğu düzen en güçlü etkiyi gösterdi.</li>
+        <li><b>Kalp ve dolaşım:</b> Dakikada yaklaşık 6 nefese inen yavaş nefes, çok sayıda çalışmanın ortak sonucuna göre kalp hızı değişkenliğini artırıyor. Bu değer, vücudun strese uyum sağlama yeteneğinin bir göstergesi.</li>
+        <li><b>Uyku:</b> Yatmadan önce yapılan yavaş nefes, zihni sakinleştirerek uykuya geçişi kolaylaştırabilir.</li>
+        <li><b>Odak:</b> Eşit ritimli nefes (kutu nefesi gibi) dikkati toplamaya ve baskı altında sakin kalmaya yardımcı olur.</li>
+      </ul>
+      <h3>Nasıl yapmalı?</h3>
+      <ul>
+        <li>Rahat bir pozisyonda otur ya da uzan, omuzlarını gevşet.</li>
+        <li>Mümkünse burundan al, nefes verirken dudaklarını hafifçe aralayabilirsin.</li>
+        <li>Göğüs yerine karnını şişirmeye çalış.</li>
+        <li>Günde birkaç dakika ile başla. Düzenli yapmak, uzun yapmaktan daha önemli.</li>
+      </ul>
+      <div class="warn"><b>Dikkat:</b> Baş dönmesi, karıncalanma ya da nefes darlığı hissedersen egzersizi bırak ve normal nefesine dön. Hamileysen, kalp veya akciğer hastalığın, yüksek tansiyonun ya da panik bozukluğun varsa nefes tutma sürelerini kısa tut (ya da 0 yap) ve doktoruna danış. Bu uygulama bilgilendirme amaçlıdır, tıbbi tedavinin yerine geçmez.</div>
+      <p class="src">Kaynaklar: Balban ve ark., <i>Cell Reports Medicine</i> (2023), <a href="https://med.stanford.edu/news/insights/2023/02/cyclic-sighing-can-help-breathe-away-anxiety.html" target="_blank" rel="noopener">Stanford Medicine</a>; Laborde ve ark., yavaş nefes ve kalp hızı değişkenliği üzerine meta-analiz (2022); <a href="https://link.springer.com/article/10.1007/s12671-023-02294-2" target="_blank" rel="noopener">Mindfulness (2023)</a>.</p>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast" hidden></div>
 <div class="alarm" id="alarm" hidden role="alertdialog" aria-modal="true" aria-labelledby="alarmT">
   <div class="alarm-card">

@@ -34,6 +34,7 @@ function route(){
   document.querySelectorAll('section.view[data-view]').forEach(s => s.hidden = s.dataset.view !== v);
   document.querySelectorAll('[data-nav]').forEach(a => { a.classList.toggle('active', a.dataset.nav === v); if(a.dataset.nav === v) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current') });
   document.body.dataset.screen = v;
+  if(v === 'nefes') renderSessName();
   const box = $('sessionBox');
   if(v === 'ana'){ $('homeSlot').appendChild(box); box.classList.add('compact') }
   else if(box.parentNode !== $('nefesSlot')){ $('nefesSlot').appendChild(box); box.classList.remove('compact') }
@@ -52,12 +53,56 @@ function greet(){
   $('topHello').textContent = h < 6 ? 'İyi geceler' : h < 12 ? 'Günaydın' : h < 18 ? 'İyi günler' : 'İyi akşamlar';
 }
 
+/* ---------- egzersiz açıklamaları ---------- */
+const INFO = {
+  '478': { short: 'Uykuya geçiş ve derin gevşeme',
+    desc: 'Dr. Andrew Weil\'in yaygınlaştırdığı 4-7-8 tekniği. Uzun nefes tutma ve ondan da uzun nefes verme, kalp atışını yavaşlatıp vücudu dinlenme moduna geçirir. Yatmadan önce ya da gergin anlarda kullanılır. Bilimsel kanıtlar küçük çalışmalara dayanıyor ama sonuçlar kalp hızı ve kaygıda azalma yönünde.' },
+  'box': { short: 'Odaklanma ve baskı altında sakin kalma',
+    desc: 'Kutu nefesi: al, tut, ver, bekle; hepsi eşit sürede. Sporcular, pilotlar ve askerler stresli anlarda dikkatini toplamak için kullanır. Eşit ritim zihni sabitler, dağınık düşünceleri toparlamaya yardım eder.' },
+  'calm': { short: 'Gün içinde birkaç dakikalık hızlı rahatlama',
+    desc: 'Nefes vermenin almaktan uzun olduğu kısa bir düzen. Uzun nefes verme, vücudun sakinleşme tepkisini en güçlü tetikleyen unsurlardan biri. Toplantı öncesi ya da yoğun bir anda birkaç tur yeterli.' },
+  'bal': { short: 'Kalp ritmini dengeleyen rezonans nefesi',
+    desc: 'Beş saniye al, beş saniye ver: dakikada 6 nefes. Araştırmalarda en çok çalışılan ritim bu. Düzenli yapıldığında kalp hızı değişkenliğini (vücudun strese uyum yeteneğinin göstergesi) artırdığı, bazı çalışmalarda tansiyona olumlu etki ettiği görülmüş. Nefes tutma olmadığı için herkes için uygun.' },
+  'deep': { short: 'Meditasyona hazırlık, uzun ve derin nefes',
+    desc: 'Yavaş, derin ve uzun bir döngü. Nefes kapasitesini zorlamadan genişletir, meditasyon ya da esneme öncesinde zihni yavaşlatmak için iyi bir başlangıç. Tutma süreleri zor gelirse kısaltabilirsin.' },
+};
+function infoFor(p){
+  if(p && (p.short || p.desc)) return { short: p.short || '', desc: p.desc || (INFO[p.id] || {}).desc || '' };
+  if(p && INFO[p.id]) return INFO[p.id];
+  const c = p ? p.cfg : N.getCfg();
+  const calming = c.exhale > c.inhale;
+  return {
+    short: calming ? 'Uzun nefes verme ile sakinleşme' : 'Dengeli ritimle odaklanma',
+    desc: calming
+      ? 'Bu düzende nefes verme, nefes almaktan uzun. Uzun nefes verme kalp atışını yavaşlatır ve vücudu dinlenme moduna geçirir; gerginlik ve kaygı anlarında iyi gelir.'
+      : 'Bu düzende nefes alma ve verme birbirine yakın. Eşit ritim zihni sabitler ve dikkati toplamaya yardım eder. Daha fazla sakinleşmek istersen nefes verme süresini uzatabilirsin.',
+  };
+}
+function currentPreset(){
+  const c = N.getCfg();
+  return N.getPresets().find(p => ['inhale','hold','exhale','hold2'].every(k => p.cfg[k] === c[k])) || null;
+}
+function renderInfo(){
+  const p = currentPreset(), inf = infoFor(p);
+  $('infoTitle').textContent = p ? `${p.name} ne işe yarar?` : 'Bu düzen ne işe yarar?';
+  $('infoText').textContent = inf.desc;
+  $('sessTag').textContent = inf.short;
+}
+/* faydalar sayfası */
+let lastFocus = null;
+function openSheet(){ lastFocus = document.activeElement; $('infoSheet').hidden = false; document.body.style.overflow = 'hidden'; $('sheetClose').focus() }
+function closeSheet(){ $('infoSheet').hidden = true; document.body.style.overflow = ''; if(lastFocus) lastFocus.focus() }
+document.addEventListener('click', e => { if(e.target.closest('[data-open-info]')) openSheet() });
+$('sheetClose').addEventListener('click', closeSheet);
+$('infoSheet').addEventListener('click', e => { if(e.target === $('infoSheet')) closeSheet() });
+document.addEventListener('keydown', e => { if(e.key === 'Escape' && !$('infoSheet').hidden) closeSheet() });
+
 /* ---------- home ---------- */
 function renderHome(){ greet(); renderExercises(); renderHomeNext(); renderSessName() }
 function renderSessName(){
-  const c = N.getCfg();
-  const p = N.getPresets().find(p => ['inhale','hold','exhale','hold2'].every(k => p.cfg[k] === c[k]));
+  const p = currentPreset();
   $('sessName').textContent = p ? p.name : 'Özel düzen';
+  renderInfo();
 }
 
 const GRIP = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>';
@@ -71,7 +116,7 @@ function renderExercises(){
     return `<div class="ex${active ? ' active' : ''}" data-id="${esc(p.id)}">
       <button class="grip" aria-label="${esc(p.name)} sırasını değiştir (yukarı/aşağı ok tuşları)">${GRIP}</button>
       <button class="e-main" aria-pressed="${active}" aria-label="${esc(p.name)} egzersizini seç">
-        <span class="e-txt"><b>${esc(p.name)}</b>
+        <span class="e-txt"><b>${esc(p.name)}</b><span class="short">${esc(infoFor(p).short)}</span>
           <span class="meta"><span class="pill num">${esc(patt(p.cfg))}</span><span class="num">${c.rounds} tur · ${fmtLen(len)} dk</span></span>
         </span>
         <span class="go" aria-hidden="true">${active ? CHECK : ''}</span>
