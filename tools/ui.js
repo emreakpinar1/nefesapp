@@ -142,5 +142,22 @@ document.addEventListener('nefes:cfg', () => { if(document.body.dataset.screen =
 document.addEventListener('nefes:rem', () => { if(document.body.dataset.screen === 'ana') renderHomeNext(); else $('bellDot').hidden = !N.getNext().on });
 document.addEventListener('nefes:play', () => document.body.classList.toggle('running', N.isRunning()));
 
+/* ---------- theme ---------- */
+const mq = matchMedia('(prefers-color-scheme: dark)');
+function applyTheme(p){
+  const dark = p === 'dark' || (p === 'system' && mq.matches);
+  document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+  document.documentElement.dataset.pref = p;
+  const tc = document.getElementById('themeColor'); if(tc) tc.content = dark ? '#0F110E' : '#F1F3EE';
+  document.querySelectorAll('#themeSeg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.t === p));
+}
+$('themeSeg').addEventListener('click', e => {
+  const b = e.target.closest('button'); if(!b) return;
+  try{ localStorage.setItem('nefes-theme', b.dataset.t) }catch(err){}
+  applyTheme(b.dataset.t);
+});
+mq.addEventListener('change', () => { if(document.documentElement.dataset.pref === 'system') applyTheme('system') });
+applyTheme(document.documentElement.dataset.pref || 'light');
+
 route();
 })();
