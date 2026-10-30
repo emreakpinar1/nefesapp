@@ -13,7 +13,7 @@ copyFileSync('res/silent.wav', 'android/app/src/main/res/raw/nefes_silent.wav');
 const jdir = 'android/app/src/main/java/com/emreakpinar/nefesapp/';
 writeFileSync(jdir + 'MainActivity.java', `package com.emreakpinar.nefesapp;
 
-import android.graphics.Color;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import androidx.activity.EdgeToEdge;
 import com.getcapacitor.BridgeActivity;
@@ -24,14 +24,28 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(FerahWindow.class);
         EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
-        // Durum çubuğu boşluğunda açılış görseli yerine uygulamanın zemin rengi görünsün
-        getWindow().getDecorView().setBackgroundColor(Color.parseColor("#DDE2D6"));
+        FerahWindow.reapply(this);
+    }
+
+    // SystemBars eklentisi stil değişince zemini temanın rengine sıfırlıyor; ardından bizim rengimizi geri koy
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        FerahWindow.reapply(this);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        FerahWindow.reapply(this);
     }
 }
 `);
 writeFileSync(jdir + 'FerahWindow.java', `package com.emreakpinar.nefesapp;
 
+import android.app.Activity;
 import android.graphics.Color;
+import android.view.View;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
@@ -39,20 +53,45 @@ import com.getcapacitor.annotation.CapacitorPlugin;
 
 @CapacitorPlugin(name = "FerahWindow")
 public class FerahWindow extends Plugin {
+    static int color = Color.parseColor("#DDE2D6");
+    static View webView;
+
+    @Override
+    public void load() {
+        webView = getBridge().getWebView();
+        reapply(getActivity());
+    }
+
+    static void paint(Activity a) {
+        try {
+            a.getWindow().getDecorView().setBackgroundColor(color);
+            if (webView != null) webView.setBackgroundColor(color);
+        } catch (Exception e) { }
+    }
+
+    // Hemen ve SystemBars'ın ana iş parçacığına koyduğu sıfırlamadan sonra tekrar boya
+    static void reapply(final Activity a) {
+        final View d = a.getWindow().getDecorView();
+        d.post(() -> paint(a));
+        d.postDelayed(() -> paint(a), 150);
+        d.postDelayed(() -> paint(a), 600);
+    }
+
     @PluginMethod
     public void setBackground(PluginCall call) {
-        final String c = call.getString("color", "#DDE2D6");
-        getActivity().runOnUiThread(() -> {
-            try {
-                int col = Color.parseColor(c);
-                getActivity().getWindow().getDecorView().setBackgroundColor(col);
-                if (getBridge().getWebView() != null) getBridge().getWebView().setBackgroundColor(col);
-            } catch (Exception e) { }
-            call.resolve();
-        });
+        try { color = Color.parseColor(call.getString("color", "#DDE2D6")); } catch (Exception e) { }
+        reapply(getActivity());
+        call.resolve();
     }
 }
 `);
+
+// Uygulama teması: zemin rengi sabit (DayNight teması koyu modda siyah veriyordu)
+const vals = 'android/app/src/main/res/values/';
+writeFileSync(vals + 'ferah_colors.xml', '<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <color name="ferah_bg">#DDE2D6</color>\n</resources>\n');
+let st = readFileSync(vals + 'styles.xml', 'utf8');
+if(!st.includes('ferah_bg')) st = st.replace('<item name="android:background">@null</item>', '<item name="android:background">@null</item>\n        <item name="android:windowBackground">@color/ferah_bg</item>\n        <item name="android:statusBarColor">@android:color/transparent</item>');
+writeFileSync(vals + 'styles.xml', st);
 
 // Hatırlatıcılar dakikası dakikasına olmak zorunda değil: "kesin alarm" iznini kaldır (Play beyanı gerektirmez)
 const man = 'android/app/src/main/AndroidManifest.xml';

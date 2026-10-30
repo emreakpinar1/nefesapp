@@ -145,8 +145,8 @@ async function init(){
     const dark = document.documentElement.dataset.theme === 'dark';
     const bg = toHex(getComputedStyle(document.body).backgroundColor) || (dark ? '#171a16' : '#dde2d6');
     const key = dark + bg; if(key === lastBars) return; lastBars = key;
-    SB.setStyle({ style: dark ? 'DARK' : 'LIGHT' }).catch(() => {});
-    FW.setBackground({ color: bg }).catch(() => {});
+    // sıra önemli: setStyle zemini sıfırlar, rengi ondan sonra ver
+    SB.setStyle({ style: dark ? 'DARK' : 'LIGHT' }).catch(() => {}).then(() => FW.setBackground({ color: bg })).catch(() => {});
   }
   new MutationObserver(() => setTimeout(syncBars, 50)).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'style'] });
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', syncBars); else syncBars();
