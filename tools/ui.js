@@ -50,58 +50,87 @@ function greet(){
 }
 
 /* ---------- home ---------- */
-let wOff = 0, selDay = null;
-function renderHome(){
-  greet();
-  const h = hist(), st = N.getState().stats || {};
-  const week = weekOf(0);
-  const done = week.filter(d => secsOn(h, d) > 0).length;
-  $('heroDays').textContent = done;
-  $('heroRing').style.strokeDashoffset = 251.3 * (1 - done/7);
-  const wkMin = week.reduce((a, d) => a + minsOn(h, d), 0);
-  $('heroTitle').textContent = done ? `Bu hafta ${done} gün nefes aldın` : 'Haftaya nefesle başla';
-  $('heroSub').textContent = done ? `Toplam ${wkMin} dakika. Hedef her gün 10 dakika.` : 'Günde birkaç dakika yeter. İlk egzersizini aşağıdan seç.';
-  $('homeToday').innerHTML = `${Math.floor((st.todaySec || 0)/60)} <small>dk</small>`;
-  $('homeStreak').innerHTML = `${streak(h)} <small>gün</small>`;
-  renderStrip7(); renderExercises(); renderHomeNext();
-}
-function renderStrip7(){
-  const h = hist(), days = weekOf(wOff);
-  const mid = days[3];
-  $('weekTitle').textContent = `${MONTHS[mid.getMonth()]} ${mid.getFullYear()}`;
-  $('wNext').disabled = wOff >= 0;
-  $('days7').innerHTML = days.map((d, i) => {
-    const cls = [secsOn(h, d) > 0 ? 'done' : '', isToday(d) ? 'today' : '', selDay === iso(d) ? 'sel' : ''].join(' ');
-    return `<button class="${cls}" data-d="${iso(d)}" aria-label="${d.getDate()} ${MONTHS[d.getMonth()]}, ${minsOn(h, d)} dakika"><small>${DAY_SHORT[i]}</small><b>${String(d.getDate()).padStart(2,'0')}</b><i></i></button>`;
-  }).join('');
-  const sd = selDay ? days.find(d => iso(d) === selDay) : null;
-  $('dayInfo').textContent = sd ? `${sd.getDate()} ${MONTHS[sd.getMonth()]}: ${minsOn(h, sd)} dakika egzersiz` : 'Yeşil nokta egzersiz yaptığın günleri gösterir.';
-}
-$('days7').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; selDay = selDay === b.dataset.d ? null : b.dataset.d; renderStrip7() });
-$('wPrev').addEventListener('click', () => { wOff--; selDay = null; renderStrip7() });
-$('wNext').addEventListener('click', () => { if(wOff < 0){ wOff++; selDay = null; renderStrip7() } });
+function renderHome(){ greet(); renderExercises(); renderHomeNext() }
 
+const GRIP = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>';
+const CHEV = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>';
 function renderExercises(){
+  if(drag) return;
   const c = N.getCfg();
-  const list = N.getPresets();
-  $('exList').innerHTML = list.map(p => {
+  $('exList').innerHTML = N.getPresets().map(p => {
     const active = ['inhale','hold','exhale','hold2'].every(k => p.cfg[k] === c[k]);
     const len = (p.cfg.inhale + p.cfg.hold + p.cfg.exhale + p.cfg.hold2) * c.rounds;
-    return `<button class="ex${active ? ' active' : ''}" data-id="${esc(p.id)}">
-      <span class="e-txt"><b>${esc(p.name)}</b>
-        <span class="meta"><span class="pill num">${esc(patt(p.cfg))}</span><span class="num">${c.rounds} tur · ${fmtLen(len)} dk</span></span>
-      </span>
-      <span class="go" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg></span>
-    </button>`;
+    return `<div class="ex${active ? ' active' : ''}" data-id="${esc(p.id)}">
+      <button class="grip" aria-label="${esc(p.name)} sırasını değiştir (yukarı/aşağı ok tuşları)">${GRIP}</button>
+      <button class="e-main" aria-label="${esc(p.name)} egzersizini seç">
+        <span class="e-txt"><b>${esc(p.name)}</b>
+          <span class="meta"><span class="pill num">${esc(patt(p.cfg))}</span><span class="num">${c.rounds} tur · ${fmtLen(len)} dk</span></span>
+        </span>
+        <span class="go" aria-hidden="true">${CHEV}</span>
+      </button>
+    </div>`;
   }).join('');
 }
 $('exList').addEventListener('click', e => {
-  const b = e.target.closest('.ex'); if(!b) return;
-  if(N.isRunning()){ location.hash = '#nefes'; return }
-  N.applyPreset(b.dataset.id);
+  const b = e.target.closest('.e-main'); if(!b || justDragged) return;
+  const id = b.closest('.ex').dataset.id;
+  if(!N.isRunning()) N.applyPreset(id);
   location.hash = '#nefes';
-  N.start();
 });
+
+/* sürükleyerek sıralama (dokunmatik ve fare) */
+let drag = null, justDragged = false;
+const ids = () => [...$('exList').querySelectorAll('.ex')].map(x => x.dataset.id);
+function saveOrder(list){ N.setOrder(list); renderExercises() }
+$('exList').addEventListener('pointerdown', e => {
+  const g = e.target.closest('.grip'); if(!g) return;
+  e.preventDefault();
+  const item = g.closest('.ex'), items = [...$('exList').querySelectorAll('.ex')];
+  const r = item.getBoundingClientRect();
+  drag = { item, items, idx: items.indexOf(item), t: items.indexOf(item), y0: e.clientY, step: r.height + 10, moved: false };
+  item.classList.add('dragging'); document.body.classList.add('dragging-list');
+  try{ g.setPointerCapture(e.pointerId) }catch(err){}
+});
+$('exList').addEventListener('pointermove', e => {
+  if(!drag) return;
+  const dy = e.clientY - drag.y0;
+  if(Math.abs(dy) > 4) drag.moved = true;
+  const n = drag.items.length;
+  const min = -drag.idx * drag.step, max = (n - 1 - drag.idx) * drag.step;
+  const cy = Math.max(min - 12, Math.min(max + 12, dy));
+  drag.item.style.transform = `translateY(${cy}px)`;
+  const t = Math.max(0, Math.min(n - 1, drag.idx + Math.round(cy / drag.step)));
+  drag.t = t;
+  drag.items.forEach((it, i) => {
+    if(it === drag.item) return;
+    const shift = (i > drag.idx && i <= t) ? -drag.step : (i < drag.idx && i >= t) ? drag.step : 0;
+    it.style.transform = shift ? `translateY(${shift}px)` : '';
+  });
+});
+function endDrag(){
+  if(!drag) return;
+  const { idx, t, moved, items } = drag;
+  items.forEach(it => { it.style.transform = ''; it.classList.remove('dragging') });
+  document.body.classList.remove('dragging-list');
+  drag = null;
+  if(moved){ justDragged = true; setTimeout(() => justDragged = false, 50) }
+  if(t !== idx){
+    const list = ids(); const [m] = list.splice(idx, 1); list.splice(t, 0, m);
+    saveOrder(list);
+  }
+}
+$('exList').addEventListener('pointerup', endDrag);
+$('exList').addEventListener('pointercancel', endDrag);
+$('exList').addEventListener('keydown', e => {
+  const g = e.target.closest('.grip'); if(!g || !['ArrowUp','ArrowDown'].includes(e.key)) return;
+  e.preventDefault();
+  const list = ids(), id = g.closest('.ex').dataset.id, i = list.indexOf(id), t = i + (e.key === 'ArrowUp' ? -1 : 1);
+  if(t < 0 || t >= list.length) return;
+  list.splice(i, 1); list.splice(t, 0, id);
+  saveOrder(list);
+  $('exList').querySelector(`.ex[data-id="${CSS.escape(id)}"] .grip`).focus();
+});
+
 function renderHomeNext(){
   const n = N.getNext();
   $('homeNextK').textContent = n.on ? n.k : 'Hatırlatıcı kapalı';
