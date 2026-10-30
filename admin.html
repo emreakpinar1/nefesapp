@@ -1,0 +1,590 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#161813">
+<title>NefesApp Yönetim</title>
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Figtree:wght@400;500;600&display=swap">
+<style>
+/* Layout: geniş ekranda iki sütunlu kart ızgarası, telefonda tek sütun; üstte sekmeler */
+:root{
+  --bg:#EEF6DC; --surface:#FFFFFF; --ink:#151712; --muted:#6A7260;
+  --lime:#C7EA70; --lime-deep:#A9D04A; --card:#161813; --card-ink:#F3F8E6; --card-muted:#8E967F;
+  --line:#E1E8CF; --bar:#161813; --grid:#E6ECD8; --bad:#B4410C;
+  --shadow:0 10px 30px rgba(60,80,20,.10);
+  --f-display:"Lexend",ui-rounded,system-ui,sans-serif;
+  --f-body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#0F110C; --surface:#1A1D15; --ink:#EEF4DF; --muted:#9AA38B;
+  --card:#22261B; --card-ink:#F3F8E6; --card-muted:#959D85; --line:#2A3021; --bar:#C7EA70; --grid:#2A3021; --bad:#F59E6B;
+  --shadow:0 10px 30px rgba(0,0,0,.35); color-scheme:dark }}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:calc(20px + env(safe-area-inset-top,0px)) calc(40px + env(safe-area-inset-bottom,0px))}
+[hidden]{display:none!important}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+input,textarea,select{font:inherit;color:inherit}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--lime-deep);outline-offset:2px}
+h1,h2,h3{font-family:var(--f-display);margin:0;font-weight:600;text-wrap:balance}
+.wrap{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+
+.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.top .acts{display:flex;gap:8px;flex-wrap:wrap}
+.logo{width:48px;height:48px;border-radius:50%;background:var(--card);display:grid;place-items:center;flex:none;overflow:hidden}
+.logo svg{width:26px;height:26px}
+.logo img{width:100%;height:100%;object-fit:cover}
+.top .txt{flex:1 1 160px;min-width:0}
+.top small{color:var(--muted);font-size:13px;display:block}
+.top h1{font-size:22px;white-space:nowrap}
+.pill-btn{padding:10px 16px;border-radius:999px;background:var(--surface);font-weight:600;font-size:14px;box-shadow:var(--shadow);flex:none}
+
+.tabs{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 8px;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs a{flex:none;padding:11px 18px;border-radius:999px;background:var(--surface);font-family:var(--f-display);font-weight:500;font-size:14px;color:inherit;text-decoration:none;border:1px solid var(--line)}
+.tabs a[aria-current="page"]{background:var(--lime);color:#151712;border-color:var(--lime)}
+
+.panel{background:var(--surface);border-radius:28px;padding:20px;box-shadow:var(--shadow);min-width:0}
+.panel-h{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.panel-h h2{font-size:18px}
+.note{font-size:12px;color:var(--muted)}
+.hint{font-size:13px;color:var(--muted);margin:0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr));gap:18px}
+
+/* gate */
+.gate{max-width:440px;margin:40px auto 0;text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center}
+.gate .big-ico{width:84px;height:84px;border-radius:50%;background:var(--card);display:grid;place-items:center}
+.gate .big-ico svg{width:40px;height:40px}
+.btn-google{display:flex;align-items:center;justify-content:center;gap:10px;padding:14px 22px;border-radius:999px;background:var(--bg);font-family:var(--f-display);font-weight:500;border:1px solid var(--line);width:100%}
+.btn-google svg{width:20px;height:20px}
+.msg{font-size:13px;color:var(--bad);margin:0}
+.msg:empty{display:none}
+
+/* kpis */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:12px}
+.kpi{border-radius:24px;padding:16px 18px;background:var(--surface);box-shadow:var(--shadow);min-width:0}
+.kpi.dark{background:var(--card);color:var(--card-ink)}
+.kpi.lime{background:var(--lime);color:#151712}
+.kpi .t{font-size:13px;font-weight:600;font-family:var(--f-display)}
+.kpi .v{font-family:var(--f-display);font-weight:700;font-size:34px;line-height:1.15;margin-top:8px;font-variant-numeric:tabular-nums}
+.kpi .v small{font-size:15px;font-weight:500;opacity:.7}
+.kpi .s{font-size:12px;opacity:.7;margin-top:2px}
+
+/* chart */
+.chart{position:relative;width:100%;height:200px}
+.chart svg{display:block;width:100%;height:100%;overflow:visible}
+.chart .tick{font-size:11px;fill:var(--muted);font-family:var(--f-body);font-variant-numeric:tabular-nums}
+.chart .gl{stroke:var(--grid);stroke-width:1}
+.chart .bar{fill:var(--bar)}
+.chart .bar.on{fill:var(--lime-deep)}
+.chart .empty{font-size:13px;fill:var(--muted)}
+.tip{position:absolute;pointer-events:none;background:var(--card);color:var(--card-ink);font-size:12px;padding:6px 10px;border-radius:10px;white-space:nowrap;transform:translate(-50%,-100%);margin-top:-8px;font-variant-numeric:tabular-nums}
+.tip b{font-family:var(--f-display)}
+details.tbl{margin-top:10px;font-size:13px}
+details.tbl summary{cursor:pointer;color:var(--muted)}
+details.tbl table{margin-top:8px}
+
+/* table */
+.tscroll{overflow-x:auto;margin:0 -4px}
+table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:10px;border-bottom:1px solid var(--line);vertical-align:middle;white-space:nowrap}
+td.num,th.num{text-align:right}
+tr:last-child td{border-bottom:0}
+.who{display:flex;align-items:center;gap:10px;min-width:220px}
+.av{width:36px;height:36px;border-radius:50%;background:var(--lime);color:#151712;display:grid;place-items:center;font-family:var(--f-display);font-weight:700;overflow:hidden;flex:none}
+.av img{width:100%;height:100%;object-fit:cover}
+.who b{display:block;font-family:var(--f-display);font-weight:500}
+.who small{color:var(--muted);font-size:12px}
+.chip{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;background:var(--bg)}
+.chip.on{background:var(--lime);color:#151712}
+.search{display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.search input{flex:1 1 220px;min-width:0;padding:12px 16px;border-radius:999px;border:1px solid var(--line);background:var(--bg)}
+
+/* forms */
+.field{background:var(--bg);border-radius:16px;padding:8px 12px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.field label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.field input,.field textarea{border:0;background:none;padding:0;width:100%;font-size:16px;font-weight:500}
+.field input[type=number],.field input[type=time]{font-family:var(--f-display);font-weight:600;font-size:18px;font-variant-numeric:tabular-nums}
+.field textarea{resize:vertical;min-height:72px;font-family:var(--f-body)}
+.preset{display:grid;grid-template-columns:minmax(0,1.6fr) repeat(4,minmax(0,1fr)) auto;gap:8px;align-items:stretch;padding:10px 0;border-top:1px solid var(--line)}
+.preset:first-child{border-top:0}
+.p-tools{display:flex;gap:4px;align-items:center}
+.icon-btn{width:36px;height:36px;border-radius:50%;background:var(--bg);display:grid;place-items:center}
+.icon-btn svg{width:16px;height:16px}
+.icon-btn.del{color:var(--bad)}
+.icon-btn:disabled{opacity:.35;cursor:default}
+@media (max-width:620px){.preset{grid-template-columns:repeat(4,minmax(0,1fr))}.preset .f-name{grid-column:1/-1}.p-tools{grid-column:1/-1;justify-content:flex-end}}
+.row-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.btn{padding:13px 20px;border-radius:999px;font-family:var(--f-display);font-weight:600;font-size:15px}
+.btn.primary{background:var(--card);color:#C7EA70}
+.btn.lime{background:var(--lime);color:#151712}
+.btn.ghost{background:var(--bg)}
+.btn:disabled{opacity:.5;cursor:default}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,130px),1fr));gap:10px}
+.seg{display:flex;background:var(--bg);border-radius:999px;padding:4px;gap:4px}
+.seg button{flex:1;padding:10px 8px;border-radius:999px;font-family:var(--f-display);font-weight:500;font-size:14px}
+.seg button[aria-pressed="true"]{background:var(--card);color:#C7EA70}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 0 12px}
+.toggle{position:relative;width:50px;height:30px;flex:none}
+.toggle input{opacity:0;position:absolute;inset:0;margin:0;cursor:pointer;z-index:1}
+.toggle i{position:absolute;inset:0;border-radius:999px;background:var(--line)}
+.toggle i::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:var(--surface);box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .2s}
+.toggle input:checked + i{background:var(--card)}
+.toggle input:checked + i::after{transform:translateX(20px);background:var(--lime)}
+.stack{display:flex;flex-direction:column;gap:10px}
+.sub{font-family:var(--f-display);font-weight:500;font-size:15px;margin:6px 0 2px}
+
+/* announcement preview (uygulamadakiyle aynı) */
+.announce{display:flex;gap:12px;align-items:flex-start;border-radius:22px;padding:14px}
+.announce .a-ico{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;flex:none}
+.announce .a-ico svg{width:18px;height:18px}
+.announce .a-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;font-size:14px;line-height:1.4}
+.announce .a-txt b{font-family:var(--f-display);font-weight:600;font-size:15px}
+.announce.k-info{background:#C7EA70;color:#151712}.announce.k-info .a-ico{background:#151712;color:#C7EA70}
+.announce.k-tip{background:#161813;color:#F3F8E6}.announce.k-tip .a-ico{background:#C7EA70;color:#151712}
+.announce.k-warn{background:#F6D9A8;color:#3A2A0C}.announce.k-warn .a-ico{background:#3A2A0C;color:#F6D9A8}
+.status-line{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--line)}
+.dot.on{background:var(--lime-deep)}
+
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(24px + env(safe-area-inset-bottom,0px));background:var(--card);color:var(--card-ink);padding:10px 18px;border-radius:999px;font-size:14px;z-index:9;max-width:calc(100% - 32px);text-align:center}
+@media (prefers-reduced-motion: reduce){.toggle i::after{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="logo" id="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#C7EA70" stroke-width="2" stroke-linecap="round"><path d="M3 9h11a3 3 0 1 0-3-3"/><path d="M3 14h15a3 3 0 1 1-3 3"/><path d="M3 19h6"/></svg></div>
+    <div class="txt"><small>NefesApp</small><h1>Yönetim paneli</h1></div>
+    <div class="acts">
+      <a class="pill-btn" href="./" style="color:inherit;text-decoration:none">Uygulamaya dön</a>
+      <button class="pill-btn" id="outBtn" hidden>Çıkış</button>
+    </div>
+  </header>
+
+  <section class="gate panel" id="gate">
+    <div class="big-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#C7EA70" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div>
+    <h2>Yönetici girişi</h2>
+    <p class="hint" id="gateText">Bu sayfaya yalnızca yönetici hesabı girebilir.</p>
+    <button class="btn-google" id="gBtn">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5a5.6 5.6 0 0 1-2.4 3.6v3h3.9c2.2-2.1 3.5-5.1 3.5-8.8z"/><path fill="#34A853" d="M12 24c3.2 0 6-1.1 8-2.9l-3.9-3c-1.1.7-2.5 1.2-4.1 1.2-3.1 0-5.8-2.1-6.7-5H1.3v3.1A12 12 0 0 0 12 24z"/><path fill="#FBBC05" d="M5.3 14.3a7.2 7.2 0 0 1 0-4.6V6.6H1.3a12 12 0 0 0 0 10.8z"/><path fill="#EA4335" d="M12 4.8c1.8 0 3.3.6 4.6 1.8l3.4-3.4A12 12 0 0 0 1.3 6.6l4 3.1c.9-2.8 3.6-4.9 6.7-4.9z"/></svg>
+      Google ile giriş yap
+    </button>
+    <p class="msg" id="gateMsg" role="alert"></p>
+  </section>
+
+  <div id="adm" hidden class="stack" style="gap:18px">
+    <nav class="tabs" aria-label="Bölümler">
+      <a href="#ozet">Özet</a>
+      <a href="#kullanicilar">Kullanıcılar</a>
+      <a href="#egzersizler">Hazır egzersizler</a>
+      <a href="#duyuru">Duyuru</a>
+      <a href="#varsayilan">Varsayılan ayarlar</a>
+    </nav>
+
+    <!-- ÖZET -->
+    <section data-view="ozet" class="stack" style="gap:18px">
+      <div class="kpis">
+        <div class="kpi dark"><div class="t">Kayıtlı kullanıcı</div><div class="v" id="kUsers">–</div><div class="s" id="kNew">&nbsp;</div></div>
+        <div class="kpi"><div class="t">Bugün uygulamayı açan</div><div class="v" id="kToday">–</div><div class="s">Giriş yapmış kullanıcılar</div></div>
+        <div class="kpi"><div class="t">Son 7 günde egzersiz yapan</div><div class="v" id="kWeek">–</div><div class="s" id="kWeekPct">&nbsp;</div></div>
+        <div class="kpi lime"><div class="t">Toplam egzersiz süresi</div><div class="v" id="kTime">–</div><div class="s" id="kSess">&nbsp;</div></div>
+      </div>
+      <div class="grid2">
+        <div class="panel">
+          <div class="panel-h"><h2>Egzersiz yapan kullanıcı</h2><span class="note">günlük · son 30 gün</span></div>
+          <div class="chart" id="chUsers"></div>
+          <details class="tbl"><summary>Tablo olarak göster</summary><div class="tscroll"><table id="tbUsers"></table></div></details>
+        </div>
+        <div class="panel">
+          <div class="panel-h"><h2>Toplam egzersiz süresi</h2><span class="note">günlük dakika · son 30 gün</span></div>
+          <div class="chart" id="chMins"></div>
+          <details class="tbl"><summary>Tablo olarak göster</summary><div class="tscroll"><table id="tbMins"></table></div></details>
+        </div>
+      </div>
+      <p class="hint">Bu sayılar yalnızca uygulamada giriş yapmış kullanıcıları kapsar. Giriş yapmadan kullananların verisi kendi cihazlarında kalır.</p>
+    </section>
+
+    <!-- KULLANICILAR -->
+    <section data-view="kullanicilar" class="panel">
+      <div class="panel-h"><h2>Kullanıcılar</h2><span class="note" id="uCount"></span></div>
+      <div class="search"><input id="uSearch" type="search" placeholder="Ad veya e-posta ara" aria-label="Kullanıcı ara"></div>
+      <div class="tscroll">
+        <table>
+          <thead><tr><th>Kullanıcı</th><th>Son görülme</th><th class="num">Seans</th><th class="num">Toplam</th><th class="num">Bugün</th><th>Nefes düzeni</th><th>Hatırlatıcı</th><th>Kayıt</th></tr></thead>
+          <tbody id="uBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- EGZERSİZLER -->
+    <section data-view="egzersizler" class="panel">
+      <div class="panel-h"><h2>Hazır egzersizler</h2><span class="note">saniye · en fazla 8</span></div>
+      <p class="hint" style="margin-bottom:10px">Uygulamanın üstündeki egzersiz düğmeleri. Kaydettiğinde tüm kullanıcıların uygulamasında birkaç saniye içinde değişir.</p>
+      <div id="pList"></div>
+      <div class="row-actions">
+        <button class="btn ghost" id="pAdd">+ Egzersiz ekle</button>
+        <button class="btn ghost" id="pReset">Başlangıç listesine dön</button>
+        <span style="flex:1"></span>
+        <button class="btn primary" id="pSave">Kaydet ve yayınla</button>
+      </div>
+      <p class="msg" id="pMsg"></p>
+    </section>
+
+    <!-- DUYURU -->
+    <section data-view="duyuru" class="grid2">
+      <div class="panel">
+        <div class="panel-h"><h2>Duyuru</h2><span class="status-line"><i class="dot" id="aDot"></i><span id="aState">Yayında değil</span></span></div>
+        <div class="stack">
+          <div class="field"><label for="aTitle">Başlık</label><input id="aTitle" maxlength="60" placeholder="Örn. Yeni egzersiz eklendi"></div>
+          <div class="field"><label for="aText">Mesaj</label><textarea id="aText" maxlength="240" placeholder="Kullanıcılara göstermek istediğin kısa mesaj"></textarea></div>
+          <div class="sub">Görünüm</div>
+          <div class="seg" id="aKind">
+            <button data-k="info" aria-pressed="true">Bilgi</button>
+            <button data-k="tip" aria-pressed="false">İpucu</button>
+            <button data-k="warn" aria-pressed="false">Uyarı</button>
+          </div>
+        </div>
+        <div class="row-actions">
+          <button class="btn primary" id="aPublish">Yayınla</button>
+          <button class="btn ghost" id="aRemove">Yayından kaldır</button>
+        </div>
+        <p class="msg" id="aMsg"></p>
+      </div>
+      <div class="panel">
+        <div class="panel-h"><h2>Önizleme</h2><span class="note">uygulamanın üstünde böyle görünür</span></div>
+        <div class="announce k-info" id="aPrev">
+          <div class="a-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1z"/><path d="M15 9a4 4 0 0 1 0 6M18 6a8 8 0 0 1 0 12"/></svg></div>
+          <div class="a-txt"><b id="aPrevT">Başlık</b><span id="aPrevX">Mesajın burada görünür.</span></div>
+        </div>
+        <p class="hint" style="margin-top:12px">Kullanıcı duyuruyu kapatırsa bir daha görmez. Yeniden yayınladığında herkes yeniden görür.</p>
+      </div>
+    </section>
+
+    <!-- VARSAYILAN -->
+    <section data-view="varsayilan" class="panel">
+      <div class="panel-h"><h2>Varsayılan ayarlar</h2><span class="note">yeni kullanıcılar için</span></div>
+      <p class="hint" style="margin-bottom:12px">Uygulamayı ilk kez açan kişiler bu ayarlarla başlar. Mevcut kullanıcıların kendi ayarları değişmez.</p>
+      <div class="sub">Nefes düzeni (saniye)</div>
+      <div class="form-grid">
+        <div class="field"><label for="dIn">Nefes al</label><input id="dIn" type="number" min="1" max="60"></div>
+        <div class="field"><label for="dHold">Nefes tut</label><input id="dHold" type="number" min="0" max="60"></div>
+        <div class="field"><label for="dEx">Nefes ver</label><input id="dEx" type="number" min="1" max="60"></div>
+        <div class="field"><label for="dHold2">Bekle</label><input id="dHold2" type="number" min="0" max="60"></div>
+        <div class="field"><label for="dRounds">Tur sayısı</label><input id="dRounds" type="number" min="1" max="50"></div>
+      </div>
+      <div class="sub" style="margin-top:14px">Hatırlatıcı (kullanıcı açınca bu değerlerle başlar)</div>
+      <div class="form-grid">
+        <div class="field"><label for="dStart">Başlangıç</label><input id="dStart" type="time"></div>
+        <div class="field"><label for="dEnd">Bitiş</label><input id="dEnd" type="time"></div>
+        <div class="field"><label for="dInt">Sıklık (dk)</label><input id="dInt" type="number" min="5" max="240" step="5"></div>
+      </div>
+      <div class="row-actions"><button class="btn primary" id="dSave">Kaydet</button></div>
+      <p class="msg" id="dMsg"></p>
+    </section>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script type="module">
+import { firebaseConfig } from './firebase-config.js?v=4';
+
+const ADMIN_EMAIL = 'emreakpinar46@gmail.com';
+const BUILTIN = [
+  { id:'478',  name:'Rahatla', inhale:4, hold:7, exhale:8, hold2:0 },
+  { id:'box',  name:'Kutu',    inhale:4, hold:4, exhale:4, hold2:4 },
+  { id:'calm', name:'Sakin',   inhale:4, hold:2, exhale:6, hold2:0 },
+  { id:'bal',  name:'Denge',   inhale:5, hold:0, exhale:5, hold2:0 },
+  { id:'deep', name:'Derin',   inhale:6, hold:6, exhale:8, hold2:2 },
+];
+const DEF = { cfg:{ inhale:4, hold:7, exhale:8, hold2:0, rounds:8 }, rem:{ start:'09:00', end:'21:00', int:60 } };
+const MONTHS = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let tt; const toast = m => { const t = $('toast'); t.textContent = m; t.hidden = false; clearTimeout(tt); tt = setTimeout(() => t.hidden = true, 3000) };
+const iso = d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+const appDay = d => d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate();
+const toDate = t => t && (t.toDate ? t.toDate() : new Date(t));
+const dur = sec => { const m = Math.round((sec||0)/60); return m < 60 ? `${m} dk` : `${Math.floor(m/60)} sa ${m%60} dk` };
+const pattern = c => c ? [c.inhale, c.hold, c.exhale, c.hold2].filter((v,i) => v || i % 2 === 0).join(' · ') : '–';
+function ago(d){
+  if(!d) return '–';
+  const s = (Date.now() - d.getTime())/1000;
+  if(s < 90) return 'şimdi';
+  if(s < 3600) return `${Math.round(s/60)} dk önce`;
+  if(s < 86400) return `${Math.round(s/3600)} sa önce`;
+  if(s < 172800) return 'dün';
+  if(s < 30*86400) return `${Math.round(s/86400)} gün önce`;
+  return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+}
+const fmtDay = k => { const [y,m,d] = k.split('-').map(Number); return `${d} ${MONTHS[m-1]}` };
+
+/* ---------- views (hash) ---------- */
+const VIEWS = ['ozet','kullanicilar','egzersizler','duyuru','varsayilan'];
+function route(){
+  const v = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'ozet';
+  document.querySelectorAll('[data-view]').forEach(s => s.hidden = s.dataset.view !== v);
+  document.querySelectorAll('.tabs a').forEach(a => { if(a.getAttribute('href') !== '#' + v) a.removeAttribute('aria-current'); else a.setAttribute('aria-current','page') });
+  if(v === 'ozet') drawCharts();
+}
+addEventListener('hashchange', route);
+
+/* ---------- firebase ---------- */
+const B = 'https://www.gstatic.com/firebasejs/10.12.2/';
+const [A, AU, FS] = await Promise.all([import(B+'firebase-app.js'), import(B+'firebase-auth.js'), import(B+'firebase-firestore.js')]);
+const app = A.initializeApp(firebaseConfig);
+const auth = AU.getAuth(app); auth.languageCode = 'tr';
+const db = FS.getFirestore(app);
+const cfgRef = FS.doc(db, 'config', 'app');
+
+let users = [], conf = {}, unsubs = [], formsFilled = false;
+
+$('gBtn').addEventListener('click', async () => {
+  $('gateMsg').textContent = '';
+  try{ await AU.signInWithPopup(auth, new AU.GoogleAuthProvider()) }
+  catch(e){ if(!/popup-closed|cancelled-popup/.test(e.code||'')) $('gateMsg').textContent = 'Giriş yapılamadı (' + (e.code || 'bilinmiyor') + ').' }
+});
+$('outBtn').addEventListener('click', () => AU.signOut(auth));
+
+AU.onAuthStateChanged(auth, user => {
+  unsubs.forEach(u => u()); unsubs = [];
+  const isAdmin = !!user && user.email === ADMIN_EMAIL && user.emailVerified;
+  $('outBtn').hidden = !user;
+  $('gate').hidden = isAdmin; $('adm').hidden = !isAdmin;
+  const logo = $('logo');
+  if(user && user.photoURL){ logo.innerHTML = ''; const i = new Image(); i.src = user.photoURL; i.alt = ''; i.referrerPolicy = 'no-referrer'; logo.appendChild(i) }
+  if(user && !isAdmin){
+    $('gateText').textContent = `${user.email || 'Bu hesap'} ile yönetim paneline erişemezsin. Yönetici hesabıyla giriş yapmak için önce çıkış yap.`;
+    $('gBtn').hidden = true;
+  }else{ $('gateText').textContent = 'Bu sayfaya yalnızca yönetici hesabı girebilir.'; $('gBtn').hidden = false }
+  if(!isAdmin) return;
+  route();
+  unsubs.push(FS.onSnapshot(FS.collection(db, 'users'), snap => {
+    users = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderSummary(); renderUsers();
+  }, e => toast(e.code === 'permission-denied' ? 'Kullanıcıları okuma izni yok. Firestore kurallarını güncelle.' : 'Kullanıcılar yüklenemedi.')));
+  unsubs.push(FS.onSnapshot(cfgRef, snap => {
+    conf = snap.exists() ? snap.data() : {};
+    renderAnnState();
+    if(!formsFilled){ fillForms(); formsFilled = true }
+  }, () => {}));
+});
+
+/* ---------- summary ---------- */
+function lastDays(n){ const out = []; for(let i = n-1; i >= 0; i--) out.push(iso(new Date(Date.now() - i*864e5))); return out }
+function series(){
+  const days = lastDays(30);
+  return days.map(k => {
+    let n = 0, s = 0;
+    users.forEach(u => { const v = (u.hist || {})[k] || 0; if(v > 0){ n++; s += v } });
+    return { k, users: n, mins: Math.round(s/60) };
+  });
+}
+function renderSummary(){
+  const todayIso = iso(new Date());
+  const weekKeys = lastDays(7);
+  const total = users.length;
+  const todayOpen = users.filter(u => { const d = toDate(u.lastSeen); return d && iso(d) === todayIso }).length;
+  const week = users.filter(u => weekKeys.some(k => ((u.hist || {})[k] || 0) > 0)).length;
+  const secs = users.reduce((a,u) => a + ((u.stats && u.stats.totalSec) || 0), 0);
+  const sess = users.reduce((a,u) => a + ((u.stats && u.stats.sessions) || 0), 0);
+  const new7 = users.filter(u => { const d = toDate(u.createdAt); return d && Date.now() - d.getTime() < 7*864e5 }).length;
+  $('kUsers').textContent = total;
+  $('kNew').textContent = new7 ? `Son 7 günde ${new7} yeni` : 'Son 7 günde yeni kayıt yok';
+  $('kToday').textContent = todayOpen;
+  $('kWeek').textContent = week;
+  $('kWeekPct').textContent = total ? `Kullanıcıların %${Math.round(week/total*100)}'i` : ' ';
+  const m = Math.round(secs/60);
+  $('kTime').innerHTML = m < 60 ? `${m}<small> dk</small>` : `${Math.floor(m/60)}<small> sa</small> ${m%60}<small> dk</small>`;
+  $('kSess').textContent = `${sess} tamamlanan seans`;
+  drawCharts();
+  const s = series();
+  const tbl = (key, unit) => `<thead><tr><th>Gün</th><th class="num">${unit}</th></tr></thead><tbody>` + s.slice().reverse().map(r => `<tr><td>${fmtDay(r.k)}</td><td class="num">${r[key]}</td></tr>`).join('') + '</tbody>';
+  $('tbUsers').innerHTML = tbl('users', 'Kullanıcı');
+  $('tbMins').innerHTML = tbl('mins', 'Dakika');
+}
+
+function niceMax(v){
+  if(v <= 0) return 4;
+  const p = Math.pow(10, Math.floor(Math.log10(v)));
+  for(const m of [1, 2, 2.5, 5, 10]) if(m*p >= v) return m*p;
+  return 10*p;
+}
+function barChart(el, data, key, label){
+  const W = Math.max(280, el.clientWidth), H = el.clientHeight || 200;
+  const L = 34, R = 4, T = 10, Bm = 24;
+  const max = niceMax(Math.max(...data.map(d => d[key])));
+  const n = data.length, slot = (W - L - R)/n, bw = Math.max(3, Math.min(18, slot - 2));
+  const y = v => T + (H - T - Bm) * (1 - v/max);
+  let g = '';
+  [0, max/2, max].forEach(t => {
+    const yy = y(t).toFixed(1);
+    g += `<line class="gl" x1="${L}" x2="${W-R}" y1="${yy}" y2="${yy}"/><text class="tick" x="${L-8}" y="${(+yy+4).toFixed(1)}" text-anchor="end">${Number.isInteger(t) ? t : t.toFixed(1)}</text>`;
+  });
+  let bars = '', hits = '';
+  data.forEach((d, i) => {
+    const cx = L + slot*i + slot/2, v = d[key];
+    if(v > 0){
+      const top = y(v), base = y(0), r = Math.min(4, bw/2, base - top);
+      const x0 = cx - bw/2, x1 = cx + bw/2;
+      bars += `<path class="bar" data-i="${i}" d="M${x0},${base} V${top+r} Q${x0},${top} ${x0+r},${top} H${x1-r} Q${x1},${top} ${x1},${top+r} V${base} Z"/>`;
+    }
+    if(i % 5 === (n-1) % 5) g += `<text class="tick" x="${cx.toFixed(1)}" y="${H-6}" text-anchor="middle">${fmtDay(d.k)}</text>`;
+    hits += `<rect data-i="${i}" x="${(L + slot*i).toFixed(1)}" y="${T}" width="${slot.toFixed(1)}" height="${H-T-Bm}" fill="transparent"/>`;
+  });
+  const empty = data.every(d => !d[key]) ? `<text class="empty" x="${(L+W)/2}" y="${H/2}" text-anchor="middle">Henüz veri yok</text>` : '';
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}">${g}${bars}${empty}<g class="hits">${hits}</g></svg><div class="tip" hidden></div>`;
+  const tip = el.querySelector('.tip'), svg = el.querySelector('svg');
+  const show = i => {
+    const d = data[i], cx = L + slot*i + slot/2;
+    svg.querySelectorAll('.bar').forEach(b => b.classList.toggle('on', +b.dataset.i === i));
+    tip.innerHTML = `${fmtDay(d.k)} · <b>${d[key]}</b> ${key === 'users' ? 'kullanıcı' : 'dk'}`;
+    tip.style.left = Math.min(Math.max(cx, 60), W - 60) + 'px';
+    tip.style.top = Math.min(y(d[key]), y(0) - 4) + 'px';
+    tip.hidden = false;
+  };
+  const hide = () => { tip.hidden = true; svg.querySelectorAll('.bar.on').forEach(b => b.classList.remove('on')) };
+  svg.querySelectorAll('.hits rect').forEach(r => { r.addEventListener('pointerenter', () => show(+r.dataset.i)); r.addEventListener('click', () => show(+r.dataset.i)) });
+  svg.addEventListener('pointerleave', hide);
+}
+function drawCharts(){
+  if($('adm').hidden || document.querySelector('[data-view="ozet"]').hidden) return;
+  const s = series();
+  barChart($('chUsers'), s, 'users', 'Günlük egzersiz yapan kullanıcı sayısı, son 30 gün');
+  barChart($('chMins'), s, 'mins', 'Günlük toplam egzersiz dakikası, son 30 gün');
+}
+let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(drawCharts, 150) });
+
+/* ---------- users table ---------- */
+$('uSearch').addEventListener('input', renderUsers);
+function renderUsers(){
+  const q = $('uSearch').value.trim().toLocaleLowerCase('tr');
+  const todayKey = appDay(new Date());
+  const list = users
+    .filter(u => !q || ((u.profile?.name || '') + ' ' + (u.profile?.email || '')).toLocaleLowerCase('tr').includes(q))
+    .sort((a,b) => (toDate(b.lastSeen)?.getTime() || 0) - (toDate(a.lastSeen)?.getTime() || 0));
+  $('uCount').textContent = q ? `${list.length} / ${users.length} kişi` : `${users.length} kişi`;
+  if(!list.length){ $('uBody').innerHTML = `<tr><td colspan="8" class="hint" style="white-space:normal;padding:20px 10px">${users.length ? 'Aramana uyan kullanıcı yok.' : 'Henüz giriş yapmış kullanıcı yok. Uygulamada biri giriş yaptığında burada görünür.'}</td></tr>`; return }
+  $('uBody').innerHTML = list.map(u => {
+    const p = u.profile || {}, st = u.stats || {}, r = u.rem || {};
+    const name = p.name || (p.email || '').split('@')[0] || 'Adsız';
+    const av = p.photo ? `<img src="${esc(p.photo)}" alt="" referrerpolicy="no-referrer">` : esc(name.charAt(0).toUpperCase());
+    const today = st.date === todayKey ? dur(st.todaySec) : '–';
+    const remTxt = r.on ? `<span class="chip on">${esc(r.start)}–${esc(r.end)} · ${esc(r.int)} dk</span>` : '<span class="chip">Kapalı</span>';
+    const created = toDate(u.createdAt);
+    return `<tr>
+      <td><div class="who"><div class="av">${av}</div><div><b>${esc(name)}</b><small>${esc(p.email || '')}</small></div></div></td>
+      <td>${ago(toDate(u.lastSeen))}</td>
+      <td class="num">${st.sessions || 0}</td>
+      <td class="num">${dur(st.totalSec)}</td>
+      <td class="num">${today}</td>
+      <td>${esc(pattern(u.cfg))}${u.cfg ? ` · ${esc(u.cfg.rounds)} tur` : ''}</td>
+      <td>${remTxt}</td>
+      <td>${created ? `${created.getDate()} ${MONTHS[created.getMonth()]}` : '–'}</td>
+    </tr>`;
+  }).join('');
+}
+
+/* ---------- presets editor ---------- */
+let draft = [];
+const NUMS = [['inhale','Al',1],['hold','Tut',0],['exhale','Ver',1],['hold2','Bekle',0]];
+function renderPresets(){
+  $('pList').innerHTML = draft.map((p, i) => `
+    <div class="preset" data-i="${i}">
+      <div class="field f-name"><label for="pn${i}">Ad</label><input id="pn${i}" data-k="name" maxlength="18" value="${esc(p.name)}"></div>
+      ${NUMS.map(([k, lab, min]) => `<div class="field"><label for="p${k}${i}">${lab}</label><input id="p${k}${i}" data-k="${k}" type="number" min="${min}" max="60" value="${p[k]}"></div>`).join('')}
+      <div class="p-tools">
+        <button class="icon-btn" data-act="up" aria-label="Yukarı taşı" ${i === 0 ? 'disabled' : ''}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 15 6-6 6 6"/></svg></button>
+        <button class="icon-btn" data-act="down" aria-label="Aşağı taşı" ${i === draft.length-1 ? 'disabled' : ''}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+        <button class="icon-btn del" data-act="del" aria-label="Sil" ${draft.length <= 1 ? 'disabled' : ''}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
+      </div>
+    </div>`).join('');
+  $('pAdd').disabled = draft.length >= 8;
+}
+$('pList').addEventListener('input', e => {
+  const row = e.target.closest('.preset'); if(!row) return;
+  const p = draft[+row.dataset.i], k = e.target.dataset.k;
+  p[k] = k === 'name' ? e.target.value : Math.max(0, Math.min(60, parseInt(e.target.value, 10) || 0));
+});
+$('pList').addEventListener('click', e => {
+  const b = e.target.closest('button[data-act]'); if(!b) return;
+  const i = +b.closest('.preset').dataset.i;
+  if(b.dataset.act === 'del') draft.splice(i, 1);
+  if(b.dataset.act === 'up' && i > 0) [draft[i-1], draft[i]] = [draft[i], draft[i-1]];
+  if(b.dataset.act === 'down' && i < draft.length-1) [draft[i+1], draft[i]] = [draft[i], draft[i+1]];
+  renderPresets();
+});
+$('pAdd').addEventListener('click', () => { draft.push({ id: 'p' + Date.now(), name: 'Yeni', inhale:4, hold:4, exhale:4, hold2:0 }); renderPresets(); $('pn' + (draft.length-1)).select() });
+$('pReset').addEventListener('click', () => { draft = BUILTIN.map(p => ({ ...p })); renderPresets(); toast('Başlangıç listesi yüklendi. Yayınlamak için Kaydet\'e bas.') });
+$('pSave').addEventListener('click', async () => {
+  const msg = $('pMsg'); msg.textContent = '';
+  const bad = draft.find(p => !p.name.trim() || p.inhale < 1 || p.exhale < 1);
+  if(bad){ msg.textContent = `"${bad.name || 'Adsız'}" için ad boş olamaz; nefes al ve ver en az 1 saniye olmalı.`; return }
+  const clean = draft.map(p => ({ id: p.id, name: p.name.trim(), inhale: p.inhale, hold: p.hold, exhale: p.exhale, hold2: p.hold2 }));
+  try{ await FS.setDoc(cfgRef, { presets: clean, updatedAt: FS.serverTimestamp() }, { merge: true }); toast('Hazır egzersizler yayınlandı') }
+  catch(e){ msg.textContent = saveErr(e) }
+});
+const saveErr = e => e.code === 'permission-denied' ? 'Kaydetme izni yok. Firestore kurallarını güncellediğinden emin ol.' : 'Kaydedilemedi (' + (e.code || 'bilinmiyor') + ').';
+
+/* ---------- announcement ---------- */
+let kind = 'info';
+function preview(){
+  $('aPrev').className = 'announce k-' + kind;
+  $('aPrevT').textContent = $('aTitle').value || 'Başlık';
+  $('aPrevX').textContent = $('aText').value || 'Mesajın burada görünür.';
+  document.querySelectorAll('#aKind button').forEach(b => b.setAttribute('aria-pressed', b.dataset.k === kind));
+}
+['aTitle','aText'].forEach(id => $(id).addEventListener('input', preview));
+$('aKind').addEventListener('click', e => { const b = e.target.closest('button'); if(b){ kind = b.dataset.k; preview() } });
+function renderAnnState(){
+  const a = conf.announcement, on = !!(a && a.active);
+  $('aDot').classList.toggle('on', on);
+  $('aState').textContent = on ? 'Yayında' : 'Yayında değil';
+}
+$('aPublish').addEventListener('click', async () => {
+  $('aMsg').textContent = '';
+  const title = $('aTitle').value.trim(), text = $('aText').value.trim();
+  if(!title && !text){ $('aMsg').textContent = 'Başlık ya da mesajdan en az birini yaz.'; return }
+  try{ await FS.setDoc(cfgRef, { announcement: { id: Date.now(), title, text, kind, active: true }, updatedAt: FS.serverTimestamp() }, { merge: true }); toast('Duyuru yayınlandı') }
+  catch(e){ $('aMsg').textContent = saveErr(e) }
+});
+$('aRemove').addEventListener('click', async () => {
+  try{ await FS.setDoc(cfgRef, { announcement: { ...(conf.announcement || {}), active: false }, updatedAt: FS.serverTimestamp() }, { merge: true }); toast('Duyuru kaldırıldı') }
+  catch(e){ $('aMsg').textContent = saveErr(e) }
+});
+
+/* ---------- defaults ---------- */
+$('dSave').addEventListener('click', async () => {
+  const n = (id, lo, hi) => Math.max(lo, Math.min(hi, parseInt($(id).value, 10) || lo));
+  const d = {
+    cfg: { inhale: n('dIn',1,60), hold: n('dHold',0,60), exhale: n('dEx',1,60), hold2: n('dHold2',0,60), rounds: n('dRounds',1,50) },
+    rem: { start: $('dStart').value || '09:00', end: $('dEnd').value || '21:00', int: n('dInt',5,240) },
+  };
+  $('dMsg').textContent = '';
+  if(d.rem.end < d.rem.start){ $('dMsg').textContent = 'Hatırlatıcı bitiş saati başlangıçtan sonra olmalı.'; return }
+  try{ await FS.setDoc(cfgRef, { defaults: d, updatedAt: FS.serverTimestamp() }, { merge: true }); toast('Varsayılan ayarlar kaydedildi') }
+  catch(e){ $('dMsg').textContent = saveErr(e) }
+});
+
+function fillForms(){
+  draft = (Array.isArray(conf.presets) && conf.presets.length ? conf.presets : BUILTIN).map(p => ({ ...p }));
+  renderPresets();
+  const a = conf.announcement || {};
+  $('aTitle').value = a.title || ''; $('aText').value = a.text || ''; kind = a.kind || 'info'; preview();
+  const d = conf.defaults || DEF, c = d.cfg || DEF.cfg, r = d.rem || DEF.rem;
+  $('dIn').value = c.inhale; $('dHold').value = c.hold; $('dEx').value = c.exhale; $('dHold2').value = c.hold2; $('dRounds').value = c.rounds;
+  $('dStart').value = r.start; $('dEnd').value = r.end; $('dInt').value = r.int;
+}
+</script>
+</body>
+</html>

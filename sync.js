@@ -1,5 +1,5 @@
 // NefesApp hesap ve eşitleme (Firebase Auth + Firestore)
-import { firebaseConfig } from './firebase-config.js?v=3';
+import { firebaseConfig } from './firebase-config.js?v=4';
 
 const $ = id => document.getElementById(id);
 const panel = $('accPanel');
@@ -38,6 +38,12 @@ function mergeStats(l, r){
   };
 }
 
+function mergeHist(l, r){
+  const out = { ...(r || {}) };
+  for(const [d, v] of Object.entries(l || {})) out[d] = Math.max(v || 0, out[d] || 0);
+  return out;
+}
+
 if(firebaseConfig && panel && window.__nefes) init();
 
 async function init(){
@@ -59,12 +65,21 @@ async function init(){
   try{ db = FS.initializeFirestore(app, { localCache: FS.persistentLocalCache({ tabManager: FS.persistentMultipleTabManager() }) }) }
   catch(e){ db = FS.getFirestore(app) }
 
-  let ref = null, ready = false, unsub = null, timer = null, signup = false;
+  // Yönetim panelinden gelen hazır egzersizler, duyuru ve varsayılanlar (herkese açık)
+  FS.onSnapshot(FS.doc(db, 'config', 'app'), s => { if(s.exists()) window.__nefes.setRemoteConfig(s.data()) }, () => {});
+
+  let ref = null, ready = false, unsub = null, timer = null, signup = false, me = null, isNew = false;
 
   async function push(){
     if(!ref) return;
     try{
-      await FS.setDoc(ref, { ...window.__nefes.getState(), updatedAt: FS.serverTimestamp() }, { merge: true });
+      const data = {
+        ...window.__nefes.getState(),
+        profile: { email: (me && me.email) || '', name: (me && me.displayName) || '', photo: (me && me.photoURL) || '' },
+        lastSeen: FS.serverTimestamp(), updatedAt: FS.serverTimestamp(),
+      };
+      if(isNew){ data.createdAt = FS.serverTimestamp(); isNew = false }
+      await FS.setDoc(ref, data, { merge: true });
       setStatus('Eşitlendi · ' + hhmm());
     }catch(e){ setStatus('Kaydedilemedi'); setMsg(trErr(e), true) }
   }
@@ -75,7 +90,7 @@ async function init(){
   };
   function applyRemote(r){
     const l = window.__nefes.getState();
-    window.__nefes.applyState({ cfg: r.cfg, opts: r.opts, rem: r.rem, stats: mergeStats(l.stats, r.stats) });
+    window.__nefes.applyState({ cfg: r.cfg, opts: r.opts, rem: r.rem, stats: mergeStats(l.stats, r.stats), hist: mergeHist(l.hist, r.hist) });
   }
 
   function renderUser(u){
@@ -105,14 +120,14 @@ async function init(){
 
   AU.onAuthStateChanged(auth, async user => {
     if(unsub){ unsub(); unsub = null }
-    ready = false; ref = null;
+    ready = false; ref = null; me = user;
     renderUser(user);
     if(!user) return;
     setStatus('Eşitleniyor…');
     ref = FS.doc(db, 'users', user.uid);
     try{
       const snap = await FS.getDoc(ref);
-      if(snap.exists()) applyRemote(snap.data());
+      if(snap.exists()) applyRemote(snap.data()); else isNew = true;
       ready = true;
       await push();
       unsub = FS.onSnapshot(ref, s => {
