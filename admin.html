@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#161813">
 <title>Ferah Yönetim</title>
-<script src="defaults.js?v=10"></script>
+<script src="defaults.js?v=11"></script>
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -298,6 +298,8 @@ tr:last-child td{border-bottom:0}
           <div class="field"><label for="aTextEn">Mesaj (EN)</label><textarea id="aTextEn" maxlength="240"></textarea></div>
           <div class="field"><label for="aTitleAr">Başlık (AR)</label><input id="aTitleAr" dir="rtl" maxlength="60" placeholder="Arapça kullanıcılar için (boşsa İngilizcesi, o da boşsa Türkçesi)"></div>
           <div class="field"><label for="aTextAr">Mesaj (AR)</label><textarea id="aTextAr" dir="rtl" maxlength="240"></textarea></div>
+          <div class="field"><label for="aTitleDe">Başlık (DE)</label><input id="aTitleDe" maxlength="60" placeholder="Almanca kullanıcılar için (boşsa Türkçesi)"></div>
+          <div class="field"><label for="aTextDe">Mesaj (DE)</label><textarea id="aTextDe" maxlength="240"></textarea></div>
           <div class="sub">Görünüm</div>
           <div class="seg" id="aKind">
             <button data-k="info" aria-pressed="true">Bilgi</button>
@@ -347,7 +349,7 @@ tr:last-child td{border-bottom:0}
     <section data-view="icerik" class="grid2">
       <div class="panel">
         <div class="panel-h"><h2>İçerik</h2><span class="note">uygulamadaki metinler</span></div>
-        <div class="seg lang-seg" id="cLangSeg" style="max-width:380px"><button data-l="tr" aria-pressed="true">Türkçe</button><button data-l="en" aria-pressed="false">English</button><button data-l="ar" aria-pressed="false">العربية</button></div>
+        <div class="seg lang-seg" id="cLangSeg" style="max-width:480px"><button data-l="tr" aria-pressed="true">Türkçe</button><button data-l="en" aria-pressed="false">English</button><button data-l="ar" aria-pressed="false">العربية</button><button data-l="de" aria-pressed="false">Deutsch</button></div>
         <div class="stack">
           <div class="sub">Ana sayfa</div>
           <div class="field"><label for="cHomeTitle">Liste başlığı</label><input id="cHomeTitle" maxlength="40"></div>
@@ -407,18 +409,7 @@ tr:last-child td{border-bottom:0}
         <div class="panel-h"><h2>Abonelik</h2><span class="note">fiyatlar ve deneme</span></div>
         <div class="stack">
           <div class="field" style="max-width:220px"><label for="bTrial">Ücretsiz deneme (gün)</label><input id="bTrial" type="number" min="0" max="90"></div>
-          <div class="sub">Türkiye (₺) · Türkçe kullanıcılar</div>
-          <div class="form-grid">
-            <div class="field"><label for="bTm">Aylık</label><input id="bTm" type="number" min="0" step="0.01"></div>
-            <div class="field"><label for="bTy">Yıllık</label><input id="bTy" type="number" min="0" step="0.01"></div>
-            <div class="field"><label for="bTl">Ömür boyu</label><input id="bTl" type="number" min="0" step="0.01"></div>
-          </div>
-          <div class="sub">Global ($) · İngilizce kullanıcılar</div>
-          <div class="form-grid">
-            <div class="field"><label for="bUm">Aylık</label><input id="bUm" type="number" min="0" step="0.01"></div>
-            <div class="field"><label for="bUy">Yıllık</label><input id="bUy" type="number" min="0" step="0.01"></div>
-            <div class="field"><label for="bUl">Ömür boyu</label><input id="bUl" type="number" min="0" step="0.01"></div>
-          </div>
+          <div id="bCur"></div>
           <p class="hint">Mağazada gerçek ödeme açıldığında fiyatlar Google Play ve App Store'da da aynı tutulmalı. Kullanıcılara elle premium vermek için Kullanıcılar sekmesindeki Abonelik sütununu kullan.</p>
         </div>
         <div class="row-actions"><button class="btn primary" id="bSave">Kaydet ve yayınla</button><button class="btn ghost" id="bReset">Varsayılan fiyatlara dön</button></div>
@@ -442,6 +433,8 @@ tr:last-child td{border-bottom:0}
           <div class="field"><label for="nBodyEn">Metin (EN)</label><input id="nBodyEn" maxlength="140"></div>
           <div class="field"><label for="nTitleAr">Başlık (AR)</label><input id="nTitleAr" dir="rtl" maxlength="50"></div>
           <div class="field"><label for="nBodyAr">Metin (AR)</label><input id="nBodyAr" dir="rtl" maxlength="140"></div>
+          <div class="field"><label for="nTitleDe">Başlık (DE)</label><input id="nTitleDe" maxlength="50"></div>
+          <div class="field"><label for="nBodyDe">Metin (DE)</label><input id="nBodyDe" maxlength="140"></div>
           <div class="fmt-help">Metinde kullanabileceklerin: <code>{duzen}</code> nefes düzeni (4 · 7 · 8) · <code>{tur}</code> tur sayısı · <code>{sure}</code> toplam süre</div>
           <div class="sub">Günlük hedef</div>
           <div class="field" style="max-width:220px"><label for="gDaily">Dakika / gün</label><input id="gDaily" type="number" min="1" max="120"></div>
@@ -710,19 +703,22 @@ function renderPresets(){
         </div>
         <div class="field f-half"><label for="pne${i}">Ad (EN)</label><input id="pne${i}" data-k="name_en" maxlength="28" value="${esc(p.name_en || '')}" placeholder="${esc(p.name)}"></div>
         <div class="field f-half"><label for="pna${i}">Ad (AR)</label><input id="pna${i}" data-k="name_ar" dir="rtl" maxlength="28" value="${esc(p.name_ar || '')}"></div>
+        <div class="field f-half"><label for="pnd${i}">Ad (DE)</label><input id="pnd${i}" data-k="name_de" maxlength="28" value="${esc(p.name_de || '')}"></div>
         <div class="field f-half"><label for="pc${i}">Kategori</label><select id="pc${i}" data-k="cat">${CATS.map(c => `<option value="${c.id}" ${p.cat === c.id ? 'selected' : ''}>${esc(c.tr)}</option>`).join('')}</select></div>
         <div class="field f-wide"><label for="ps${i}">Kısa açıklama (TR)</label><input id="ps${i}" data-k="short" maxlength="90" value="${esc(p.short || '')}"></div>
         <div class="field f-wide"><label for="pse${i}">Kısa açıklama (EN)</label><input id="pse${i}" data-k="short_en" maxlength="90" value="${esc(p.short_en || '')}"></div>
         <div class="field f-wide"><label for="psa${i}">Kısa açıklama (AR)</label><input id="psa${i}" data-k="short_ar" dir="rtl" maxlength="90" value="${esc(p.short_ar || '')}"></div>
+        <div class="field f-wide"><label for="psd${i}">Kısa açıklama (DE)</label><input id="psd${i}" data-k="short_de" maxlength="90" value="${esc(p.short_de || '')}"></div>
         <div class="field f-wide"><label for="pd${i}">Ne işe yarar? (TR)</label><textarea id="pd${i}" data-k="desc" maxlength="800">${esc(p.desc || '')}</textarea></div>
         <div class="field f-wide"><label for="pde${i}">Ne işe yarar? (EN)</label><textarea id="pde${i}" data-k="desc_en" maxlength="800">${esc(p.desc_en || '')}</textarea></div>
         <div class="field f-wide"><label for="pda${i}">Ne işe yarar? (AR)</label><textarea id="pda${i}" data-k="desc_ar" dir="rtl" maxlength="800">${esc(p.desc_ar || '')}</textarea></div>
+        <div class="field f-wide"><label for="pdd${i}">Ne işe yarar? (DE)</label><textarea id="pdd${i}" data-k="desc_de" maxlength="800">${esc(p.desc_de || '')}</textarea></div>
       </div>
     </details>`).join('');
   $('pAdd').disabled = draft.length >= 60;
   $('pCount').textContent = `${draft.length} egzersiz · deneme bitince hepsi Premium`;
 }
-const TXT = ['name','name_en','name_ar','short','short_en','short_ar','desc','desc_en','desc_ar','cat'];
+const TXT = ['name','name_en','name_ar','name_de','short','short_en','short_ar','short_de','desc','desc_en','desc_ar','desc_de','cat'];
 function onPresetEdit(e){
   const row = e.target.closest('.preset-d'); if(!row || !e.target.dataset.k) return;
   const p = draft[+row.dataset.i], k = e.target.dataset.k;
@@ -751,7 +747,7 @@ $('pSave').addEventListener('click', async () => {
   const bad = draft.find(p => !p.name.trim() || p.inhale < 1 || p.exhale < 1);
   if(bad){ msg.textContent = `"${bad.name || 'Adsız'}" için ad boş olamaz; nefes al ve ver en az 1 saniye olmalı.`; return }
   const T = v => String(v || '').trim();
-  const clean = draft.map(p => ({ id: p.id, name: T(p.name), name_en: T(p.name_en), name_ar: T(p.name_ar), cat: p.cat || 'calm', free: false, short: T(p.short), short_en: T(p.short_en), short_ar: T(p.short_ar), desc: T(p.desc), desc_en: T(p.desc_en), desc_ar: T(p.desc_ar), inhale: p.inhale, hold: p.hold, exhale: p.exhale, hold2: p.hold2 }));
+  const clean = draft.map(p => ({ id: p.id, name: T(p.name), name_en: T(p.name_en), name_ar: T(p.name_ar), name_de: T(p.name_de), cat: p.cat || 'calm', free: false, short: T(p.short), short_en: T(p.short_en), short_ar: T(p.short_ar), short_de: T(p.short_de), desc: T(p.desc), desc_en: T(p.desc_en), desc_ar: T(p.desc_ar), desc_de: T(p.desc_de), inhale: p.inhale, hold: p.hold, exhale: p.exhale, hold2: p.hold2 }));
   try{ await FS.setDoc(cfgRef, { presets: clean, presetsVersion: 2, updatedAt: FS.serverTimestamp() }, { merge: true }); toast('Hazır egzersizler yayınlandı') }
   catch(e){ msg.textContent = saveErr(e) }
 });
@@ -776,7 +772,7 @@ $('aPublish').addEventListener('click', async () => {
   $('aMsg').textContent = '';
   const title = $('aTitle').value.trim(), text = $('aText').value.trim();
   if(!title && !text){ $('aMsg').textContent = 'Başlık ya da mesajdan en az birini yaz.'; return }
-  try{ await FS.setDoc(cfgRef, { announcement: { id: Date.now(), title, text, title_en: $('aTitleEn').value.trim(), text_en: $('aTextEn').value.trim(), title_ar: $('aTitleAr').value.trim(), text_ar: $('aTextAr').value.trim(), kind, active: true }, updatedAt: FS.serverTimestamp() }, { merge: true }); toast('Duyuru yayınlandı') }
+  try{ await FS.setDoc(cfgRef, { announcement: { id: Date.now(), title, text, title_en: $('aTitleEn').value.trim(), text_en: $('aTextEn').value.trim(), title_ar: $('aTitleAr').value.trim(), text_ar: $('aTextAr').value.trim(), title_de: $('aTitleDe').value.trim(), text_de: $('aTextDe').value.trim(), kind, active: true }, updatedAt: FS.serverTimestamp() }, { merge: true }); toast('Duyuru yayınlandı') }
   catch(e){ $('aMsg').textContent = saveErr(e) }
 });
 $('aRemove').addEventListener('click', async () => {
@@ -802,8 +798,8 @@ const ND = window.NEFES_DEFAULTS;
 const vals = ids => Object.fromEntries(ids.map(([k, id]) => [k, $(id).value.trim()]));
 const C_IDS = [['homeTitle','cHomeTitle'],['homeHint','cHomeHint'],['benefitsTitle','cBTitle'],['benefits','cBenefits'],['warning','cWarning'],['sources','cSources']];
 let cLang = 'tr';
-const cKey = () => cLang === 'en' ? 'content_en' : cLang === 'ar' ? 'content_ar' : 'content';
-const cDef = () => cLang === 'en' ? ND.content_en : cLang === 'ar' ? ND.content_ar : ND.content;
+const cKey = () => cLang === 'tr' ? 'content' : 'content_' + cLang;
+const cDef = () => cLang === 'tr' ? ND.content : ND['content_' + cLang];
 function fillContent(){
   const ct = nefesMerge(cDef(), conf[cKey()]);
   C_IDS.forEach(([k, id]) => { $(id).value = ct[k] || ''; $(id).dir = cLang === 'ar' ? 'rtl' : 'ltr' }); $('cPrev').dir = $('cPrevT').dir = cLang === 'ar' ? 'rtl' : 'ltr'; cPreview();
@@ -818,7 +814,7 @@ function cPreview(){
 C_IDS.forEach(([, id]) => $(id).addEventListener('input', cPreview));
 $('cSave').addEventListener('click', async () => {
   $('cMsg').textContent = '';
-  try{ await FS.setDoc(cfgRef, { [cKey()]: vals(C_IDS), updatedAt: FS.serverTimestamp() }, { merge: true }); toast(cLang === 'en' ? 'İngilizce içerik yayınlandı' : cLang === 'ar' ? 'Arapça içerik yayınlandı' : 'İçerik yayınlandı') }
+  try{ await FS.setDoc(cfgRef, { [cKey()]: vals(C_IDS), updatedAt: FS.serverTimestamp() }, { merge: true }); toast(({ en: 'İngilizce', ar: 'Arapça', de: 'Almanca' }[cLang] || 'Türkçe') + ' içerik yayınlandı') }
   catch(e){ $('cMsg').textContent = saveErr(e) }
 });
 $('cReset').addEventListener('click', async () => {
@@ -858,31 +854,40 @@ function nPreview(){
 $('nSave').addEventListener('click', async () => {
   $('nMsg').textContent = '';
   const daily = Math.max(1, Math.min(120, parseInt($('gDaily').value, 10) || 10));
-  try{ await FS.setDoc(cfgRef, { notify: { title: $('nTitle').value.trim(), body: $('nBody').value.trim() }, notify_en: { title: $('nTitleEn').value.trim(), body: $('nBodyEn').value.trim() }, notify_ar: { title: $('nTitleAr').value.trim(), body: $('nBodyAr').value.trim() }, goal: { dailyMin: daily }, updatedAt: FS.serverTimestamp() }, { merge: true }); toast('Bildirim ve hedef yayınlandı') }
+  try{ await FS.setDoc(cfgRef, { notify: { title: $('nTitle').value.trim(), body: $('nBody').value.trim() }, notify_en: { title: $('nTitleEn').value.trim(), body: $('nBodyEn').value.trim() }, notify_ar: { title: $('nTitleAr').value.trim(), body: $('nBodyAr').value.trim() }, notify_de: { title: $('nTitleDe').value.trim(), body: $('nBodyDe').value.trim() }, goal: { dailyMin: daily }, updatedAt: FS.serverTimestamp() }, { merge: true }); toast('Bildirim ve hedef yayınlandı') }
   catch(e){ $('nMsg').textContent = saveErr(e) }
 });
 $('nReset').addEventListener('click', async () => {
   $('nTitle').value = ND.notify.title; $('nBody').value = ND.notify.body; $('gDaily').value = ND.goal.dailyMin; nPreview();
-  $('nTitleEn').value = ND.notify_en.title; $('nBodyEn').value = ND.notify_en.body; $('nTitleAr').value = ND.notify_ar.title; $('nBodyAr').value = ND.notify_ar.body;
-  try{ await FS.setDoc(cfgRef, { notify: FS.deleteField(), notify_en: FS.deleteField(), notify_ar: FS.deleteField(), goal: FS.deleteField(), updatedAt: FS.serverTimestamp() }, { merge: true }); toast('Varsayılana dönüldü') }
+  $('nTitleEn').value = ND.notify_en.title; $('nBodyEn').value = ND.notify_en.body; $('nTitleAr').value = ND.notify_ar.title; $('nBodyAr').value = ND.notify_ar.body; $('nTitleDe').value = ND.notify_de.title; $('nBodyDe').value = ND.notify_de.body;
+  try{ await FS.setDoc(cfgRef, { notify: FS.deleteField(), notify_en: FS.deleteField(), notify_ar: FS.deleteField(), notify_de: FS.deleteField(), goal: FS.deleteField(), updatedAt: FS.serverTimestamp() }, { merge: true }); toast('Varsayılana dönüldü') }
   catch(e){ $('nMsg').textContent = saveErr(e) }
 });
 
 /* ---------- abonelik fiyatları ---------- */
-const B_IDS = { TRY: ['bTm','bTy','bTl'], USD: ['bUm','bUy','bUl'] };
+const CURS = [
+  ['TRY','₺','Türkiye'], ['EUR','€','Euro bölgesi (Almanya, Avusturya, Fransa, Hollanda…)'], ['SAR','SAR ','Suudi Arabistan'], ['AED','AED ','Birleşik Arap Emirlikleri'], ['USD','$','Diğer ülkeler'],
+];
+const PLANS = ['monthly','yearly','lifetime'];
+$('bCur').innerHTML = CURS.map(([c, sym, lab]) => `
+  <div class="sub">${lab} · ${c}</div>
+  <div class="form-grid">
+    ${PLANS.map((pl, i) => `<div class="field"><label for="b_${c}_${pl}">${['Aylık','Yıllık','Ömür boyu'][i]}</label><input id="b_${c}_${pl}" type="number" min="0" step="0.01"></div>`).join('')}
+  </div>`).join('');
 const readBill = () => {
   const n = id => Math.max(0, parseFloat($(id).value) || 0);
-  return { trialDays: Math.max(0, Math.min(90, parseInt($('bTrial').value, 10) || 0)),
-    TRY: { monthly: n('bTm'), yearly: n('bTy'), lifetime: n('bTl') }, USD: { monthly: n('bUm'), yearly: n('bUy'), lifetime: n('bUl') } };
+  const out = { trialDays: Math.max(0, Math.min(90, parseInt($('bTrial').value, 10) || 0)) };
+  CURS.forEach(([c]) => out[c] = Object.fromEntries(PLANS.map(pl => [pl, n(`b_${c}_${pl}`)])));
+  return out;
 };
 function fillBill(b){
   $('bTrial').value = b.trialDays;
-  for(const c of ['TRY','USD']) B_IDS[c].forEach((id, i) => $(id).value = b[c][['monthly','yearly','lifetime'][i]]);
+  CURS.forEach(([c]) => PLANS.forEach(pl => $(`b_${c}_${pl}`).value = (b[c] || {})[pl] ?? ''));
   bCheck();
 }
 function bCheck(){
   const b = readBill(); let html = '', ok = true;
-  for(const [c, sym] of [['TRY','₺'],['USD','$']]){
+  for(const [c, sym] of CURS){
     const P = b[c], save = P.monthly ? Math.round((1 - P.yearly / (P.monthly * 12)) * 100) : 0, yrs = P.yearly ? Math.round(P.lifetime / P.yearly * 10) / 10 : 0;
     const y = P.yearly < P.monthly * 12, l = P.lifetime > P.yearly;
     ok = ok && y && l;
@@ -894,7 +899,7 @@ function bCheck(){
   $('bCheck').innerHTML = html;
   return ok;
 }
-['bTrial', ...B_IDS.TRY, ...B_IDS.USD].forEach(id => $(id).addEventListener('input', bCheck));
+$('bTrial').addEventListener('input', bCheck); $('bCur').addEventListener('input', bCheck);
 $('bSave').addEventListener('click', async () => {
   $('bMsg').textContent = '';
   if(!bCheck()){ $('bMsg').textContent = 'Plan fiyatlarında uyarı var; yine de kaydetmek için düzeltmen önerilir.'; }
@@ -908,13 +913,14 @@ $('bReset').addEventListener('click', async () => {
 });
 
 function fillForms(){
-  { const b = conf.billing || {}; fillBill({ trialDays: b.trialDays ?? ND.billing.trialDays, TRY: { ...ND.billing.TRY, ...(b.TRY || {}) }, USD: { ...ND.billing.USD, ...(b.USD || {}) } }) }
+  { const b = conf.billing || {}, o = { trialDays: b.trialDays ?? ND.billing.trialDays }; CURS.forEach(([c]) => o[c] = { ...(ND.billing[c] || {}), ...(b[c] || {}) }); fillBill(o) }
   fillContent();
   const lk = nefesMerge(ND.look, conf.look);
   $('lBreath').value = lk.breath; $('lAccent').value = lk.accent; lTheme = lk.theme; lPreview();
   const nt = nefesMerge(ND.notify, conf.notify);
   const ne = nefesMerge(ND.notify_en, conf.notify_en); $('nTitleEn').value = ne.title; $('nBodyEn').value = ne.body;
   const na = nefesMerge(ND.notify_ar, conf.notify_ar); $('nTitleAr').value = na.title; $('nBodyAr').value = na.body;
+  const nd = nefesMerge(ND.notify_de, conf.notify_de); $('nTitleDe').value = nd.title; $('nBodyDe').value = nd.body;
   $('nTitle').value = nt.title; $('nBody').value = nt.body; $('gDaily').value = nefesMerge(ND.goal, conf.goal).dailyMin; nPreview();
   const rl = Array.isArray(conf.presets) && conf.presets.length ? conf.presets : null;
   if(!rl) draft = BUILTIN.map(p => ({ ...p }));
@@ -926,7 +932,7 @@ function fillForms(){
   }
   renderPresets();
   const a = conf.announcement || {};
-  $('aTitle').value = a.title || ''; $('aText').value = a.text || ''; $('aTitleEn').value = a.title_en || ''; $('aTextEn').value = a.text_en || ''; $('aTitleAr').value = a.title_ar || ''; $('aTextAr').value = a.text_ar || ''; kind = a.kind || 'info'; preview();
+  $('aTitle').value = a.title || ''; $('aText').value = a.text || ''; $('aTitleEn').value = a.title_en || ''; $('aTextEn').value = a.text_en || ''; $('aTitleAr').value = a.title_ar || ''; $('aTextAr').value = a.text_ar || ''; $('aTitleDe').value = a.title_de || ''; $('aTextDe').value = a.text_de || ''; kind = a.kind || 'info'; preview();
   const d = conf.defaults || DEF, c = d.cfg || DEF.cfg, r = d.rem || DEF.rem;
   $('dIn').value = c.inhale; $('dHold').value = c.hold; $('dEx').value = c.exhale; $('dHold2').value = c.hold2; $('dRounds').value = c.rounds;
   $('dStart').value = r.start; $('dEnd').value = r.end; $('dInt').value = r.int;

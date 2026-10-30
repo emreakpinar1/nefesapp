@@ -286,3 +286,96 @@ window.NEFES_DEFAULTS.billing = {
   };
   window.NEFES_DEFAULTS.notify_ar = { title: 'حان وقت التنفس', body: 'نمط {duzen}، {tur} جولات، حوالي {sure} دقيقة.' };
 })();
+
+/* ---------- Almanca içerik ---------- */
+(function(){
+  const DE_CATS = { calm: 'Ruhe', sleep: 'Schlaf', focus: 'Fokus', energy: 'Energie', stress: 'Angst & Stress', lung: 'Lungentraining', voice: 'Stimme & Gesang' };
+  window.NEFES_CATEGORIES.forEach(c => { c.de = DE_CATS[c.id] });
+  const DE = {
+    '478':   ['Entspannen', 'Tiefe Entspannung und leichter Einschlafen', 'Die 4-7-8-Technik, bekannt gemacht von Dr. Andrew Weil. Langes Halten und ein noch längeres Ausatmen verlangsamen den Herzschlag und bringen den Körper in den Ruhemodus. Die Belege stammen aus kleinen Studien und deuten auf niedrigeren Puls und weniger Angst hin.'],
+    'calm':  ['Ruhe', 'Schnell zur Ruhe kommen in wenigen Minuten', 'Ein kurzes Muster, bei dem das Ausatmen länger ist als das Einatmen. Langes Ausatmen gehört zu den stärksten Auslösern der Beruhigungsreaktion des Körpers.'],
+    'bal':   ['Balance', 'Resonanzatmung für einen ruhigen Herzschlag', 'Fünf Sekunden ein, fünf Sekunden aus: sechs Atemzüge pro Minute. Der am besten untersuchte Rhythmus; regelmäßig geübt erhöht er die Herzratenvariabilität. Ohne Atemhalten, daher für alle geeignet.'],
+    'eq':    ['Gleichmäßiges Atmen', 'Der einfachste Rhythmus zum Einstieg', 'Ein- und Ausatmen sind gleich lang. Ein guter erster Schritt, um den Atem wahrzunehmen und die Gedanken zu sammeln.'],
+    'long':  ['Langes Ausatmen', 'Durch längeres Ausatmen zur Ruhe kommen', 'Das Ausatmen ist doppelt so lang wie das Einatmen. Wirkt in angespannten Momenten wie ein sanfter Druck auf die Bremse des Körpers.'],
+    '711':   ['7/11-Atmung', 'Ein langsamer, langer Zyklus', 'Sieben Sekunden ein, elf aus. Verlangsamt den Atem stark; wenn es schwerfällt, beginne mit Langes Ausatmen.'],
+    'wave':  ['Sanfte Welle', 'Ein fließender Rhythmus wie eine Welle', 'Sanftes Einatmen, kurze Pause, langes Ausatmen. Zum Ausruhen des Kopfes zwischendurch.'],
+    'deep':  ['Tief', 'Lange, tiefe Atemzüge vor der Meditation', 'Ein langsamer, tiefer, langer Zyklus. Gut, um den Geist vor Meditation oder Dehnen zu beruhigen.'],
+    'sleep': ['Einschlafen', 'Ein paar Minuten vor dem Schlafengehen', 'Langes Ausatmen und kurzes Halten bereiten den Körper auf den Schlaf vor. Im Bett bei ausgeschaltetem Licht.'],
+    'sleep2':['Tiefschlaf', 'Ein langsamer Zyklus zum Einschlafen', 'Ein sehr langsamer Rhythmus. Auch hilfreich, um nachts wieder einzuschlafen.'],
+    'night': ['Nachtruhe', 'Den Tag hinter dir lassen', 'Eine kurze Pause nach dem Ausatmen ahmt die natürliche Atempause nach und verlangsamt den Geist.'],
+    'box':   ['Box', 'Fokus und Ruhe unter Druck', 'Ein, halten, aus, halten; alles gleich lang. Sportler, Piloten und Soldaten nutzen sie, um unter Druck fokussiert zu bleiben.'],
+    'box6':  ['Große Box', 'Eine längere, tiefere Box-Atmung', 'Eine langsamere Version der Box-Atmung. Probiere sie, wenn dir die Box-Atmung leichtfällt.'],
+    'focus': ['Fokus', 'Bevor du mit der Arbeit beginnst', 'Gleich langes Ein-, Halten und Ausatmen. Hilft, verstreute Gedanken vor konzentrierter Arbeit zu sammeln.'],
+    'clear': ['Klarer Kopf', 'Eine kurze Pause zum Durchatmen', 'Ein ausgewogener Rhythmus mit sanftem Halten. Gut mitten in einer langen Arbeitsphase.'],
+    'study': ['Lernpause', 'Zwischen Unterricht oder Meetings', 'Ein kurzer, leichter Zyklus. Ein paar Runden reichen, um die Aufmerksamkeit neu auszurichten.'],
+    'wake':  ['Aufwachen', 'Morgens den Kopf frei bekommen', 'Das Einatmen ist länger als das Ausatmen. Das belebt sanft; probiere es morgens oder beim Nachmittagstief.'],
+    'morning':['Morgenfrische', 'Ein frischer Start in den Tag', 'Tiefes Einatmen, kurzes Halten, schnelles Ausatmen. Ein paar Runden vor dem Kaffee.'],
+    'boost': ['Energie', 'Ein schneller Energieschub', 'Schnelle, gleichmäßige Atemzüge. Wenn dir schwindlig wird, hör auf und atme normal weiter.'],
+    'quick': ['Schneller Kick', 'Eine Energiepause in einer Minute', 'Ein sehr kurzer, schneller Zyklus. Im Sitzen und nur wenige Runden.'],
+    'sos':   ['Angst-SOS', 'Sofort, wenn die Angst steigt', 'Kurzes Einatmen und doppelt so langes Ausatmen. Der schnellste Weg zur Ruhe, wenn das Herz zu rasen beginnt.'],
+    'stress':['Stress abbauen', 'Mitten in einem vollen Tag', 'Langes Ausatmen mit Haltephasen. Lass die Schultern sinken und konzentriere dich nur auf den Atem.'],
+    'body':  ['Entspannter Körper', 'Anspannung aus dem Körper lösen', 'Stell dir bei jedem Ausatmen vor, wie sich ein angespannter Bereich (Kiefer, Schultern, Bauch) löst. Keine Schmerzbehandlung, aber eine Hilfe zur Entspannung.'],
+    'urge':  ['Impulspause', 'Ein plötzliches Verlangen überstehen', 'Atme bei einem starken Verlangen einige Minuten in diesem Rhythmus; solche Impulse kommen und gehen meist wie eine Welle.'],
+    'reset': ['Neustart', 'Nach einem Streit oder schwierigen Gespräch', 'Ein ausgewogener Zyklus, der den Körper zurück in einen ruhigen Rhythmus bringt.'],
+    'lung1': ['Lunge · Leicht', 'Einstieg in die Atemkapazität', 'Trainiert die Atemmuskulatur mit angenehmen Haltephasen. Täglich ein paar Runden.'],
+    'lung2': ['Lunge · Mittel', 'Längeres Halten aufbauen', 'Längeres Halten fordert deine Kapazität. Geh zurück zu Leicht, wenn es anstrengend wird.'],
+    'lung3': ['Lunge · Schwer', 'Langes Halten für Erfahrene', 'Enthält langes Atemhalten. Nicht in der Schwangerschaft oder bei Herz-, Lungen- oder Blutdruckproblemen.'],
+    'end1':  ['Ausdauer · Leicht', 'Lange, gleichmäßige Atemübung', 'Vier gleich lange Schritte. Atemunterstützung für Laufen, Schwimmen und ähnliche Sportarten.'],
+    'end2':  ['Ausdauer · Mittel', 'Längere gleichmäßige Zyklen', 'Jeder Schritt ist länger als bei Leicht. Versuche durchzuhalten, ohne zu forcieren.'],
+    'end3':  ['Ausdauer · Schwer', 'Erfordert Geduld und Kontrolle', 'Lange, gleiche Schritte. Sofort aufhören, wenn dir schwindlig wird.'],
+    'sing1': ['Für Sänger · Weit', 'Langes, kontrolliertes Ausatmen', 'Trainiert kontrolliertes Ausatmen, um lange Phrasen in einem Atemzug zu singen. Probiere beim Ausatmen ein leises „sss“.'],
+    'sing2': ['Für Sänger · Schnell', 'Schnell ein, lange aus', 'Übt, zwischen Zeilen schnell Luft zu holen und sie lange zu nutzen.'],
+  };
+  window.NEFES_DEFAULTS.exercises.forEach(e => { const a = DE[e.id]; if(a){ e.name_de = a[0]; e.short_de = a[1]; e.desc_de = a[2] } });
+
+  window.NEFES_DEFAULTS.content_de = {
+    homeTitle: 'Übungen',
+    homeHint: 'Tippe auf eine Übung, um die Zeiten anzupassen; mit dem Kreis rechts wählst du sie direkt aus. Zum Sortieren am Griff links ziehen.',
+    benefitsTitle: 'Was bewirken Atemübungen?',
+    benefits: [
+      'Die Atmung ist eine der wenigen automatischen Körperfunktionen, die wir bewusst steuern können. Langsameres Atmen und vor allem ein längeres Ausatmen stärken das Ruhe- und Erholungssystem des Körpers (den Parasympathikus). Das Herz schlägt langsamer, die Muskeln entspannen sich und der Geist wird ruhiger.',
+      '',
+      '## Was sagt die Forschung?',
+      '- **Stress und Angst:** In einer Studie der Stanford University von 2023 hatten Menschen, die einen Monat lang täglich 5 Minuten Atemübungen machten, bessere Stimmung und weniger Angst. Das Muster mit längerem Ausatmen wirkte am stärksten.',
+      '- **Herz und Kreislauf:** Langsames Atmen mit etwa sechs Atemzügen pro Minute erhöht in vielen Studien die Herzratenvariabilität, ein Zeichen dafür, wie gut sich der Körper an Stress anpasst.',
+      '- **Schlaf:** Langsames Atmen vor dem Schlafengehen beruhigt den Geist und kann das Einschlafen erleichtern.',
+      '- **Fokus:** Ein gleichmäßiger Rhythmus (etwa die Box-Atmung) hilft, die Aufmerksamkeit zu bündeln und unter Druck ruhig zu bleiben.',
+      '',
+      '## So geht es',
+      '- Setz oder leg dich bequem hin und entspanne die Schultern.',
+      '- Atme wenn möglich durch die Nase ein; beim Ausatmen kannst du die Lippen leicht öffnen.',
+      '- Lass den Bauch statt der Brust sich heben.',
+      '- Beginne mit wenigen Minuten am Tag. Regelmäßigkeit ist wichtiger als Dauer.',
+    ].join('\n'),
+    warning: '**Hinweis:** Wenn dir schwindlig wird, du Kribbeln oder Atemnot spürst, hör auf und atme normal weiter. Bei Schwangerschaft, Herz- oder Lungenerkrankungen, Bluthochdruck oder Panikstörung halte die Haltephasen kurz (oder auf 0) und sprich mit deiner Ärztin oder deinem Arzt. Diese App dient nur der Information und ersetzt keine medizinische Behandlung.',
+    sources: 'Quellen: Balban et al., Cell Reports Medicine (2023), [Stanford Medicine](https://med.stanford.edu/news/insights/2023/02/cyclic-sighing-can-help-breathe-away-anxiety.html); Laborde et al., Metaanalyse zu langsamem Atmen und Herzratenvariabilität (2022); [Mindfulness (2023)](https://link.springer.com/article/10.1007/s12671-023-02294-2).',
+  };
+  window.NEFES_DEFAULTS.notify_de = { title: 'Zeit zum Atmen', body: '{duzen}-Muster, {tur} Runden, etwa {sure} Minuten.' };
+})();
+
+/* ---------- Bölgeye göre para birimi ---------- */
+Object.assign(window.NEFES_DEFAULTS.billing, {
+  EUR: { monthly: 3.99, yearly: 27.99, lifetime: 139 },
+  SAR: { monthly: 14.99, yearly: 109, lifetime: 549 },
+  AED: { monthly: 14.99, yearly: 109, lifetime: 549 },
+});
+window.NEFES_CURRENCIES = ['TRY','EUR','SAR','AED','USD'];
+/* Ülke: önce telefonun bölge ayarı (ör. ar-SA, de-DE), yoksa saat dilimi. Para birimi: TR→TRY, SA→SAR, AE→AED, euro bölgesi→EUR, diğerleri→USD */
+window.nefesCountry = function(){
+  const langs = (navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || '']);
+  for(const l of langs){ const m = String(l).match(/[-_]([A-Za-z]{2})\b/); if(m) return m[1].toUpperCase() }
+  const tz = (Intl.DateTimeFormat().resolvedOptions().timeZone || '');
+  const TZ = { 'Europe/Istanbul':'TR', 'Asia/Istanbul':'TR', 'Asia/Riyadh':'SA', 'Asia/Dubai':'AE', 'Europe/Berlin':'DE', 'Europe/Vienna':'AT', 'Europe/Paris':'FR', 'Europe/Amsterdam':'NL', 'Europe/Brussels':'BE', 'Europe/Rome':'IT', 'Europe/Madrid':'ES', 'Europe/Dublin':'IE', 'Europe/Helsinki':'FI', 'Europe/Lisbon':'PT', 'Europe/Athens':'GR', 'Europe/Luxembourg':'LU', 'Europe/Bratislava':'SK', 'Europe/Ljubljana':'SI', 'Europe/Tallinn':'EE', 'Europe/Riga':'LV', 'Europe/Vilnius':'LT', 'Europe/Malta':'MT', 'Asia/Nicosia':'CY', 'Europe/Zagreb':'HR' };
+  return TZ[tz] || '';
+};
+window.nefesCurrency = function(){
+  const c = window.nefesCountry();
+  const EURO = ['DE','AT','FR','NL','BE','IT','ES','IE','FI','PT','GR','LU','SK','SI','EE','LV','LT','MT','CY','HR'];
+  if(c === 'TR') return 'TRY';
+  if(c === 'SA') return 'SAR';
+  if(c === 'AE') return 'AED';
+  if(EURO.includes(c)) return 'EUR';
+  if(!c && window.nefesLang === 'tr') return 'TRY';
+  if(!c && window.nefesLang === 'de') return 'EUR';
+  return 'USD';
+};
