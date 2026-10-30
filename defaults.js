@@ -217,8 +217,9 @@ window.NEFES_DEFAULTS.notify_en = { title: 'Time to breathe', body: '{duzen} pat
 /* ---------- Abonelik ---------- */
 window.NEFES_DEFAULTS.billing = {
   trialDays: 30,
-  TRY: { monthly: 69, yearly: 499, lifetime: 4990 },
-  USD: { monthly: 3.99, yearly: 29, lifetime: 149 },
+  // Google Play'deki fiyatlarla aynı (vergi dahil, Play'in yuvarlamasıyla)
+  TRY: { monthly: 68.99, yearly: 499.99, lifetime: 4989.99 },
+  USD: { monthly: 3.99, yearly: 28.99, lifetime: 149.99 },
 };
 
 /* ---------- Arapça içerik ---------- */
@@ -355,9 +356,9 @@ window.NEFES_DEFAULTS.billing = {
 
 /* ---------- Bölgeye göre para birimi ---------- */
 Object.assign(window.NEFES_DEFAULTS.billing, {
-  EUR: { monthly: 3.99, yearly: 27.99, lifetime: 139 },
-  SAR: { monthly: 14.99, yearly: 109, lifetime: 549 },
-  AED: { monthly: 14.99, yearly: 109, lifetime: 549 },
+  EUR: { monthly: 4.29, yearly: 30.99, lifetime: 159.99 },
+  SAR: { monthly: 16.99, yearly: 124.99, lifetime: 639.99 },
+  AED: { monthly: 14.99, yearly: 109.99, lifetime: 569.99 },
 });
 window.NEFES_CURRENCIES = ['TRY','EUR','SAR','AED','USD'];
 /* Ülke: önce telefonun bölge ayarı (ör. ar-SA, de-DE), yoksa saat dilimi. Para birimi: TR→TRY, SA→SAR, AE→AED, euro bölgesi→EUR, diğerleri→USD */
