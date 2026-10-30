@@ -12,16 +12,17 @@ Canlı site: https://emreakpinar1.github.io/nefesapp/ · Yönetim paneli: `/admi
 - **sync.js** — Firebase giriş (Google, e-posta) ve Firestore eşitleme; premium bilgisi (`entitlements/{uid}`)
 - **native.js** — Android/iOS (Capacitor) içinde yerel bildirim ve titreşim
 - **admin.html** — yönetim paneli (egzersizler, içerik, duyuru, görünüm, bildirim, abonelik, kullanıcılar)
+- **gizlilik.html, kosullar.html, hesap-silme.html** — yasal sayfalar (TR/EN; diğer dillerde EN). Ortak stil/dil: legal.css, legal.js. Hesap silme uygulamada Profil → Hesap → Hesabımı sil (sync.js).
 - **sw.js** — çevrimdışı önbellek. Bir JS dosyası değişince `?v=` numarasını shell.html, admin.html, sync.js ve sw.js'te birlikte artır.
 - **mobile/** — Capacitor Android kabuğu; içerik canlı siteden yüklenir. `mobile/` değişince GitHub Actions APK üretir (Releases → android-latest).
 
 ## Veri (Firestore, proje nefesapp-f3778)
 - `config/app`: panelden yönetilen her şey (presets, presetsVersion=2, content[_en|_ar|_de], notify[_…], announcement, look, goal, billing, defaults)
 - `users/{uid}`: kullanıcının ayarları, istatistikleri, günlük geçmişi, profil
-- `entitlements/{uid}`: premium (yalnızca admin yazar)
+- `entitlements/{uid}`: premium (yalnızca admin yazar; kullanıcı hesabını silerken kendi kaydını silebilir)
 
 ## Yayın
 `git push` → GitHub Pages 1–2 dakikada yayınlar. Test için: `python3 -m http.server` ve Playwright.
 
 ## Henüz yapılmayanlar
-Mağaza ödemesi (RevenueCat / Play Billing), hesap silme, gizlilik politikası sayfası, karşılama akışı, iOS derlemesi.
+Mağaza ödemesi (RevenueCat / Play Billing), karşılama akışı, iOS derlemesi.

@@ -1,5 +1,5 @@
 // NefesApp hesap ve eşitleme (Firebase Auth + Firestore)
-import { firebaseConfig } from './firebase-config.js?v=10';
+import { firebaseConfig } from './firebase-config.js?v=12';
 
 const $ = id => document.getElementById(id);
 const panel = $('accPanel');
@@ -25,6 +25,8 @@ const ERR = {
   'auth/too-many-requests': 'Çok fazla deneme yapıldı. Biraz sonra tekrar dene.',
   'permission-denied': 'Veritabanı izinleri ayarlı değil.',
   'unavailable': 'Sunucuya ulaşılamıyor. Bağlantı gelince eşitlenecek.',
+  'auth/requires-recent-login': 'Güvenlik için yeniden giriş yapman gerekiyor. Çıkış yapıp tekrar giriş yap, sonra yeniden dene.',
+  'auth/user-mismatch': 'Farklı bir hesapla doğrulama yapıldı. Bu hesabın Google hesabını seç.',
 };
 const trErr = e => ERR[e && e.code] || `Bir sorun oluştu (${(e && e.code) || 'bilinmiyor'}).`;
 
@@ -101,6 +103,7 @@ async function init(){
 
   function renderUser(u){
     $('accOut').hidden = !!u; $('accIn').hidden = !u;
+    if($('delBox')){ $('delBox').hidden = true; $('delOpen').hidden = false; const g = $('delGo'); g.disabled = false; g.textContent = 'Kalıcı olarak sil' }
     document.dispatchEvent(new CustomEvent('nefes:user', { detail: { signedIn: !!u } }));
     const al = $('adminLink'); if(al) al.hidden = !(u && u.email === 'emreakpinar46@gmail.com');
     const hello = $('topHello'), logo = $('topLogo');
@@ -184,6 +187,55 @@ async function init(){
     try{ await AU.sendPasswordResetEmail(auth, email); setMsg('Şifre sıfırlama bağlantısını e-postana gönderdik.') }
     catch(err){ setMsg(trErr(err), true) }
   });
+  // --- hesap silme ---
+  const delBox = $('delBox');
+  const isPw = () => !!(me && me.providerData.some(p => p.providerId === 'password'));
+  const isG = () => !!(me && me.providerData.some(p => p.providerId === 'google.com'));
+  $('delOpen').addEventListener('click', () => {
+    delBox.hidden = false; $('delOpen').hidden = true; setMsg('');
+    $('delPassF').hidden = !isPw();
+    $('delPass').value = '';
+    delBox.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  });
+  $('delCancel').addEventListener('click', () => { delBox.hidden = true; $('delOpen').hidden = false; setMsg('') });
+  $('delGo').addEventListener('click', async () => {
+    if(!me) return;
+    const btn = $('delGo'); setMsg('');
+    if(isPw() && !$('delPass').value){ setMsg('Onaylamak için şifreni yaz.', true); $('delPass').focus(); return }
+    btn.disabled = true; btn.textContent = 'Siliniyor…';
+    const user = me, uid = user.uid;
+    try{
+      // 1) kimliği yeniden doğrula (Firebase son girişin taze olmasını ister)
+      if(isPw()) await AU.reauthenticateWithCredential(user, AU.EmailAuthProvider.credential(user.email, $('delPass').value));
+      else if(isG()) await AU.reauthenticateWithPopup(user, new AU.GoogleAuthProvider());
+      // 2) eşitlemeyi durdur ki silinen kayıt yeniden yazılmasın
+      clearTimeout(timer); ready = false; ref = null;
+      if(unsub){ unsub(); unsub = null }
+      if(entUnsub){ entUnsub(); entUnsub = null }
+      // 3) sunucudaki veriler
+      await FS.deleteDoc(FS.doc(db, 'users', uid));
+      try{ await FS.deleteDoc(FS.doc(db, 'entitlements', uid)) }catch(e){}
+      // 4) hesabın kendisi
+      await AU.deleteUser(user);
+      // 5) bu cihazdaki kişisel veriler (dil, tema ve deneme başlangıcı kalır)
+      try{
+        let trial = null; try{ trial = (JSON.parse(localStorage.getItem('nefes-opts') || '{}') || {}).trialStart || null }catch(e){}
+        ['nefes-cfg','nefes-stats','nefes-hist','nefes-rem','nefes-ent','nefes-ann','nefes-opts'].forEach(k => localStorage.removeItem(k));
+        if(trial) localStorage.setItem('nefes-opts', JSON.stringify({ trialStart: trial }));
+      }catch(e){}
+      try{ sessionStorage.setItem('nefes-deleted', '1') }catch(e){}
+      location.hash = '#profil';
+      location.reload();
+    }catch(e){
+      btn.disabled = false; btn.textContent = 'Kalıcı olarak sil';
+      if(e && (e.code === 'auth/invalid-credential' || e.code === 'auth/wrong-password')) setMsg('Şifre hatalı.', true);
+      else setMsg(trErr(e), true);
+      // silme yarıda kaldıysa eşitlemeyi geri aç
+      if(!ref && auth.currentUser){ ref = FS.doc(db, 'users', auth.currentUser.uid); ready = true }
+    }
+  });
+  try{ if(sessionStorage.getItem('nefes-deleted')){ sessionStorage.removeItem('nefes-deleted'); setMsg('Hesabın ve sunucudaki tüm verilerin silindi.') } }catch(e){}
+
   $('accOutBtn').addEventListener('click', async () => {
     await AU.signOut(auth);
     setMsg('Çıkış yaptın. Ayarların bu cihazda kalmaya devam ediyor.');

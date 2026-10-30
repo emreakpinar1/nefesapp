@@ -14,8 +14,8 @@
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>Ferah</title>
-<script src="defaults.js?v=11"></script>
-<script src="i18n.js?v=11"></script>
+<script src="defaults.js?v=12"></script>
+<script src="i18n.js?v=12"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
@@ -416,6 +416,19 @@ input[type=range]{width:100%;accent-color:var(--green-strong)}
 .acc-msg{margin-top:10px}
 .acc-msg:empty{display:none}
 .acc-msg.bad{color:var(--bad)}
+.del-link{display:block;margin-top:16px;font-size:13px;font-weight:600;color:var(--bad);opacity:.85}
+.del-box{margin-top:14px;padding:14px;border-radius:16px;border:1.5px solid color-mix(in srgb,var(--bad) 45%,transparent);display:flex;flex-direction:column;gap:8px}
+.del-box b{font-family:var(--f-display);font-weight:600}
+.del-box .hint{margin:0}
+.del-box .field input{font-family:var(--f-body);font-size:16px;font-weight:500}
+.del-acts{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:4px}
+.btn-danger{background:var(--bad);color:#fff;border-radius:999px;padding:9px 16px;font-weight:600;font-size:14px}
+.btn-danger:disabled{opacity:.6}
+.legal{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:8px;font-size:12.5px}
+.legal a{color:var(--green-strong);font-weight:600;text-decoration:none}
+.legal-c{justify-content:center;margin-top:0}
+.consent{font-size:12px;text-align:center;margin:2px 0 0}
+.consent a{color:var(--green-strong);font-weight:600}
 .about{display:flex;align-items:center;gap:12px}
 .about .lab{flex:1;min-width:0}
 .about b{font-family:var(--f-display);font-weight:500}
@@ -709,6 +722,7 @@ body.running .nav .center span.c::after{content:"";position:absolute;inset:-6px;
     <button class="btn-main" id="pwBuy">Abone ol</button>
     <p class="hint" id="pwNote" style="text-align:center">İptal etmek kolay; istediğin zaman mağaza ayarlarından iptal edebilirsin.</p>
     <p class="hint" id="pwFree" style="text-align:center"></p>
+    <p class="hint legal legal-c"><a href="kosullar.html">Kullanım koşulları</a><a href="gizlilik.html">Gizlilik politikası</a></p>
   </section>
 
   <!-- ============ PROFİL ============ -->
@@ -734,6 +748,7 @@ body.running .nav .center span.c::after{content:"";position:absolute;inset:-6px;
             <div class="field"><label for="accPass">Şifre</label><input id="accPass" type="password" autocomplete="current-password" placeholder="En az 6 karakter"></div>
             <button class="btn-main" type="submit" id="accSubmit">Giriş yap</button>
             <div class="acc-links"><button type="button" id="accMode">Hesabın yok mu? Kayıt ol</button><button type="button" id="accReset">Şifremi unuttum</button></div>
+            <p class="hint consent" id="consent" data-no-i18n></p>
           </form>
         </div>
         <div id="accIn" hidden>
@@ -743,12 +758,21 @@ body.running .nav .center span.c::after{content:"";position:absolute;inset:-6px;
             <button class="small-btn" id="accOutBtn" type="button">Çıkış yap</button>
           </div>
           <a class="link-btn" id="adminLink" href="admin.html" hidden style="margin-top:14px;text-decoration:none">Yönetim paneline git <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></a>
+          <button class="del-link" id="delOpen" type="button">Hesabımı sil</button>
+          <div class="del-box" id="delBox" hidden>
+            <b>Hesabın kalıcı olarak silinsin mi?</b>
+            <p class="hint">Hesabın ve sunucuda eşitlenen ayarların, istatistiklerin ve geçmişin silinir. Bu işlem geri alınamaz.</p>
+            <p class="hint">Mağazadan aldığın bir abonelik varsa onu Google Play veya App Store ayarlarından ayrıca iptal etmelisin.</p>
+            <div class="field" id="delPassF" hidden><label for="delPass">Onaylamak için şifren</label><input id="delPass" type="password" autocomplete="current-password"></div>
+            <div class="del-acts"><button class="small-btn" id="delCancel" type="button">Vazgeç</button><button class="btn-danger" id="delGo" type="button">Kalıcı olarak sil</button></div>
+          </div>
         </div>
         <p class="hint acc-msg" id="accMsg" role="status"></p>
       </section>
       <section class="card about">
         <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 9h11a3 3 0 1 0-3-3"/><path d="M3 14h15a3 3 0 1 1-3 3"/><path d="M3 19h6"/></svg></span>
-        <span class="lab"><b>Ferah: Nefes Egzersizleri</b><br><small class="note">Ayarların bu cihazda saklanır. Giriş yaparsan tüm cihazlarında eşitlenir.</small></span>
+        <span class="lab"><b>Ferah: Nefes Egzersizleri</b><br><small class="note">Ayarların bu cihazda saklanır. Giriş yaparsan tüm cihazlarında eşitlenir.</small>
+          <span class="legal"><a href="gizlilik.html">Gizlilik politikası</a><a href="kosullar.html">Kullanım koşulları</a><a href="hesap-silme.html">Hesap silme</a></span></span>
       </section>
     </div>
     <div class="col">
@@ -842,8 +866,8 @@ body.running .nav .center span.c::after{content:"";position:absolute;inset:-6px;
 <script>
 {{UI}}
 </script>
-<script type="module" src="native.js?v=10"></script>
-<script type="module" src="sync.js?v=10"></script>
+<script type="module" src="native.js?v=12"></script>
+<script type="module" src="sync.js?v=12"></script>
 <script>if('serviceWorker' in navigator) addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));</script>
 </body>
 </html>

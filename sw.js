@@ -1,5 +1,5 @@
-const CACHE='nefesapp-v11';
-const CORE=['./','./index.html','./defaults.js?v=11','./i18n.js?v=11','./native.js?v=10','./sync.js?v=10','./firebase-config.js?v=10','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png'];
+const CACHE='nefesapp-v12';
+const CORE=['./','./index.html','./defaults.js?v=12','./i18n.js?v=12','./native.js?v=12','./sync.js?v=12','./firebase-config.js?v=12','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
 const put=(req,res)=>{if(res&&(res.ok||res.type==='opaque')){const c=res.clone();caches.open(CACHE).then(x=>x.put(req,c))}return res};

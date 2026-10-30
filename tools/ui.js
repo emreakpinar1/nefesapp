@@ -4,6 +4,14 @@ const $ = id => document.getElementById(id);
 const N = window.__nefes;
 const LANG = ['en','ar','de'].includes(window.nefesLang) ? window.nefesLang : 'tr';
 const T3 = (tr, en, ar, de) => LANG === 'en' ? en : LANG === 'ar' ? ar : LANG === 'de' ? (de ?? en) : tr;
+{ const c = document.getElementById('consent'); if(c){
+  const K = '<a href="kosullar.html">', G = '<a href="gizlilik.html">';
+  c.innerHTML = T3(
+    `Devam ederek ${K}Kullanım koşulları</a>'nı ve ${G}Gizlilik politikası</a>'nı kabul etmiş olursun.`,
+    `By continuing you agree to the ${K}Terms of Use</a> and ${G}Privacy Policy</a>.`,
+    `بالمتابعة، فإنك توافق على ${K}شروط الاستخدام</a> و${G}سياسة الخصوصية</a>.`,
+    `Mit dem Fortfahren akzeptierst du die ${K}Nutzungsbedingungen</a> und die ${G}Datenschutzerklärung</a>.`);
+} }
 const DAY_SHORT = T3(['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'], ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], ['الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت','الأحد'], ['Mo','Di','Mi','Do','Fr','Sa','So']);
 const MONTHS = T3(['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'], ['January','February','March','April','May','June','July','August','September','October','November','December'], ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'], ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember']);
 let GOAL_MIN = 10;
