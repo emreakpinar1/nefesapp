@@ -129,7 +129,7 @@ function renderExercises(){
       <button class="grip" aria-label="${esc(p.name)} sırasını değiştir (yukarı/aşağı ok tuşları)">${GRIP}</button>
       <button class="e-main" aria-label="${esc(p.name)}: süreleri ayarla">
         <span class="e-txt"><b data-no-i18n>${esc(p.name)}</b><span class="short" data-no-i18n>${esc(infoFor(p).short)}</span>
-          <span class="meta"><span class="pill num">${esc(patt(p.cfg))}</span>${p.custom ? '<span class="badge">Düzenlendi</span>' : ''}${!p.free ? `<span class="lock">${locked ? LOCK : ''}Premium</span>` : ''}<span class="num">${c.rounds} tur · ${fmtLen(len)} dk</span></span>
+          <span class="meta"><span class="pill num">${esc(patt(p.cfg))}</span>${p.custom ? '<span class="badge">Düzenlendi</span>' : ''}${locked ? `<span class="lock">${LOCK}Premium</span>` : ''}<span class="num">${c.rounds} tur · ${fmtLen(len)} dk</span></span>
         </span>
       </button>
       <button class="go" data-act="select" aria-pressed="${active}" aria-label="${esc(p.name)} egzersizini seç" ${N.isRunning() ? 'disabled' : ''}>${active ? CHECK : (locked ? LOCK : '')}</button>
@@ -332,7 +332,8 @@ function trialStart(){ let t = +N.getOpt('trialStart'); if(!t){ t = Date.now(); 
 function trialLeft(){ return Math.max(0, Math.ceil((trialStart() + bill().trialDays * 864e5 - Date.now()) / 864e5)) }
 function isPremium(){ const e = window.__nefesEnt; return !!(e && e.plan && (e.plan === 'lifetime' || !e.until || e.until > Date.now())) }
 function hasAccess(){ return isPremium() || trialLeft() > 0 }
-window.__nefesLocked = p => !!p && p.free === false && !hasAccess();
+window.__nefesLocked = p => !!p && !hasAccess();
+window.__nefesNoAccess = () => !hasAccess();
 window.__nefesPaywall = () => { location.hash = '#premium' };
 const cur = () => LANG === 'en' ? 'USD' : 'TRY';
 const money = v => new Intl.NumberFormat(LANG === 'en' ? 'en-US' : 'tr-TR', { style: 'currency', currency: cur(), maximumFractionDigits: v % 1 ? 2 : 0 }).format(v);
@@ -359,7 +360,7 @@ function renderPaywall(){
   const plans = [
     { id: 'monthly', name: en ? 'Monthly' : 'Aylık', sub: en ? 'Cancel anytime' : 'İstediğin zaman iptal', price: money(P.monthly), per: en ? '/ month' : '/ ay' },
     { id: 'yearly', name: en ? 'Yearly' : 'Yıllık', sub: en ? `${money(P.yearly / 12)} per month · save ${save}%` : `Ayda ${money(P.yearly / 12)} · %${save} tasarruf`, price: money(P.yearly), per: en ? '/ year' : '/ yıl', tag: en ? 'Most popular' : 'En popüler' },
-    { id: 'lifetime', name: en ? 'Lifetime' : 'Ömür boyu', sub: en ? `The price of ${years} years, forever` : `${String(years).replace('.', ',')} yıllık fiyatına, sonsuza kadar`, price: money(P.lifetime), per: en ? 'one-time' : 'tek seferlik', tag: en ? 'Best value' : 'En avantajlı', alt: true },
+    { id: 'lifetime', name: en ? 'Lifetime' : 'Ömür boyu', sub: en ? 'One payment, no subscription' : 'Tek ödeme, abonelik yok', price: money(P.lifetime), per: en ? 'one-time' : 'tek seferlik', tag: en ? 'Best value' : 'En avantajlı', alt: true },
   ];
   $('plans').innerHTML = plans.map(p => `<button class="plan" role="radio" data-p="${p.id}" aria-checked="${plan === p.id}" data-no-i18n>
       ${p.tag ? `<span class="tag${p.alt ? ' alt' : ''}">${p.tag}</span>` : ''}
@@ -369,8 +370,10 @@ function renderPaywall(){
     </button>`).join('');
   $('pwBuy').textContent = prem ? (en ? 'You already have Premium' : 'Zaten Premium üyesin') : plan === 'lifetime' ? (en ? 'Buy' : 'Satın al') : (en ? 'Subscribe' : 'Abone ol');
   $('pwBuy').disabled = prem;
-  const freeN = N.getPresets().filter(p => p.free !== false).length;
-  $('pwFree').textContent = en ? `The free version includes ${freeN} core exercises.` : `Ücretsiz sürümde ${freeN} temel egzersiz var.`;
+  const total = N.getPresets().length;
+  $('pwFree').textContent = prem ? '' : left > 0
+    ? (en ? `All ${total} exercises are open during your trial. After it ends, a plan is needed to keep breathing with NefesApp.` : `Deneme süresince ${total} egzersizin hepsi açık. Deneme bitince egzersizlere devam etmek için bir plan gerekir.`)
+    : (en ? `Your trial has ended. Choose a plan to unlock all ${total} exercises.` : `Deneme süren bitti. ${total} egzersizin kilidini açmak için bir plan seç.`);
   $('pwFree').setAttribute('data-no-i18n', '');
 }
 $('plans').addEventListener('click', e => { const b = e.target.closest('.plan'); if(b){ plan = b.dataset.p; renderPaywall() } });

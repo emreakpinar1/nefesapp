@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#161813">
 <title>NefesApp Yönetim</title>
-<script src="defaults.js?v=8"></script>
+<script src="defaults.js?v=9"></script>
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -695,7 +695,6 @@ function renderPresets(){
       <summary>
         <b data-sum="name">${esc(p.name)}</b>
         <span class="ps-meta" data-sum="meta">${esc(sumTxt(p))}</span>
-        <span class="chip ${p.free !== false ? 'on' : ''}" data-sum="free">${p.free !== false ? 'Ücretsiz' : 'Premium'}</span>
       </summary>
       <div class="preset">
         <div class="field f-name"><label for="pn${i}">Ad (TR)</label><input id="pn${i}" data-k="name" maxlength="28" value="${esc(p.name)}"></div>
@@ -707,7 +706,6 @@ function renderPresets(){
         </div>
         <div class="field f-half"><label for="pne${i}">Ad (EN)</label><input id="pne${i}" data-k="name_en" maxlength="28" value="${esc(p.name_en || '')}" placeholder="${esc(p.name)}"></div>
         <div class="field f-half"><label for="pc${i}">Kategori</label><select id="pc${i}" data-k="cat">${CATS.map(c => `<option value="${c.id}" ${p.cat === c.id ? 'selected' : ''}>${esc(c.tr)}</option>`).join('')}</select></div>
-        <label class="field f-half chk"><input type="checkbox" data-k="free" ${p.free !== false ? 'checked' : ''}> <span>Deneme bitince de ücretsiz</span></label>
         <div class="field f-wide"><label for="ps${i}">Kısa açıklama (TR)</label><input id="ps${i}" data-k="short" maxlength="90" value="${esc(p.short || '')}"></div>
         <div class="field f-wide"><label for="pse${i}">Kısa açıklama (EN)</label><input id="pse${i}" data-k="short_en" maxlength="90" value="${esc(p.short_en || '')}"></div>
         <div class="field f-wide"><label for="pd${i}">Ne işe yarar? (TR)</label><textarea id="pd${i}" data-k="desc" maxlength="800">${esc(p.desc || '')}</textarea></div>
@@ -715,7 +713,7 @@ function renderPresets(){
       </div>
     </details>`).join('');
   $('pAdd').disabled = draft.length >= 60;
-  $('pCount').textContent = `${draft.length} egzersiz · ${draft.filter(p => p.free !== false).length} ücretsiz`;
+  $('pCount').textContent = `${draft.length} egzersiz · deneme bitince hepsi Premium`;
 }
 const TXT = ['name','name_en','short','short_en','desc','desc_en','cat'];
 function onPresetEdit(e){
@@ -726,8 +724,7 @@ function onPresetEdit(e){
   else p[k] = Math.max(0, Math.min(60, parseInt(e.target.value, 10) || 0));
   row.querySelector('[data-sum="name"]').textContent = p.name;
   row.querySelector('[data-sum="meta"]').textContent = sumTxt(p);
-  const f = row.querySelector('[data-sum="free"]'); f.textContent = p.free !== false ? 'Ücretsiz' : 'Premium'; f.classList.toggle('on', p.free !== false);
-  $('pCount').textContent = `${draft.length} egzersiz · ${draft.filter(p => p.free !== false).length} ücretsiz`;
+  $('pCount').textContent = `${draft.length} egzersiz · deneme bitince hepsi Premium`;
 }
 $('pList').addEventListener('input', onPresetEdit);
 $('pList').addEventListener('change', onPresetEdit);
@@ -747,7 +744,7 @@ $('pSave').addEventListener('click', async () => {
   const bad = draft.find(p => !p.name.trim() || p.inhale < 1 || p.exhale < 1);
   if(bad){ msg.textContent = `"${bad.name || 'Adsız'}" için ad boş olamaz; nefes al ve ver en az 1 saniye olmalı.`; return }
   const T = v => String(v || '').trim();
-  const clean = draft.map(p => ({ id: p.id, name: T(p.name), name_en: T(p.name_en), cat: p.cat || 'calm', free: p.free !== false, short: T(p.short), short_en: T(p.short_en), desc: T(p.desc), desc_en: T(p.desc_en), inhale: p.inhale, hold: p.hold, exhale: p.exhale, hold2: p.hold2 }));
+  const clean = draft.map(p => ({ id: p.id, name: T(p.name), name_en: T(p.name_en), cat: p.cat || 'calm', free: false, short: T(p.short), short_en: T(p.short_en), desc: T(p.desc), desc_en: T(p.desc_en), inhale: p.inhale, hold: p.hold, exhale: p.exhale, hold2: p.hold2 }));
   try{ await FS.setDoc(cfgRef, { presets: clean, presetsVersion: 2, updatedAt: FS.serverTimestamp() }, { merge: true }); toast('Hazır egzersizler yayınlandı') }
   catch(e){ msg.textContent = saveErr(e) }
 });
@@ -880,13 +877,13 @@ function bCheck(){
   const b = readBill(); let html = '', ok = true;
   for(const [c, sym] of [['TRY','₺'],['USD','$']]){
     const P = b[c], save = P.monthly ? Math.round((1 - P.yearly / (P.monthly * 12)) * 100) : 0, yrs = P.yearly ? Math.round(P.lifetime / P.yearly * 10) / 10 : 0;
-    const y = P.yearly < P.monthly * 12, l = P.lifetime > P.yearly && P.lifetime <= P.yearly * 4;
+    const y = P.yearly < P.monthly * 12, l = P.lifetime > P.yearly;
     ok = ok && y && l;
     html += `<div class="bc"><strong>${c}</strong><br>
       Yıllık, aylığa göre <strong>%${save}</strong> tasarruf (ayda ${sym}${(P.yearly / 12).toFixed(2)}) ${y ? '✓' : '⚠️ Yıllık, 12 aylıktan ucuz olmalı'}<br>
-      Ömür boyu = <strong>${yrs}</strong> yıllık fiyatı ${l ? '✓' : '⚠️ Ömür boyu, yıllıktan pahalı ama 4 yıllıktan ucuz olmalı'}</div>`;
+      Ömür boyu = <strong>${yrs}</strong> yıllık fiyatı ${l ? '✓' : '⚠️ Ömür boyu, yıllıktan pahalı olmalı'}</div>`;
   }
-  html += `<p class="hint">Deneme: ${b.trialDays} gün. Deneme süresince tüm egzersizler açık; sonra yalnızca "ücretsiz" işaretli egzersizler açık kalır.</p>`;
+  html += `<p class="hint">Deneme: ${b.trialDays} gün. Deneme süresince tüm egzersizler açık; deneme bitince hiçbir egzersiz ücretsiz kalmaz, devam etmek için plan gerekir.</p>`;
   $('bCheck').innerHTML = html;
   return ok;
 }

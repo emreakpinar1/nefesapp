@@ -71,7 +71,7 @@ window.nefesMerge = function(def, over){
 };
 
 /* ---------- Egzersiz kataloğu ----------
-   free: deneme bittikten sonra da ücretsiz kalanlar. Süreler saniye. */
+   Deneme bittikten sonra hiçbir egzersiz ücretsiz değildir (free alanı yalnızca eski kayıtlarla uyum için). Süreler saniye. */
 window.NEFES_CATEGORIES = [
   { id: 'calm',   tr: 'Sakinleş',          en: 'Calm' },
   { id: 'sleep',  tr: 'Uyku',              en: 'Sleep' },
@@ -217,6 +217,6 @@ window.NEFES_DEFAULTS.notify_en = { title: 'Time to breathe', body: '{duzen} pat
 /* ---------- Abonelik ---------- */
 window.NEFES_DEFAULTS.billing = {
   trialDays: 30,
-  TRY: { monthly: 99, yearly: 599, lifetime: 1199 },
-  USD: { monthly: 4.99, yearly: 29.99, lifetime: 59.99 },
+  TRY: { monthly: 69, yearly: 499, lifetime: 4990 },
+  USD: { monthly: 3.99, yearly: 29, lifetime: 149 },
 };
