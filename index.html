@@ -14,7 +14,8 @@
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>NefesApp</title>
-<script src="defaults.js?v=7"></script>
+<script src="defaults.js?v=8"></script>
+<script src="i18n.js?v=8"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Figtree:wght@400;500;600;700&display=swap">
@@ -166,6 +167,43 @@ h1,h2,h3{font-family:var(--f-display);margin:0;font-weight:500;letter-spacing:-.
 .ex .go svg{width:18px;height:18px}
 .ex.active{outline:2px solid var(--green);outline-offset:-2px}
 .view.narrow{max-width:680px;width:100%;margin:0 auto}
+.lang-btn{width:auto;padding:0 12px 0 10px;display:flex;gap:6px;font-weight:700;font-size:13px;font-family:var(--f-display)}
+.lang-btn svg{width:17px;height:17px}
+.trial-chip{display:inline-block;white-space:nowrap;margin-top:4px;font-size:12px;font-weight:700;color:var(--green-strong);background:var(--green-soft);border-radius:999px;padding:3px 10px;text-decoration:none}
+.cats{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 4px;margin:0 -2px;scrollbar-width:none}
+.cats::-webkit-scrollbar{display:none}
+.cats button{flex:none;padding:8px 14px;border-radius:999px;background:var(--surface);font-weight:600;font-size:13px;box-shadow:var(--shadow);white-space:nowrap}
+.cats button[aria-pressed="true"]{background:var(--dark);color:var(--dark-ink)}
+.ex .lock{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:#8F4F14;background:#EADCC8;border-radius:6px;padding:2px 7px}
+.ex .lock svg{width:11px;height:11px}
+.ex.locked .e-txt b{opacity:.75}
+.ex.nodrag .grip{visibility:hidden;width:12px}
+.chip[data-locked]{opacity:.6}
+.chip[data-locked]::after{content:"🔒";font-size:10px;margin-top:2px}
+.prem-card{display:flex;align-items:center;gap:12px;text-decoration:none}
+.prem-card .txt{flex:1;min-width:0}
+.prem-card b{display:block;font-family:var(--f-display);font-weight:500;font-size:16px}
+.prem-card small{color:var(--muted);font-size:13px}
+.pw-hero{background:var(--breath-bg);color:var(--breath-ink);border-radius:28px;padding:22px}
+.pw-hero h2{font-size:26px;margin:10px 0 2px}
+.pw-hero p{margin:0;opacity:.8}
+.pw-badge{display:inline-block;background:rgba(255,255,255,.14);border-radius:999px;padding:5px 12px;font-size:12px;font-weight:700}
+.pw-list{list-style:none;margin:16px 0 0;padding:0;display:flex;flex-direction:column;gap:9px}
+.pw-list li{display:flex;gap:10px;align-items:flex-start;font-size:15px}
+.pw-list li::before{content:"";width:20px;height:20px;border-radius:50%;flex:none;background:var(--breath-lime) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231F2B17' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center/12px no-repeat;margin-top:1px}
+.plans{display:flex;flex-direction:column;gap:10px}
+.plan{display:flex;align-items:center;gap:14px;background:var(--surface);border-radius:20px;padding:16px;box-shadow:var(--shadow);text-align:left;width:100%;border:2px solid transparent;position:relative}
+.plan[aria-checked="true"]{border-color:var(--green)}
+.plan .radio{width:22px;height:22px;border-radius:50%;border:2px solid var(--line);flex:none;display:grid;place-items:center}
+.plan[aria-checked="true"] .radio{border-color:var(--green)}
+.plan[aria-checked="true"] .radio::after{content:"";width:12px;height:12px;border-radius:50%;background:var(--green)}
+.plan .p-txt{flex:1;min-width:0}
+.plan b{display:block;font-family:var(--f-display);font-weight:500;font-size:16px}
+.plan small{color:var(--muted);font-size:13px}
+.plan .price{text-align:right;font-family:var(--f-display);font-weight:600;font-size:18px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.plan .price small{display:block;font-family:var(--f-body);font-weight:500;font-size:12px}
+.plan .tag{position:absolute;top:-10px;right:16px;background:var(--green);color:#16181A;font-size:11px;font-weight:700;border-radius:999px;padding:3px 10px}
+.plan .tag.alt{background:var(--dark);color:var(--dark-ink)}
 .ex .short{display:block;font-size:13px;color:var(--muted);margin-top:2px;line-height:1.35}
 .info-card p{margin:0 0 10px;line-height:1.55}
 .info-card .src{font-size:12px;color:var(--muted)}
@@ -430,8 +468,10 @@ body.running .nav .center span.c::after{content:"";position:absolute;inset:-6px;
       <div class="txt">
         <small id="topHello">Merhaba</small>
         <h1 id="topName">Misafir</h1>
+        <a class="trial-chip" id="trialChip" href="#premium" hidden></a>
       </div>
       <div class="acts">
+        <button class="round lang-btn" id="langBtn" aria-label="Dili değiştir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg><span id="langCode" data-no-i18n>TR</span></button>
         <a class="round" href="#istatistik" aria-label="İstatistik"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg></a>
         <a class="round" href="#hatirlatici" aria-label="Hatırlatıcı" id="bellBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="dot" id="bellDot" hidden></span></a>
       </div>
@@ -447,6 +487,7 @@ body.running .nav .center span.c::after{content:"";position:absolute;inset:-6px;
       <div id="homeSlot"></div>
       <div class="sec-h"><h2 id="homeTitle">Egzersizler</h2><a href="#nefes">Süreleri ayarla</a></div>
       <p class="hint" id="homeHint" style="margin:-4px 2px 2px"></p>
+      <div class="cats" id="cats"></div>
       <div class="ex-list" id="exList"></div>
       <button class="card learn" data-open-info>
         <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.4-9.3-9A5.3 5.3 0 0 1 12 6.5 5.3 5.3 0 0 1 21.3 12C19 16.6 12 21 12 21z"/></svg></span>
@@ -611,10 +652,35 @@ body.running .nav .center span.c::after{content:"";position:absolute;inset:-6px;
     </section>
   </section>
 
+  <!-- ============ PREMIUM ============ -->
+  <section class="view narrow" data-view="premium" hidden>
+    <div class="page-top"><h1>Premium</h1><a class="round" href="#ana" aria-label="Kapat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></a></div>
+    <div class="pw-hero">
+      <span class="pw-badge" id="pwStatus">Ücretsiz deneme</span>
+      <h2>NefesApp Premium</h2>
+      <p>Tüm egzersizlerin kilidini aç</p>
+      <ul class="pw-list">
+        <li>Tüm egzersizler ve programlar</li>
+        <li>Uyku, odak ve enerji programları</li>
+        <li>Akciğer ve dayanıklılık antrenmanları</li>
+        <li>Sınırsız özel düzen ve tüm istatistikler</li>
+      </ul>
+    </div>
+    <div class="plans" id="plans" role="radiogroup" aria-label="Planlar"></div>
+    <button class="btn-main" id="pwBuy">Abone ol</button>
+    <p class="hint" id="pwNote" style="text-align:center">İptal etmek kolay; istediğin zaman mağaza ayarlarından iptal edebilirsin.</p>
+    <p class="hint" id="pwFree" style="text-align:center"></p>
+  </section>
+
   <!-- ============ PROFİL ============ -->
   <section class="view cols" data-view="profil" hidden>
     <div class="page-top span"><h1>Profil</h1></div>
     <div class="col">
+      <a class="card prem-card" href="#premium">
+        <span class="ico" style="background:var(--hero);color:var(--hero-ink)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17l-6.1 3.4 1.5-6.8L2.2 9l6.9-.7z"/></svg></span>
+        <span class="txt"><b>NefesApp Premium</b><small id="premState">Ücretsiz deneme</small></span>
+        <span class="small-btn" id="premBtn">Planları gör</span>
+      </a>
       <section class="card" id="accPanel" hidden>
         <div class="card-h"><h2>Hesap</h2><span class="note" id="accStatus"></span></div>
         <div id="accOut">
@@ -752,11 +818,24 @@ const PRESETS = [
 ];
 function presetsFromRemote(list){
   if(!Array.isArray(list)) return null;
-  const out = list.filter(p => p && p.name && p.inhale >= 1 && p.exhale >= 1).slice(0, 8)
-    .map(p => ({ id: String(p.id || p.name), name: String(p.name).slice(0, 18), short: p.short ? String(p.short).slice(0, 70) : '', desc: p.desc ? String(p.desc).slice(0, 600) : '', cfg: { inhale: +p.inhale, hold: +p.hold || 0, exhale: +p.exhale, hold2: +p.hold2 || 0 } }));
+  const EN = window.nefesLang === 'en';
+  const out = list.filter(p => p && p.name && p.inhale >= 1 && p.exhale >= 1).slice(0, 60)
+    .map(p => ({ id: String(p.id || p.name), name: String((EN && p.name_en) || p.name).slice(0, 28), short: String((EN ? p.short_en : p.short) || '').slice(0, 90), desc: String((EN ? p.desc_en : p.desc) || '').slice(0, 800),
+      cat: p.cat || 'calm', free: p.free !== false, name_tr: p.name, cfg: { inhale: +p.inhale, hold: +p.hold || 0, exhale: +p.exhale, hold2: +p.hold2 || 0 } }));
   return out.length ? out : null;
 }
-{ const rp = presetsFromRemote(remoteCache && remoteCache.presets); if(rp) PRESETS.splice(0, PRESETS.length, ...rp) }
+function buildPresets(remote){
+  const base = (window.NEFES_DEFAULTS || {}).exercises || [];
+  const rl = remote && Array.isArray(remote.presets) && remote.presets.length ? remote.presets : null;
+  if(!rl) return presetsFromRemote(base);
+  if(remote.presetsVersion >= 2) return presetsFromRemote(rl);
+  // eski (5 egzersizlik) kayıt: kataloğu kullan, aynı kimlikli egzersizlerde paneldeki değişiklikleri uygula
+  const byId = Object.fromEntries(rl.map(p => [String(p.id), p]));
+  const merged = base.map(c => { const r = byId[c.id]; if(!r) return c; return { ...c, name: r.name || c.name, inhale: r.inhale, hold: r.hold, exhale: r.exhale, hold2: r.hold2, short: r.short || c.short, desc: r.desc || c.desc } });
+  rl.forEach(p => { if(!base.some(c => c.id === String(p.id))) merged.push(p) });
+  return presetsFromRemote(merged);
+}
+{ const bp = buildPresets(remoteCache); if(bp) PRESETS.splice(0, PRESETS.length, ...bp) }
 const PHASES = [
   {key:'inhale', name:'Nefes Al', short:'Al',   voice:'Nefes al'},
   {key:'hold',   name:'Nefes Tut',short:'Tut',  voice:'Tut'},
@@ -790,7 +869,7 @@ function renderPresets(){
   sortPresets();
   const match = PRESETS.find(p => ['inhale','hold','exhale','hold2'].every(k => pc(p)[k] === cfg[k]));
   $('presets').innerHTML = PRESETS.map(p =>
-    `<button class="chip" data-id="${p.id}" aria-pressed="${match && match.id===p.id}">${p.name}<span>${[pc(p).inhale,pc(p).hold,pc(p).exhale,pc(p).hold2].filter((v,i)=>v||i%2===0).join('·')}</span></button>`
+    `<button class="chip" data-id="${p.id}" aria-pressed="${match && match.id===p.id}"${window.__nefesLocked && window.__nefesLocked(p) ? ' data-locked="1"' : ''}>${p.name}<span>${[pc(p).inhale,pc(p).hold,pc(p).exhale,pc(p).hold2].filter((v,i)=>v||i%2===0).join('·')}</span></button>`
   ).join('') + `<button class="chip" disabled aria-pressed="${!match}">Özel<span>${!match ? patternText() : 'ayarla'}</span></button>`;
   document.dispatchEvent(new Event('nefes:cfg'));
 }
@@ -1028,6 +1107,7 @@ function saveOpts(){ store.set('nefes-opts', opts); if(master) master.gain.value
 $('presets').addEventListener('click', e => {
   const b = e.target.closest('.chip[data-id]'); if(!b) return;
   const p = PRESETS.find(x => x.id === b.dataset.id);
+  if(window.__nefesLocked && window.__nefesLocked(p)){ window.__nefesPaywall && window.__nefesPaywall(); return }
   touched = true; Object.assign(cfg, pc(p)); refreshAll();
   if(S.running) toast('Yeni süreler bir sonraki aşamada geçerli olur');
 });
@@ -1162,8 +1242,10 @@ function ring(){
 function vib(){ if(window.__nefesNative){ window.__nefesNative.vibrate(800); return true } try{ return ('vibrate' in navigator) ? navigator.vibrate([500,250,500,250,800]) : false }catch(e){ return false } }
 function notifState(){ return ('Notification' in window) ? Notification.permission : 'none' }
 function notifText(){
-  const D = (window.NEFES_DEFAULTS || {}).notify || { title: 'Nefes zamanı', body: '{duzen} düzeninde {tur} tur' };
-  const n = Object.assign({}, D, Object.fromEntries(Object.entries((store.get('nefes-remote', {}) || {}).notify || {}).filter(([, v]) => v)));
+  const EN = window.nefesLang === 'en', ND = window.NEFES_DEFAULTS || {};
+  const D = (EN ? ND.notify_en : ND.notify) || { title: 'Nefes zamanı', body: '{duzen} düzeninde {tur} tur' };
+  const R = store.get('nefes-remote', {}) || {};
+  const n = Object.assign({}, D, Object.fromEntries(Object.entries((EN ? R.notify_en : R.notify) || {}).filter(([, v]) => v)));
   const fill = t => String(t).replace(/\{duzen\}/g, patternText()).replace(/\{tur\}/g, cfg.rounds).replace(/\{sure\}/g, fmt(cycleLen() * cfg.rounds));
   return { title: fill(n.title), body: fill(n.body) };
 }
@@ -1308,6 +1390,9 @@ window.__nefes = {
   },
   getPresets(){ return PRESETS.map(p => ({ ...p, cfg: { ...pc(p) }, base: { ...p.cfg }, custom: !!(opts.custom || {})[p.id] })) },
   getCfg(){ return { ...cfg } },
+  getOpt(k){ return opts[k] },
+  setOpt(k, v){ opts[k] = v; saveOpts() },
+  rerender(){ renderPresets() },
   setOrder(ids){ opts.order = ids.slice(0, 20); saveOpts(); renderPresets() },
   applyPreset(id){ const p = PRESETS.find(x => x.id === id); if(!p) return; touched = true; Object.assign(cfg, pc(p)); refreshAll() },
   setCustom(id, vals){
@@ -1324,7 +1409,7 @@ window.__nefes = {
   setRemoteConfig(c){
     if(!c) return;
     store.set('nefes-remote', c);
-    const rp = presetsFromRemote(c.presets);
+    const rp = buildPresets(c);
     if(rp){ PRESETS.splice(0, PRESETS.length, ...rp); renderPresets() }
     renderAnnouncement(c.announcement);
     document.dispatchEvent(new CustomEvent('nefes:remote', { detail: c }));
@@ -1345,9 +1430,10 @@ function renderAnnouncement(a){
   let dismissed = store.get('nefes-ann-closed', null);
   if(!a || !a.active || !(a.title || a.text) || String(a.id) === String(dismissed)){ box.hidden = true; return }
   box.className = 'announce k-' + (['info','tip','warn'].includes(a.kind) ? a.kind : 'info');
-  $('annTitle').textContent = a.title || '';
-  $('annTitle').hidden = !a.title;
-  $('annText').textContent = a.text || '';
+  const EN = window.nefesLang === 'en', at = (EN && a.title_en) || a.title || '', ax = (EN && a.text_en) || a.text || '';
+  $('annTitle').textContent = at;
+  $('annTitle').hidden = !at;
+  $('annText').textContent = ax;
   box.dataset.id = a.id;
   box.hidden = false;
 }
@@ -1362,8 +1448,9 @@ renderRows(); refreshAll(); renderStats(); setPlayIcon(); saveOpts(); renderRem(
 (() => {
 const $ = id => document.getElementById(id);
 const N = window.__nefes;
-const DAY_SHORT = ['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'];
-const MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+const LANG = window.nefesLang === 'en' ? 'en' : 'tr';
+const DAY_SHORT = LANG === 'en' ? ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] : ['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'];
+const MONTHS = LANG === 'en' ? ['January','February','March','April','May','June','July','August','September','October','November','December'] : ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
 let GOAL_MIN = 10;
 const DEF = window.NEFES_DEFAULTS;
 let REMOTE = {};
@@ -1391,19 +1478,22 @@ const fmtLen = s => Math.floor(s/60) + ':' + String(s%60).padStart(2,'0');
 const patt = c => [c.inhale, c.hold, c.exhale, c.hold2].filter((v,i) => v || i % 2 === 0).join(' · ');
 
 /* ---------- routing ---------- */
-const VIEWS = ['ana','istatistik','nefes','hatirlatici','profil'];
+const VIEWS = ['ana','istatistik','nefes','hatirlatici','profil','premium'];
 function route(){
   const v = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'ana';
   document.querySelectorAll('section.view[data-view]').forEach(s => s.hidden = s.dataset.view !== v);
   document.querySelectorAll('[data-nav]').forEach(a => { a.classList.toggle('active', a.dataset.nav === v); if(a.dataset.nav === v) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current') });
   document.body.dataset.screen = v;
+  ['exSheet','infoSheet'].forEach(id => { const s = $(id); if(s && !s.hidden){ s.hidden = true; document.body.style.overflow = '' } });
   if(v === 'nefes') renderSessName();
   const box = $('sessionBox');
   if(v === 'ana'){ $('homeSlot').appendChild(box); box.classList.add('compact') }
   else if(box.parentNode !== $('nefesSlot')){ $('nefesSlot').appendChild(box); box.classList.remove('compact') }
   window.scrollTo(0, 0);
-  if(v === 'ana') renderHome();
+  if(v === 'ana'){ renderHome(); renderAccess() }
   if(v === 'istatistik') renderWeek();
+  if(v === 'premium') renderPaywall();
+  if(v === 'profil') renderAccess();
 }
 addEventListener('hashchange', route);
 $('navNefes').addEventListener('click', e => {
@@ -1420,14 +1510,16 @@ function greet(){
 const INFO = DEF.info;
 function infoFor(p){
   if(p && (p.short || p.desc)) return { short: p.short || '', desc: p.desc || (INFO[p.id] || {}).desc || '' };
-  if(p && INFO[p.id]) return INFO[p.id];
+  if(p && INFO[p.id] && LANG === 'tr') return INFO[p.id];
   const c = p ? p.cfg : N.getCfg();
   const calming = c.exhale > c.inhale;
   return {
-    short: calming ? 'Uzun nefes verme ile sakinleşme' : 'Dengeli ritimle odaklanma',
-    desc: calming
-      ? 'Bu düzende nefes verme, nefes almaktan uzun. Uzun nefes verme kalp atışını yavaşlatır ve vücudu dinlenme moduna geçirir; gerginlik ve kaygı anlarında iyi gelir.'
-      : 'Bu düzende nefes alma ve verme birbirine yakın. Eşit ritim zihni sabitler ve dikkati toplamaya yardım eder. Daha fazla sakinleşmek istersen nefes verme süresini uzatabilirsin.',
+    short: LANG === 'en' ? (calming ? 'Calm down with a long exhale' : 'Focus with an even rhythm') : (calming ? 'Uzun nefes verme ile sakinleşme' : 'Dengeli ritimle odaklanma'),
+    desc: LANG === 'en'
+      ? (calming ? 'In this pattern the exhale is longer than the inhale. A long exhale slows the heart and shifts the body into rest mode; it helps in tense and anxious moments.'
+                 : 'In this pattern the inhale and exhale are close in length. An even rhythm steadies the mind and helps you focus. Lengthen the exhale if you want to calm down more.')
+      : (calming ? 'Bu düzende nefes verme, nefes almaktan uzun. Uzun nefes verme kalp atışını yavaşlatır ve vücudu dinlenme moduna geçirir; gerginlik ve kaygı anlarında iyi gelir.'
+                 : 'Bu düzende nefes alma ve verme birbirine yakın. Eşit ritim zihni sabitler ve dikkati toplamaya yardım eder. Daha fazla sakinleşmek istersen nefes verme süresini uzatabilirsin.'),
   };
 }
 function currentPreset(){
@@ -1459,20 +1551,34 @@ function renderSessName(){
 
 const GRIP = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>';
 const CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+const LOCK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+let catSel = 'all';
+function renderCats(list){
+  const present = new Set(list.map(p => p.cat));
+  const cats = (window.NEFES_CATEGORIES || []).filter(c => present.has(c.id));
+  if(catSel !== 'all' && !present.has(catSel)) catSel = 'all';
+  $('cats').hidden = cats.length < 2;
+  $('cats').innerHTML = `<button data-c="all" aria-pressed="${catSel === 'all'}">${LANG === 'en' ? 'All' : 'Tümü'}</button>` +
+    cats.map(c => `<button data-c="${c.id}" aria-pressed="${catSel === c.id}" data-no-i18n>${esc(LANG === 'en' ? c.en : c.tr)}</button>`).join('');
+}
+$('cats').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; catSel = b.dataset.c; renderExercises() });
 function renderExercises(){
   if(drag) return;
-  const c = N.getCfg();
-  $('exList').innerHTML = N.getPresets().map(p => {
+  const c = N.getCfg(), all = N.getPresets();
+  renderCats(all);
+  const list = catSel === 'all' ? all : all.filter(p => p.cat === catSel);
+  $('exList').innerHTML = list.map(p => {
     const active = ['inhale','hold','exhale','hold2'].every(k => p.cfg[k] === c[k]);
+    const locked = window.__nefesLocked(p);
     const len = (p.cfg.inhale + p.cfg.hold + p.cfg.exhale + p.cfg.hold2) * c.rounds;
-    return `<div class="ex${active ? ' active' : ''}" data-id="${esc(p.id)}">
+    return `<div class="ex${active ? ' active' : ''}${locked ? ' locked' : ''}${catSel !== 'all' ? ' nodrag' : ''}" data-id="${esc(p.id)}">
       <button class="grip" aria-label="${esc(p.name)} sırasını değiştir (yukarı/aşağı ok tuşları)">${GRIP}</button>
       <button class="e-main" aria-label="${esc(p.name)}: süreleri ayarla">
-        <span class="e-txt"><b>${esc(p.name)}</b><span class="short">${esc(infoFor(p).short)}</span>
-          <span class="meta"><span class="pill num">${esc(patt(p.cfg))}</span>${p.custom ? '<span class="badge">Düzenlendi</span>' : ''}<span class="num">${c.rounds} tur · ${fmtLen(len)} dk</span></span>
+        <span class="e-txt"><b data-no-i18n>${esc(p.name)}</b><span class="short" data-no-i18n>${esc(infoFor(p).short)}</span>
+          <span class="meta"><span class="pill num">${esc(patt(p.cfg))}</span>${p.custom ? '<span class="badge">Düzenlendi</span>' : ''}${!p.free ? `<span class="lock">${locked ? LOCK : ''}Premium</span>` : ''}<span class="num">${c.rounds} tur · ${fmtLen(len)} dk</span></span>
         </span>
       </button>
-      <button class="go" data-act="select" aria-pressed="${active}" aria-label="${esc(p.name)} egzersizini seç" ${N.isRunning() ? 'disabled' : ''}>${active ? CHECK : ''}</button>
+      <button class="go" data-act="select" aria-pressed="${active}" aria-label="${esc(p.name)} egzersizini seç" ${N.isRunning() ? 'disabled' : ''}>${active ? CHECK : (locked ? LOCK : '')}</button>
     </div>`;
   }).join('');
 }
@@ -1480,11 +1586,15 @@ $('exList').addEventListener('click', e => {
   const s = e.target.closest('[data-act="select"]');
   if(s && !justDragged){
     if(N.isRunning()) return;
+    const sp = N.getPresets().find(x => x.id === s.closest('.ex').dataset.id);
+    if(sp && window.__nefesLocked(sp)){ location.hash = '#premium'; return }
     N.applyPreset(s.closest('.ex').dataset.id);
     window.scrollTo({ top: 0, behavior: 'smooth' });
     return;
   }
   const b = e.target.closest('.e-main'); if(!b || justDragged) return;
+  const bp = N.getPresets().find(x => x.id === b.closest('.ex').dataset.id);
+  if(bp && window.__nefesLocked(bp)){ location.hash = '#premium'; return }
   openEx(b.closest('.ex').dataset.id);
 });
 
@@ -1555,7 +1665,7 @@ let drag = null, justDragged = false;
 const ids = () => [...$('exList').querySelectorAll('.ex')].map(x => x.dataset.id);
 function saveOrder(list){ N.setOrder(list); renderExercises() }
 $('exList').addEventListener('pointerdown', e => {
-  const g = e.target.closest('.grip'); if(!g) return;
+  const g = e.target.closest('.grip'); if(!g || catSel !== 'all') return;
   e.preventDefault();
   const item = g.closest('.ex'), items = [...$('exList').querySelectorAll('.ex')];
   const r = item.getBoundingClientRect();
@@ -1661,6 +1771,64 @@ $('themeSeg').addEventListener('click', e => {
 mq.addEventListener('change', () => { if(document.documentElement.dataset.pref === 'system') applyTheme('system') });
 applyTheme(document.documentElement.dataset.pref || 'light');
 
+/* ---------- abonelik: deneme, premium, planlar ---------- */
+try{ if(!window.__nefesEnt) window.__nefesEnt = JSON.parse(localStorage.getItem('nefes-ent') || 'null') }catch(e){}
+const bill = () => { const b = REMOTE.billing || {}, d = DEF.billing; return { trialDays: +b.trialDays || d.trialDays, TRY: { ...d.TRY, ...(b.TRY || {}) }, USD: { ...d.USD, ...(b.USD || {}) } } };
+function trialStart(){ let t = +N.getOpt('trialStart'); if(!t){ t = Date.now(); N.setOpt('trialStart', t) } return t }
+function trialLeft(){ return Math.max(0, Math.ceil((trialStart() + bill().trialDays * 864e5 - Date.now()) / 864e5)) }
+function isPremium(){ const e = window.__nefesEnt; return !!(e && e.plan && (e.plan === 'lifetime' || !e.until || e.until > Date.now())) }
+function hasAccess(){ return isPremium() || trialLeft() > 0 }
+window.__nefesLocked = p => !!p && p.free === false && !hasAccess();
+window.__nefesPaywall = () => { location.hash = '#premium' };
+const cur = () => LANG === 'en' ? 'USD' : 'TRY';
+const money = v => new Intl.NumberFormat(LANG === 'en' ? 'en-US' : 'tr-TR', { style: 'currency', currency: cur(), maximumFractionDigits: v % 1 ? 2 : 0 }).format(v);
+let plan = 'yearly';
+function renderAccess(){
+  const prem = isPremium(), left = trialLeft();
+  const txt = prem ? (LANG === 'en' ? "You're a Premium member" : 'Premium üyesin')
+    : left > 0 ? (LANG === 'en' ? `Free trial · ${left} days left` : `Ücretsiz deneme · ${left} gün kaldı`)
+    : (LANG === 'en' ? 'Your trial has ended' : 'Deneme süren bitti');
+  $('premState').textContent = txt; $('premState').setAttribute('data-no-i18n', '');
+  $('premBtn').textContent = prem ? (LANG === 'en' ? 'Details' : 'Ayrıntılar') : (LANG === 'en' ? 'See plans' : 'Planları gör');
+  const chip = $('trialChip');
+  chip.hidden = prem;
+  chip.setAttribute('data-no-i18n', '');
+  chip.textContent = left > 0 ? (LANG === 'en' ? `Trial: ${left} days left` : `Deneme: ${left} gün kaldı`) : (LANG === 'en' ? 'Go Premium' : "Premium'a geç");
+}
+function renderPaywall(){
+  const b = bill(), P = b[cur()], prem = isPremium(), left = trialLeft();
+  const save = Math.max(0, Math.round((1 - P.yearly / (P.monthly * 12)) * 100));
+  const years = Math.round(P.lifetime / P.yearly * 10) / 10;
+  const en = LANG === 'en';
+  $('pwStatus').textContent = prem ? (en ? 'Premium active' : 'Premium aktif') : left > 0 ? (en ? `Free trial · ${left} days left` : `Ücretsiz deneme · ${left} gün kaldı`) : (en ? 'Trial ended' : 'Deneme bitti');
+  $('pwStatus').setAttribute('data-no-i18n', '');
+  const plans = [
+    { id: 'monthly', name: en ? 'Monthly' : 'Aylık', sub: en ? 'Cancel anytime' : 'İstediğin zaman iptal', price: money(P.monthly), per: en ? '/ month' : '/ ay' },
+    { id: 'yearly', name: en ? 'Yearly' : 'Yıllık', sub: en ? `${money(P.yearly / 12)} per month · save ${save}%` : `Ayda ${money(P.yearly / 12)} · %${save} tasarruf`, price: money(P.yearly), per: en ? '/ year' : '/ yıl', tag: en ? 'Most popular' : 'En popüler' },
+    { id: 'lifetime', name: en ? 'Lifetime' : 'Ömür boyu', sub: en ? `The price of ${years} years, forever` : `${String(years).replace('.', ',')} yıllık fiyatına, sonsuza kadar`, price: money(P.lifetime), per: en ? 'one-time' : 'tek seferlik', tag: en ? 'Best value' : 'En avantajlı', alt: true },
+  ];
+  $('plans').innerHTML = plans.map(p => `<button class="plan" role="radio" data-p="${p.id}" aria-checked="${plan === p.id}" data-no-i18n>
+      ${p.tag ? `<span class="tag${p.alt ? ' alt' : ''}">${p.tag}</span>` : ''}
+      <span class="radio"></span>
+      <span class="p-txt"><b>${p.name}</b><small>${p.sub}</small></span>
+      <span class="price">${p.price}<small>${p.per}</small></span>
+    </button>`).join('');
+  $('pwBuy').textContent = prem ? (en ? 'You already have Premium' : 'Zaten Premium üyesin') : plan === 'lifetime' ? (en ? 'Buy' : 'Satın al') : (en ? 'Subscribe' : 'Abone ol');
+  $('pwBuy').disabled = prem;
+  const freeN = N.getPresets().filter(p => p.free !== false).length;
+  $('pwFree').textContent = en ? `The free version includes ${freeN} core exercises.` : `Ücretsiz sürümde ${freeN} temel egzersiz var.`;
+  $('pwFree').setAttribute('data-no-i18n', '');
+}
+$('plans').addEventListener('click', e => { const b = e.target.closest('.plan'); if(b){ plan = b.dataset.p; renderPaywall() } });
+$('pwBuy').addEventListener('click', () => toast2(LANG === 'en' ? 'Purchases will open when the app launches on Google Play and the App Store.' : "Satın alma, uygulama Google Play ve App Store'da yayınlandığında açılacak."));
+function accessChanged(){ renderAccess(); N.rerender(); refresh(); if(document.body.dataset.screen === 'premium') renderPaywall() }
+document.addEventListener('nefes:ent', accessChanged);
+setInterval(renderAccess, 60 * 60 * 1000);
+
+/* ---------- dil ---------- */
+$('langCode').textContent = LANG.toUpperCase();
+$('langBtn').addEventListener('click', () => window.nefesSetLang(LANG === 'en' ? 'tr' : 'en'));
+
 /* ---------- panelden gelen içerik ve görünüm ---------- */
 function shade(hex, f){
   const n = parseInt(String(hex).replace('#',''), 16); if(isNaN(n)) return hex;
@@ -1678,7 +1846,7 @@ function applyLook(){
 }
 function applyRemote(c){
   REMOTE = c || {};
-  const ct = nefesMerge(DEF.content, REMOTE.content);
+  const ct = LANG === 'en' ? nefesMerge(DEF.content_en, REMOTE.content_en) : nefesMerge(DEF.content, REMOTE.content);
   $('homeTitle').textContent = ct.homeTitle;
   $('homeHint').textContent = ct.homeHint;
   $('learnTitle').textContent = ct.benefitsTitle;
@@ -1696,13 +1864,14 @@ function applyRemote(c){
 }
 document.addEventListener('nefes:remote', e => applyRemote(e.detail));
 applyRemote(REMOTE);
+N.rerender();
 
 route();
 })();
 
 </script>
-<script type="module" src="native.js?v=7"></script>
-<script type="module" src="sync.js?v=7"></script>
+<script type="module" src="native.js?v=8"></script>
+<script type="module" src="sync.js?v=8"></script>
 <script>if('serviceWorker' in navigator) addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));</script>
 </body>
 </html>

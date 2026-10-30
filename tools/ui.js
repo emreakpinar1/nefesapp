@@ -2,8 +2,9 @@
 (() => {
 const $ = id => document.getElementById(id);
 const N = window.__nefes;
-const DAY_SHORT = ['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'];
-const MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+const LANG = window.nefesLang === 'en' ? 'en' : 'tr';
+const DAY_SHORT = LANG === 'en' ? ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] : ['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'];
+const MONTHS = LANG === 'en' ? ['January','February','March','April','May','June','July','August','September','October','November','December'] : ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
 let GOAL_MIN = 10;
 const DEF = window.NEFES_DEFAULTS;
 let REMOTE = {};
@@ -31,19 +32,22 @@ const fmtLen = s => Math.floor(s/60) + ':' + String(s%60).padStart(2,'0');
 const patt = c => [c.inhale, c.hold, c.exhale, c.hold2].filter((v,i) => v || i % 2 === 0).join(' · ');
 
 /* ---------- routing ---------- */
-const VIEWS = ['ana','istatistik','nefes','hatirlatici','profil'];
+const VIEWS = ['ana','istatistik','nefes','hatirlatici','profil','premium'];
 function route(){
   const v = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'ana';
   document.querySelectorAll('section.view[data-view]').forEach(s => s.hidden = s.dataset.view !== v);
   document.querySelectorAll('[data-nav]').forEach(a => { a.classList.toggle('active', a.dataset.nav === v); if(a.dataset.nav === v) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current') });
   document.body.dataset.screen = v;
+  ['exSheet','infoSheet'].forEach(id => { const s = $(id); if(s && !s.hidden){ s.hidden = true; document.body.style.overflow = '' } });
   if(v === 'nefes') renderSessName();
   const box = $('sessionBox');
   if(v === 'ana'){ $('homeSlot').appendChild(box); box.classList.add('compact') }
   else if(box.parentNode !== $('nefesSlot')){ $('nefesSlot').appendChild(box); box.classList.remove('compact') }
   window.scrollTo(0, 0);
-  if(v === 'ana') renderHome();
+  if(v === 'ana'){ renderHome(); renderAccess() }
   if(v === 'istatistik') renderWeek();
+  if(v === 'premium') renderPaywall();
+  if(v === 'profil') renderAccess();
 }
 addEventListener('hashchange', route);
 $('navNefes').addEventListener('click', e => {
@@ -60,14 +64,16 @@ function greet(){
 const INFO = DEF.info;
 function infoFor(p){
   if(p && (p.short || p.desc)) return { short: p.short || '', desc: p.desc || (INFO[p.id] || {}).desc || '' };
-  if(p && INFO[p.id]) return INFO[p.id];
+  if(p && INFO[p.id] && LANG === 'tr') return INFO[p.id];
   const c = p ? p.cfg : N.getCfg();
   const calming = c.exhale > c.inhale;
   return {
-    short: calming ? 'Uzun nefes verme ile sakinleşme' : 'Dengeli ritimle odaklanma',
-    desc: calming
-      ? 'Bu düzende nefes verme, nefes almaktan uzun. Uzun nefes verme kalp atışını yavaşlatır ve vücudu dinlenme moduna geçirir; gerginlik ve kaygı anlarında iyi gelir.'
-      : 'Bu düzende nefes alma ve verme birbirine yakın. Eşit ritim zihni sabitler ve dikkati toplamaya yardım eder. Daha fazla sakinleşmek istersen nefes verme süresini uzatabilirsin.',
+    short: LANG === 'en' ? (calming ? 'Calm down with a long exhale' : 'Focus with an even rhythm') : (calming ? 'Uzun nefes verme ile sakinleşme' : 'Dengeli ritimle odaklanma'),
+    desc: LANG === 'en'
+      ? (calming ? 'In this pattern the exhale is longer than the inhale. A long exhale slows the heart and shifts the body into rest mode; it helps in tense and anxious moments.'
+                 : 'In this pattern the inhale and exhale are close in length. An even rhythm steadies the mind and helps you focus. Lengthen the exhale if you want to calm down more.')
+      : (calming ? 'Bu düzende nefes verme, nefes almaktan uzun. Uzun nefes verme kalp atışını yavaşlatır ve vücudu dinlenme moduna geçirir; gerginlik ve kaygı anlarında iyi gelir.'
+                 : 'Bu düzende nefes alma ve verme birbirine yakın. Eşit ritim zihni sabitler ve dikkati toplamaya yardım eder. Daha fazla sakinleşmek istersen nefes verme süresini uzatabilirsin.'),
   };
 }
 function currentPreset(){
@@ -99,20 +105,34 @@ function renderSessName(){
 
 const GRIP = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>';
 const CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+const LOCK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+let catSel = 'all';
+function renderCats(list){
+  const present = new Set(list.map(p => p.cat));
+  const cats = (window.NEFES_CATEGORIES || []).filter(c => present.has(c.id));
+  if(catSel !== 'all' && !present.has(catSel)) catSel = 'all';
+  $('cats').hidden = cats.length < 2;
+  $('cats').innerHTML = `<button data-c="all" aria-pressed="${catSel === 'all'}">${LANG === 'en' ? 'All' : 'Tümü'}</button>` +
+    cats.map(c => `<button data-c="${c.id}" aria-pressed="${catSel === c.id}" data-no-i18n>${esc(LANG === 'en' ? c.en : c.tr)}</button>`).join('');
+}
+$('cats').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; catSel = b.dataset.c; renderExercises() });
 function renderExercises(){
   if(drag) return;
-  const c = N.getCfg();
-  $('exList').innerHTML = N.getPresets().map(p => {
+  const c = N.getCfg(), all = N.getPresets();
+  renderCats(all);
+  const list = catSel === 'all' ? all : all.filter(p => p.cat === catSel);
+  $('exList').innerHTML = list.map(p => {
     const active = ['inhale','hold','exhale','hold2'].every(k => p.cfg[k] === c[k]);
+    const locked = window.__nefesLocked(p);
     const len = (p.cfg.inhale + p.cfg.hold + p.cfg.exhale + p.cfg.hold2) * c.rounds;
-    return `<div class="ex${active ? ' active' : ''}" data-id="${esc(p.id)}">
+    return `<div class="ex${active ? ' active' : ''}${locked ? ' locked' : ''}${catSel !== 'all' ? ' nodrag' : ''}" data-id="${esc(p.id)}">
       <button class="grip" aria-label="${esc(p.name)} sırasını değiştir (yukarı/aşağı ok tuşları)">${GRIP}</button>
       <button class="e-main" aria-label="${esc(p.name)}: süreleri ayarla">
-        <span class="e-txt"><b>${esc(p.name)}</b><span class="short">${esc(infoFor(p).short)}</span>
-          <span class="meta"><span class="pill num">${esc(patt(p.cfg))}</span>${p.custom ? '<span class="badge">Düzenlendi</span>' : ''}<span class="num">${c.rounds} tur · ${fmtLen(len)} dk</span></span>
+        <span class="e-txt"><b data-no-i18n>${esc(p.name)}</b><span class="short" data-no-i18n>${esc(infoFor(p).short)}</span>
+          <span class="meta"><span class="pill num">${esc(patt(p.cfg))}</span>${p.custom ? '<span class="badge">Düzenlendi</span>' : ''}${!p.free ? `<span class="lock">${locked ? LOCK : ''}Premium</span>` : ''}<span class="num">${c.rounds} tur · ${fmtLen(len)} dk</span></span>
         </span>
       </button>
-      <button class="go" data-act="select" aria-pressed="${active}" aria-label="${esc(p.name)} egzersizini seç" ${N.isRunning() ? 'disabled' : ''}>${active ? CHECK : ''}</button>
+      <button class="go" data-act="select" aria-pressed="${active}" aria-label="${esc(p.name)} egzersizini seç" ${N.isRunning() ? 'disabled' : ''}>${active ? CHECK : (locked ? LOCK : '')}</button>
     </div>`;
   }).join('');
 }
@@ -120,11 +140,15 @@ $('exList').addEventListener('click', e => {
   const s = e.target.closest('[data-act="select"]');
   if(s && !justDragged){
     if(N.isRunning()) return;
+    const sp = N.getPresets().find(x => x.id === s.closest('.ex').dataset.id);
+    if(sp && window.__nefesLocked(sp)){ location.hash = '#premium'; return }
     N.applyPreset(s.closest('.ex').dataset.id);
     window.scrollTo({ top: 0, behavior: 'smooth' });
     return;
   }
   const b = e.target.closest('.e-main'); if(!b || justDragged) return;
+  const bp = N.getPresets().find(x => x.id === b.closest('.ex').dataset.id);
+  if(bp && window.__nefesLocked(bp)){ location.hash = '#premium'; return }
   openEx(b.closest('.ex').dataset.id);
 });
 
@@ -195,7 +219,7 @@ let drag = null, justDragged = false;
 const ids = () => [...$('exList').querySelectorAll('.ex')].map(x => x.dataset.id);
 function saveOrder(list){ N.setOrder(list); renderExercises() }
 $('exList').addEventListener('pointerdown', e => {
-  const g = e.target.closest('.grip'); if(!g) return;
+  const g = e.target.closest('.grip'); if(!g || catSel !== 'all') return;
   e.preventDefault();
   const item = g.closest('.ex'), items = [...$('exList').querySelectorAll('.ex')];
   const r = item.getBoundingClientRect();
@@ -301,6 +325,64 @@ $('themeSeg').addEventListener('click', e => {
 mq.addEventListener('change', () => { if(document.documentElement.dataset.pref === 'system') applyTheme('system') });
 applyTheme(document.documentElement.dataset.pref || 'light');
 
+/* ---------- abonelik: deneme, premium, planlar ---------- */
+try{ if(!window.__nefesEnt) window.__nefesEnt = JSON.parse(localStorage.getItem('nefes-ent') || 'null') }catch(e){}
+const bill = () => { const b = REMOTE.billing || {}, d = DEF.billing; return { trialDays: +b.trialDays || d.trialDays, TRY: { ...d.TRY, ...(b.TRY || {}) }, USD: { ...d.USD, ...(b.USD || {}) } } };
+function trialStart(){ let t = +N.getOpt('trialStart'); if(!t){ t = Date.now(); N.setOpt('trialStart', t) } return t }
+function trialLeft(){ return Math.max(0, Math.ceil((trialStart() + bill().trialDays * 864e5 - Date.now()) / 864e5)) }
+function isPremium(){ const e = window.__nefesEnt; return !!(e && e.plan && (e.plan === 'lifetime' || !e.until || e.until > Date.now())) }
+function hasAccess(){ return isPremium() || trialLeft() > 0 }
+window.__nefesLocked = p => !!p && p.free === false && !hasAccess();
+window.__nefesPaywall = () => { location.hash = '#premium' };
+const cur = () => LANG === 'en' ? 'USD' : 'TRY';
+const money = v => new Intl.NumberFormat(LANG === 'en' ? 'en-US' : 'tr-TR', { style: 'currency', currency: cur(), maximumFractionDigits: v % 1 ? 2 : 0 }).format(v);
+let plan = 'yearly';
+function renderAccess(){
+  const prem = isPremium(), left = trialLeft();
+  const txt = prem ? (LANG === 'en' ? "You're a Premium member" : 'Premium üyesin')
+    : left > 0 ? (LANG === 'en' ? `Free trial · ${left} days left` : `Ücretsiz deneme · ${left} gün kaldı`)
+    : (LANG === 'en' ? 'Your trial has ended' : 'Deneme süren bitti');
+  $('premState').textContent = txt; $('premState').setAttribute('data-no-i18n', '');
+  $('premBtn').textContent = prem ? (LANG === 'en' ? 'Details' : 'Ayrıntılar') : (LANG === 'en' ? 'See plans' : 'Planları gör');
+  const chip = $('trialChip');
+  chip.hidden = prem;
+  chip.setAttribute('data-no-i18n', '');
+  chip.textContent = left > 0 ? (LANG === 'en' ? `Trial: ${left} days left` : `Deneme: ${left} gün kaldı`) : (LANG === 'en' ? 'Go Premium' : "Premium'a geç");
+}
+function renderPaywall(){
+  const b = bill(), P = b[cur()], prem = isPremium(), left = trialLeft();
+  const save = Math.max(0, Math.round((1 - P.yearly / (P.monthly * 12)) * 100));
+  const years = Math.round(P.lifetime / P.yearly * 10) / 10;
+  const en = LANG === 'en';
+  $('pwStatus').textContent = prem ? (en ? 'Premium active' : 'Premium aktif') : left > 0 ? (en ? `Free trial · ${left} days left` : `Ücretsiz deneme · ${left} gün kaldı`) : (en ? 'Trial ended' : 'Deneme bitti');
+  $('pwStatus').setAttribute('data-no-i18n', '');
+  const plans = [
+    { id: 'monthly', name: en ? 'Monthly' : 'Aylık', sub: en ? 'Cancel anytime' : 'İstediğin zaman iptal', price: money(P.monthly), per: en ? '/ month' : '/ ay' },
+    { id: 'yearly', name: en ? 'Yearly' : 'Yıllık', sub: en ? `${money(P.yearly / 12)} per month · save ${save}%` : `Ayda ${money(P.yearly / 12)} · %${save} tasarruf`, price: money(P.yearly), per: en ? '/ year' : '/ yıl', tag: en ? 'Most popular' : 'En popüler' },
+    { id: 'lifetime', name: en ? 'Lifetime' : 'Ömür boyu', sub: en ? `The price of ${years} years, forever` : `${String(years).replace('.', ',')} yıllık fiyatına, sonsuza kadar`, price: money(P.lifetime), per: en ? 'one-time' : 'tek seferlik', tag: en ? 'Best value' : 'En avantajlı', alt: true },
+  ];
+  $('plans').innerHTML = plans.map(p => `<button class="plan" role="radio" data-p="${p.id}" aria-checked="${plan === p.id}" data-no-i18n>
+      ${p.tag ? `<span class="tag${p.alt ? ' alt' : ''}">${p.tag}</span>` : ''}
+      <span class="radio"></span>
+      <span class="p-txt"><b>${p.name}</b><small>${p.sub}</small></span>
+      <span class="price">${p.price}<small>${p.per}</small></span>
+    </button>`).join('');
+  $('pwBuy').textContent = prem ? (en ? 'You already have Premium' : 'Zaten Premium üyesin') : plan === 'lifetime' ? (en ? 'Buy' : 'Satın al') : (en ? 'Subscribe' : 'Abone ol');
+  $('pwBuy').disabled = prem;
+  const freeN = N.getPresets().filter(p => p.free !== false).length;
+  $('pwFree').textContent = en ? `The free version includes ${freeN} core exercises.` : `Ücretsiz sürümde ${freeN} temel egzersiz var.`;
+  $('pwFree').setAttribute('data-no-i18n', '');
+}
+$('plans').addEventListener('click', e => { const b = e.target.closest('.plan'); if(b){ plan = b.dataset.p; renderPaywall() } });
+$('pwBuy').addEventListener('click', () => toast2(LANG === 'en' ? 'Purchases will open when the app launches on Google Play and the App Store.' : "Satın alma, uygulama Google Play ve App Store'da yayınlandığında açılacak."));
+function accessChanged(){ renderAccess(); N.rerender(); refresh(); if(document.body.dataset.screen === 'premium') renderPaywall() }
+document.addEventListener('nefes:ent', accessChanged);
+setInterval(renderAccess, 60 * 60 * 1000);
+
+/* ---------- dil ---------- */
+$('langCode').textContent = LANG.toUpperCase();
+$('langBtn').addEventListener('click', () => window.nefesSetLang(LANG === 'en' ? 'tr' : 'en'));
+
 /* ---------- panelden gelen içerik ve görünüm ---------- */
 function shade(hex, f){
   const n = parseInt(String(hex).replace('#',''), 16); if(isNaN(n)) return hex;
@@ -318,7 +400,7 @@ function applyLook(){
 }
 function applyRemote(c){
   REMOTE = c || {};
-  const ct = nefesMerge(DEF.content, REMOTE.content);
+  const ct = LANG === 'en' ? nefesMerge(DEF.content_en, REMOTE.content_en) : nefesMerge(DEF.content, REMOTE.content);
   $('homeTitle').textContent = ct.homeTitle;
   $('homeHint').textContent = ct.homeHint;
   $('learnTitle').textContent = ct.benefitsTitle;
@@ -336,6 +418,7 @@ function applyRemote(c){
 }
 document.addEventListener('nefes:remote', e => applyRemote(e.detail));
 applyRemote(REMOTE);
+N.rerender();
 
 route();
 })();

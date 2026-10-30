@@ -1,5 +1,5 @@
 // NefesApp hesap ve eşitleme (Firebase Auth + Firestore)
-import { firebaseConfig } from './firebase-config.js?v=7';
+import { firebaseConfig } from './firebase-config.js?v=8';
 
 const $ = id => document.getElementById(id);
 const panel = $('accPanel');
@@ -73,6 +73,7 @@ async function init(){
   // Yönetim panelinden gelen hazır egzersizler, duyuru ve varsayılanlar (herkese açık)
   FS.onSnapshot(FS.doc(db, 'config', 'app'), s => { if(s.exists()) window.__nefes.setRemoteConfig(s.data()) }, () => {});
 
+  let entUnsub = null;
   let ref = null, ready = false, unsub = null, timer = null, signup = false, me = null, isNew = false;
 
   async function push(){
@@ -127,11 +128,19 @@ async function init(){
 
   AU.onAuthStateChanged(auth, async user => {
     if(unsub){ unsub(); unsub = null }
+    if(entUnsub){ entUnsub(); entUnsub = null }
+    if(!user){ window.__nefesEnt = null; try{ localStorage.removeItem('nefes-ent') }catch(e){} document.dispatchEvent(new Event('nefes:ent')) }
     ready = false; ref = null; me = user;
     renderUser(user);
     if(!user) return;
     setStatus('Eşitleniyor…');
     ref = FS.doc(db, 'users', user.uid);
+    entUnsub = FS.onSnapshot(FS.doc(db, 'entitlements', user.uid), s => {
+      const d = s.exists() ? s.data() : null;
+      window.__nefesEnt = d ? { plan: d.plan, until: d.until && d.until.toMillis ? d.until.toMillis() : (d.until || null) } : null;
+      try{ localStorage.setItem('nefes-ent', JSON.stringify(window.__nefesEnt)) }catch(e){}
+      document.dispatchEvent(new Event('nefes:ent'));
+    }, () => {});
     try{
       const snap = await FS.getDoc(ref);
       if(snap.exists()) applyRemote(snap.data()); else isNew = true;

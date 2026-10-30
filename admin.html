@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#161813">
 <title>NefesApp Yönetim</title>
-<script src="defaults.js?v=7"></script>
+<script src="defaults.js?v=8"></script>
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -114,6 +114,21 @@ tr:last-child td{border-bottom:0}
 .field textarea{resize:vertical;min-height:72px;font-family:var(--f-body)}
 .preset{display:grid;grid-template-columns:minmax(0,1.6fr) repeat(4,minmax(0,1fr)) auto;gap:8px;align-items:stretch;padding:10px 0;border-top:1px solid var(--line)}
 .preset .f-wide{grid-column:1/-1}
+.preset .f-half{grid-column:span 2}
+@media (max-width:620px){.preset .f-half{grid-column:span 2}}
+.preset select{border:0;background:none;font-size:15px;padding:0;width:100%}
+.preset .chk{flex-direction:row;align-items:center;gap:8px;cursor:pointer}
+.preset .chk input{width:18px;height:18px;accent-color:var(--lime-deep)}
+.preset-d{border-top:1px solid var(--line)}
+.preset-d:first-child{border-top:0}
+.preset-d summary{display:flex;align-items:center;gap:10px;padding:12px 4px;cursor:pointer;list-style:none}
+.preset-d summary::-webkit-details-marker{display:none}
+.preset-d summary::before{content:"›";font-size:20px;color:var(--muted);transition:transform .15s;width:12px}
+.preset-d[open] summary::before{transform:rotate(90deg)}
+.preset-d summary b{font-family:var(--f-display);font-weight:500}
+.preset-d .ps-meta{flex:1;color:var(--muted);font-size:13px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.preset-d .preset{border-top:0;padding-top:0;padding-bottom:16px}
+.lang-seg{max-width:260px;margin-bottom:6px}
 .preset .f-wide textarea{min-height:60px}
 .preset:first-child{border-top:0}
 .p-tools{display:flex;gap:4px;align-items:center}
@@ -181,6 +196,8 @@ tr:last-child td{border-bottom:0}
 .notif-prev .ni svg{width:22px;height:22px}
 .notif-prev b{display:block;font-family:var(--f-display);font-weight:500}
 .notif-prev span{font-size:14px;color:var(--muted)}
+.bc{background:var(--bg);border-radius:16px;padding:12px 14px;font-size:14px;line-height:1.7}
+.bc strong{font-family:var(--f-display);font-weight:600}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(24px + env(safe-area-inset-bottom,0px));background:var(--card);color:var(--card-ink);padding:10px 18px;border-radius:999px;font-size:14px;z-index:9;max-width:calc(100% - 32px);text-align:center}
 @media (prefers-reduced-motion: reduce){.toggle i::after{transition:none}}
 </style>
@@ -217,6 +234,7 @@ tr:last-child td{border-bottom:0}
       <a href="#icerik">İçerik</a>
       <a href="#gorunum">Görünüm</a>
       <a href="#bildirim">Bildirim ve hedef</a>
+      <a href="#abonelik">Abonelik</a>
     </nav>
 
     <!-- ÖZET -->
@@ -248,7 +266,7 @@ tr:last-child td{border-bottom:0}
       <div class="search"><input id="uSearch" type="search" placeholder="Ad veya e-posta ara" aria-label="Kullanıcı ara"></div>
       <div class="tscroll">
         <table>
-          <thead><tr><th>Kullanıcı</th><th>Son görülme</th><th class="num">Seans</th><th class="num">Toplam</th><th class="num">Bugün</th><th>Nefes düzeni</th><th>Hatırlatıcı</th><th>Kayıt</th></tr></thead>
+          <thead><tr><th>Kullanıcı</th><th>Son görülme</th><th class="num">Seans</th><th class="num">Toplam</th><th class="num">Bugün</th><th>Nefes düzeni</th><th>Hatırlatıcı</th><th>Abonelik</th><th>Kayıt</th></tr></thead>
           <tbody id="uBody"></tbody>
         </table>
       </div>
@@ -256,8 +274,9 @@ tr:last-child td{border-bottom:0}
 
     <!-- EGZERSİZLER -->
     <section data-view="egzersizler" class="panel">
-      <div class="panel-h"><h2>Hazır egzersizler</h2><span class="note">saniye · en fazla 8</span></div>
+      <div class="panel-h"><h2>Hazır egzersizler</h2><span class="note">saniye · en fazla 60 · satıra tıklayıp düzenle</span></div>
       <p class="hint" style="margin-bottom:10px">Uygulamanın üstündeki egzersiz düğmeleri. Kaydettiğinde tüm kullanıcıların uygulamasında birkaç saniye içinde değişir.</p>
+      <p class="note" id="pCount" style="margin:0 0 6px"></p>
       <div id="pList"></div>
       <div class="row-actions">
         <button class="btn ghost" id="pAdd">+ Egzersiz ekle</button>
@@ -275,6 +294,8 @@ tr:last-child td{border-bottom:0}
         <div class="stack">
           <div class="field"><label for="aTitle">Başlık</label><input id="aTitle" maxlength="60" placeholder="Örn. Yeni egzersiz eklendi"></div>
           <div class="field"><label for="aText">Mesaj</label><textarea id="aText" maxlength="240" placeholder="Kullanıcılara göstermek istediğin kısa mesaj"></textarea></div>
+          <div class="field"><label for="aTitleEn">Başlık (EN)</label><input id="aTitleEn" maxlength="60" placeholder="İngilizce kullanıcılar için (boşsa Türkçesi gösterilir)"></div>
+          <div class="field"><label for="aTextEn">Mesaj (EN)</label><textarea id="aTextEn" maxlength="240"></textarea></div>
           <div class="sub">Görünüm</div>
           <div class="seg" id="aKind">
             <button data-k="info" aria-pressed="true">Bilgi</button>
@@ -324,6 +345,7 @@ tr:last-child td{border-bottom:0}
     <section data-view="icerik" class="grid2">
       <div class="panel">
         <div class="panel-h"><h2>İçerik</h2><span class="note">uygulamadaki metinler</span></div>
+        <div class="seg lang-seg" id="cLangSeg"><button data-l="tr" aria-pressed="true">Türkçe</button><button data-l="en" aria-pressed="false">English</button></div>
         <div class="stack">
           <div class="sub">Ana sayfa</div>
           <div class="field"><label for="cHomeTitle">Liste başlığı</label><input id="cHomeTitle" maxlength="40"></div>
@@ -377,6 +399,35 @@ tr:last-child td{border-bottom:0}
       </div>
     </section>
 
+    <!-- ABONELİK -->
+    <section data-view="abonelik" class="grid2">
+      <div class="panel">
+        <div class="panel-h"><h2>Abonelik</h2><span class="note">fiyatlar ve deneme</span></div>
+        <div class="stack">
+          <div class="field" style="max-width:220px"><label for="bTrial">Ücretsiz deneme (gün)</label><input id="bTrial" type="number" min="0" max="90"></div>
+          <div class="sub">Türkiye (₺) · Türkçe kullanıcılar</div>
+          <div class="form-grid">
+            <div class="field"><label for="bTm">Aylık</label><input id="bTm" type="number" min="0" step="0.01"></div>
+            <div class="field"><label for="bTy">Yıllık</label><input id="bTy" type="number" min="0" step="0.01"></div>
+            <div class="field"><label for="bTl">Ömür boyu</label><input id="bTl" type="number" min="0" step="0.01"></div>
+          </div>
+          <div class="sub">Global ($) · İngilizce kullanıcılar</div>
+          <div class="form-grid">
+            <div class="field"><label for="bUm">Aylık</label><input id="bUm" type="number" min="0" step="0.01"></div>
+            <div class="field"><label for="bUy">Yıllık</label><input id="bUy" type="number" min="0" step="0.01"></div>
+            <div class="field"><label for="bUl">Ömür boyu</label><input id="bUl" type="number" min="0" step="0.01"></div>
+          </div>
+          <p class="hint">Mağazada gerçek ödeme açıldığında fiyatlar Google Play ve App Store'da da aynı tutulmalı. Kullanıcılara elle premium vermek için Kullanıcılar sekmesindeki Abonelik sütununu kullan.</p>
+        </div>
+        <div class="row-actions"><button class="btn primary" id="bSave">Kaydet ve yayınla</button><button class="btn ghost" id="bReset">Varsayılan fiyatlara dön</button></div>
+        <p class="msg" id="bMsg"></p>
+      </div>
+      <div class="panel">
+        <div class="panel-h"><h2>Kontrol</h2><span class="note">plan avantajları</span></div>
+        <div id="bCheck" class="stack" style="gap:8px"></div>
+      </div>
+    </section>
+
     <!-- BİLDİRİM VE HEDEF -->
     <section data-view="bildirim" class="grid2">
       <div class="panel">
@@ -385,6 +436,8 @@ tr:last-child td{border-bottom:0}
           <div class="sub">Hatırlatma bildirimi</div>
           <div class="field"><label for="nTitle">Başlık</label><input id="nTitle" maxlength="50"></div>
           <div class="field"><label for="nBody">Metin</label><input id="nBody" maxlength="140"></div>
+          <div class="field"><label for="nTitleEn">Başlık (EN)</label><input id="nTitleEn" maxlength="50"></div>
+          <div class="field"><label for="nBodyEn">Metin (EN)</label><input id="nBodyEn" maxlength="140"></div>
           <div class="fmt-help">Metinde kullanabileceklerin: <code>{duzen}</code> nefes düzeni (4 · 7 · 8) · <code>{tur}</code> tur sayısı · <code>{sure}</code> toplam süre</div>
           <div class="sub">Günlük hedef</div>
           <div class="field" style="max-width:220px"><label for="gDaily">Dakika / gün</label><input id="gDaily" type="number" min="1" max="120"></div>
@@ -406,16 +459,10 @@ tr:last-child td{border-bottom:0}
 <div class="toast" id="toast" hidden></div>
 
 <script type="module">
-import { firebaseConfig } from './firebase-config.js?v=7';
+import { firebaseConfig } from './firebase-config.js?v=8';
 
 const ADMIN_EMAIL = 'emreakpinar46@gmail.com';
-const BUILTIN = [
-  { id:'478',  name:'Rahatla', inhale:4, hold:7, exhale:8, hold2:0 },
-  { id:'box',  name:'Kutu',    inhale:4, hold:4, exhale:4, hold2:4 },
-  { id:'calm', name:'Sakin',   inhale:4, hold:2, exhale:6, hold2:0 },
-  { id:'bal',  name:'Denge',   inhale:5, hold:0, exhale:5, hold2:0 },
-  { id:'deep', name:'Derin',   inhale:6, hold:6, exhale:8, hold2:2 },
-];
+const BUILTIN = window.NEFES_DEFAULTS.exercises;
 const DEF = { cfg:{ inhale:4, hold:7, exhale:8, hold2:0, rounds:8 }, rem:{ start:'09:00', end:'21:00', int:60 } };
 const MONTHS = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
 
@@ -440,7 +487,7 @@ function ago(d){
 const fmtDay = k => { const [y,m,d] = k.split('-').map(Number); return `${d} ${MONTHS[m-1]}` };
 
 /* ---------- views (hash) ---------- */
-const VIEWS = ['ozet','kullanicilar','egzersizler','duyuru','varsayilan','icerik','gorunum','bildirim'];
+const VIEWS = ['ozet','kullanicilar','egzersizler','duyuru','varsayilan','icerik','gorunum','bildirim','abonelik'];
 function route(){
   const v = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'ozet';
   document.querySelectorAll('[data-view]').forEach(s => s.hidden = s.dataset.view !== v);
@@ -457,7 +504,7 @@ const auth = AU.getAuth(app); auth.languageCode = 'tr';
 const db = FS.getFirestore(app);
 const cfgRef = FS.doc(db, 'config', 'app');
 
-let users = [], conf = {}, unsubs = [], formsFilled = false;
+let users = [], conf = {}, unsubs = [], formsFilled = false, ents = {};
 
 $('gBtn').addEventListener('click', async () => {
   $('gateMsg').textContent = '';
@@ -479,6 +526,9 @@ AU.onAuthStateChanged(auth, user => {
   }else{ $('gateText').textContent = 'Bu sayfaya yalnızca yönetici hesabı girebilir.'; $('gBtn').hidden = false }
   if(!isAdmin) return;
   route();
+  unsubs.push(FS.onSnapshot(FS.collection(db, 'entitlements'), snap => {
+    ents = Object.fromEntries(snap.docs.map(d => [d.id, d.data()])); renderUsers();
+  }, () => {}));
   unsubs.push(FS.onSnapshot(FS.collection(db, 'users'), snap => {
     users = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     renderSummary(); renderUsers();
@@ -584,7 +634,7 @@ function renderUsers(){
     .filter(u => !q || ((u.profile?.name || '') + ' ' + (u.profile?.email || '')).toLocaleLowerCase('tr').includes(q))
     .sort((a,b) => (toDate(b.lastSeen)?.getTime() || 0) - (toDate(a.lastSeen)?.getTime() || 0));
   $('uCount').textContent = q ? `${list.length} / ${users.length} kişi` : `${users.length} kişi`;
-  if(!list.length){ $('uBody').innerHTML = `<tr><td colspan="8" class="hint" style="white-space:normal;padding:20px 10px">${users.length ? 'Aramana uyan kullanıcı yok.' : 'Henüz giriş yapmış kullanıcı yok. Uygulamada biri giriş yaptığında burada görünür.'}</td></tr>`; return }
+  if(!list.length){ $('uBody').innerHTML = `<tr><td colspan="9" class="hint" style="white-space:normal;padding:20px 10px">${users.length ? 'Aramana uyan kullanıcı yok.' : 'Henüz giriş yapmış kullanıcı yok. Uygulamada biri giriş yaptığında burada görünür.'}</td></tr>`; return }
   $('uBody').innerHTML = list.map(u => {
     const p = u.profile || {}, st = u.stats || {}, r = u.rem || {};
     const name = p.name || (p.email || '').split('@')[0] || 'Adsız';
@@ -600,34 +650,88 @@ function renderUsers(){
       <td class="num">${today}</td>
       <td>${esc(pattern(u.cfg))}${u.cfg ? ` · ${esc(u.cfg.rounds)} tur` : ''}</td>
       <td>${remTxt}</td>
+      <td>${subCell(u)}</td>
       <td>${created ? `${created.getDate()} ${MONTHS[created.getMonth()]}` : '–'}</td>
     </tr>`;
   }).join('');
 }
 
+/* ---------- abonelik sütunu ---------- */
+const PLAN_TR = { monthly: 'Aylık', yearly: 'Yıllık', lifetime: 'Ömür boyu' };
+function subCell(u){
+  const e = ents[u.id], plan = e && e.plan || '';
+  const until = e && e.until ? toDate(e.until) : null;
+  const ts = +((u.opts || {}).trialStart) || 0, days = (conf.billing && conf.billing.trialDays) ?? ND.billing.trialDays;
+  const left = ts ? Math.max(0, Math.ceil((ts + days * 864e5 - Date.now()) / 864e5)) : null;
+  const info = plan ? (until ? `${until.getDate()} ${MONTHS[until.getMonth()]} ${until.getFullYear()}'e kadar` : 'süresiz') : (left === null ? '' : left > 0 ? `Deneme: ${left} gün` : 'Deneme bitti');
+  return `<select class="sub-sel" data-uid="${esc(u.id)}" aria-label="Abonelik">
+      <option value="" ${!plan ? 'selected' : ''}>Yok</option>
+      ${Object.entries(PLAN_TR).map(([k, v]) => `<option value="${k}" ${plan === k ? 'selected' : ''}>${v}</option>`).join('')}
+    </select><small class="note" style="display:block">${info}</small>`;
+}
+$('uBody').addEventListener('change', async e => {
+  const s = e.target.closest('.sub-sel'); if(!s) return;
+  const ref = FS.doc(db, 'entitlements', s.dataset.uid), plan = s.value;
+  try{
+    if(!plan) await FS.deleteDoc(ref);
+    else {
+      const until = plan === 'lifetime' ? null : FS.Timestamp.fromMillis(Date.now() + (plan === 'monthly' ? 31 : 366) * 864e5);
+      await FS.setDoc(ref, { plan, until, grantedAt: FS.serverTimestamp(), by: 'admin' });
+    }
+    toast(plan ? `${PLAN_TR[plan]} premium verildi` : 'Premium kaldırıldı');
+  }catch(err){ toast(err.code === 'permission-denied' ? 'İzin yok: Firestore kurallarına entitlements bölümünü ekle.' : 'Kaydedilemedi') }
+});
+
 /* ---------- presets editor ---------- */
 let draft = [];
 const NUMS = [['inhale','Al',1],['hold','Tut',0],['exhale','Ver',1],['hold2','Bekle',0]];
+const CATS = window.NEFES_CATEGORIES;
+const catName = id => (CATS.find(c => c.id === id) || {}).tr || id;
+const sumTxt = p => `${[p.inhale, p.hold, p.exhale, p.hold2].filter((v, i) => v || i % 2 === 0).join(' · ')} · ${catName(p.cat)}`;
+let openRows = new Set();
 function renderPresets(){
   $('pList').innerHTML = draft.map((p, i) => `
-    <div class="preset" data-i="${i}">
-      <div class="field f-name"><label for="pn${i}">Ad</label><input id="pn${i}" data-k="name" maxlength="18" value="${esc(p.name)}"></div>
-      ${NUMS.map(([k, lab, min]) => `<div class="field"><label for="p${k}${i}">${lab}</label><input id="p${k}${i}" data-k="${k}" type="number" min="${min}" max="60" value="${p[k]}"></div>`).join('')}
-      <div class="field f-wide"><label for="ps${i}">Kısa açıklama</label><input id="ps${i}" data-k="short" maxlength="70" value="${esc(p.short || '')}" placeholder="${esc((ND.info[p.id] || {}).short || 'Boş bırakırsan nefes düzenine göre açıklama gösterilir')}"></div>
-      <div class="field f-wide"><label for="pd${i}">Ne işe yarar?</label><textarea id="pd${i}" data-k="desc" maxlength="600" placeholder="${esc((ND.info[p.id] || {}).desc || 'Boş bırakırsan nefes düzenine göre açıklama gösterilir')}">${esc(p.desc || '')}</textarea></div>
-      <div class="p-tools">
-        <button class="icon-btn" data-act="up" aria-label="Yukarı taşı" ${i === 0 ? 'disabled' : ''}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 15 6-6 6 6"/></svg></button>
-        <button class="icon-btn" data-act="down" aria-label="Aşağı taşı" ${i === draft.length-1 ? 'disabled' : ''}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
-        <button class="icon-btn del" data-act="del" aria-label="Sil" ${draft.length <= 1 ? 'disabled' : ''}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
+    <details class="preset-d" data-i="${i}" ${openRows.has(p.id) ? 'open' : ''}>
+      <summary>
+        <b data-sum="name">${esc(p.name)}</b>
+        <span class="ps-meta" data-sum="meta">${esc(sumTxt(p))}</span>
+        <span class="chip ${p.free !== false ? 'on' : ''}" data-sum="free">${p.free !== false ? 'Ücretsiz' : 'Premium'}</span>
+      </summary>
+      <div class="preset">
+        <div class="field f-name"><label for="pn${i}">Ad (TR)</label><input id="pn${i}" data-k="name" maxlength="28" value="${esc(p.name)}"></div>
+        ${NUMS.map(([k, lab, min]) => `<div class="field"><label for="p${k}${i}">${lab}</label><input id="p${k}${i}" data-k="${k}" type="number" min="${min}" max="60" value="${p[k]}"></div>`).join('')}
+        <div class="p-tools">
+          <button class="icon-btn" data-act="up" aria-label="Yukarı taşı" ${i === 0 ? 'disabled' : ''}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 15 6-6 6 6"/></svg></button>
+          <button class="icon-btn" data-act="down" aria-label="Aşağı taşı" ${i === draft.length-1 ? 'disabled' : ''}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+          <button class="icon-btn del" data-act="del" aria-label="Sil" ${draft.length <= 1 ? 'disabled' : ''}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
+        </div>
+        <div class="field f-half"><label for="pne${i}">Ad (EN)</label><input id="pne${i}" data-k="name_en" maxlength="28" value="${esc(p.name_en || '')}" placeholder="${esc(p.name)}"></div>
+        <div class="field f-half"><label for="pc${i}">Kategori</label><select id="pc${i}" data-k="cat">${CATS.map(c => `<option value="${c.id}" ${p.cat === c.id ? 'selected' : ''}>${esc(c.tr)}</option>`).join('')}</select></div>
+        <label class="field f-half chk"><input type="checkbox" data-k="free" ${p.free !== false ? 'checked' : ''}> <span>Deneme bitince de ücretsiz</span></label>
+        <div class="field f-wide"><label for="ps${i}">Kısa açıklama (TR)</label><input id="ps${i}" data-k="short" maxlength="90" value="${esc(p.short || '')}"></div>
+        <div class="field f-wide"><label for="pse${i}">Kısa açıklama (EN)</label><input id="pse${i}" data-k="short_en" maxlength="90" value="${esc(p.short_en || '')}"></div>
+        <div class="field f-wide"><label for="pd${i}">Ne işe yarar? (TR)</label><textarea id="pd${i}" data-k="desc" maxlength="800">${esc(p.desc || '')}</textarea></div>
+        <div class="field f-wide"><label for="pde${i}">Ne işe yarar? (EN)</label><textarea id="pde${i}" data-k="desc_en" maxlength="800">${esc(p.desc_en || '')}</textarea></div>
       </div>
-    </div>`).join('');
-  $('pAdd').disabled = draft.length >= 8;
+    </details>`).join('');
+  $('pAdd').disabled = draft.length >= 60;
+  $('pCount').textContent = `${draft.length} egzersiz · ${draft.filter(p => p.free !== false).length} ücretsiz`;
 }
-$('pList').addEventListener('input', e => {
-  const row = e.target.closest('.preset'); if(!row) return;
+const TXT = ['name','name_en','short','short_en','desc','desc_en','cat'];
+function onPresetEdit(e){
+  const row = e.target.closest('.preset-d'); if(!row || !e.target.dataset.k) return;
   const p = draft[+row.dataset.i], k = e.target.dataset.k;
-  p[k] = (k === 'name' || k === 'short' || k === 'desc') ? e.target.value : Math.max(0, Math.min(60, parseInt(e.target.value, 10) || 0));
-});
+  if(k === 'free') p.free = e.target.checked;
+  else if(TXT.includes(k)) p[k] = e.target.value;
+  else p[k] = Math.max(0, Math.min(60, parseInt(e.target.value, 10) || 0));
+  row.querySelector('[data-sum="name"]').textContent = p.name;
+  row.querySelector('[data-sum="meta"]').textContent = sumTxt(p);
+  const f = row.querySelector('[data-sum="free"]'); f.textContent = p.free !== false ? 'Ücretsiz' : 'Premium'; f.classList.toggle('on', p.free !== false);
+  $('pCount').textContent = `${draft.length} egzersiz · ${draft.filter(p => p.free !== false).length} ücretsiz`;
+}
+$('pList').addEventListener('input', onPresetEdit);
+$('pList').addEventListener('change', onPresetEdit);
+$('pList').addEventListener('toggle', e => { const d = e.target.closest && e.target.closest('.preset-d'); if(!d) return; const id = draft[+d.dataset.i].id; d.open ? openRows.add(id) : openRows.delete(id) }, true);
 $('pList').addEventListener('click', e => {
   const b = e.target.closest('button[data-act]'); if(!b) return;
   const i = +b.closest('.preset').dataset.i;
@@ -636,14 +740,15 @@ $('pList').addEventListener('click', e => {
   if(b.dataset.act === 'down' && i < draft.length-1) [draft[i+1], draft[i]] = [draft[i], draft[i+1]];
   renderPresets();
 });
-$('pAdd').addEventListener('click', () => { draft.push({ id: 'p' + Date.now(), name: 'Yeni', inhale:4, hold:4, exhale:4, hold2:0 }); renderPresets(); $('pn' + (draft.length-1)).select() });
+$('pAdd').addEventListener('click', () => { const id = 'p' + Date.now(); draft.push({ id, name: 'Yeni', cat: 'calm', free: true, inhale:4, hold:4, exhale:4, hold2:0 }); openRows.add(id); renderPresets(); $('pn' + (draft.length-1)).select() });
 $('pReset').addEventListener('click', () => { draft = BUILTIN.map(p => ({ ...p })); renderPresets(); toast('Başlangıç listesi yüklendi. Yayınlamak için Kaydet\'e bas.') });
 $('pSave').addEventListener('click', async () => {
   const msg = $('pMsg'); msg.textContent = '';
   const bad = draft.find(p => !p.name.trim() || p.inhale < 1 || p.exhale < 1);
   if(bad){ msg.textContent = `"${bad.name || 'Adsız'}" için ad boş olamaz; nefes al ve ver en az 1 saniye olmalı.`; return }
-  const clean = draft.map(p => ({ id: p.id, name: p.name.trim(), short: (p.short || '').trim(), desc: (p.desc || '').trim(), inhale: p.inhale, hold: p.hold, exhale: p.exhale, hold2: p.hold2 }));
-  try{ await FS.setDoc(cfgRef, { presets: clean, updatedAt: FS.serverTimestamp() }, { merge: true }); toast('Hazır egzersizler yayınlandı') }
+  const T = v => String(v || '').trim();
+  const clean = draft.map(p => ({ id: p.id, name: T(p.name), name_en: T(p.name_en), cat: p.cat || 'calm', free: p.free !== false, short: T(p.short), short_en: T(p.short_en), desc: T(p.desc), desc_en: T(p.desc_en), inhale: p.inhale, hold: p.hold, exhale: p.exhale, hold2: p.hold2 }));
+  try{ await FS.setDoc(cfgRef, { presets: clean, presetsVersion: 2, updatedAt: FS.serverTimestamp() }, { merge: true }); toast('Hazır egzersizler yayınlandı') }
   catch(e){ msg.textContent = saveErr(e) }
 });
 const saveErr = e => e.code === 'permission-denied' ? 'Kaydetme izni yok. Firestore kurallarını güncellediğinden emin ol.' : 'Kaydedilemedi (' + (e.code || 'bilinmiyor') + ').';
@@ -667,7 +772,7 @@ $('aPublish').addEventListener('click', async () => {
   $('aMsg').textContent = '';
   const title = $('aTitle').value.trim(), text = $('aText').value.trim();
   if(!title && !text){ $('aMsg').textContent = 'Başlık ya da mesajdan en az birini yaz.'; return }
-  try{ await FS.setDoc(cfgRef, { announcement: { id: Date.now(), title, text, kind, active: true }, updatedAt: FS.serverTimestamp() }, { merge: true }); toast('Duyuru yayınlandı') }
+  try{ await FS.setDoc(cfgRef, { announcement: { id: Date.now(), title, text, title_en: $('aTitleEn').value.trim(), text_en: $('aTextEn').value.trim(), kind, active: true }, updatedAt: FS.serverTimestamp() }, { merge: true }); toast('Duyuru yayınlandı') }
   catch(e){ $('aMsg').textContent = saveErr(e) }
 });
 $('aRemove').addEventListener('click', async () => {
@@ -692,20 +797,29 @@ $('dSave').addEventListener('click', async () => {
 const ND = window.NEFES_DEFAULTS;
 const vals = ids => Object.fromEntries(ids.map(([k, id]) => [k, $(id).value.trim()]));
 const C_IDS = [['homeTitle','cHomeTitle'],['homeHint','cHomeHint'],['benefitsTitle','cBTitle'],['benefits','cBenefits'],['warning','cWarning'],['sources','cSources']];
+let cLang = 'tr';
+const cKey = () => cLang === 'en' ? 'content_en' : 'content';
+const cDef = () => cLang === 'en' ? ND.content_en : ND.content;
+function fillContent(){
+  const ct = nefesMerge(cDef(), conf[cKey()]);
+  C_IDS.forEach(([k, id]) => $(id).value = ct[k] || ''); cPreview();
+  document.querySelectorAll('#cLangSeg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.l === cLang));
+}
+$('cLangSeg').addEventListener('click', e => { const b = e.target.closest('button'); if(b){ cLang = b.dataset.l; fillContent() } });
 function cPreview(){
-  const c = nefesMerge(ND.content, vals(C_IDS));
+  const c = nefesMerge(cDef(), vals(C_IDS));
   $('cPrevT').textContent = c.benefitsTitle;
   $('cPrev').innerHTML = nefesMd(c.benefits) + (c.warning ? `<div class="warn">${nefesMd(c.warning)}</div>` : '') + (c.sources ? `<div class="src">${nefesMd(c.sources)}</div>` : '');
 }
 C_IDS.forEach(([, id]) => $(id).addEventListener('input', cPreview));
 $('cSave').addEventListener('click', async () => {
   $('cMsg').textContent = '';
-  try{ await FS.setDoc(cfgRef, { content: vals(C_IDS), updatedAt: FS.serverTimestamp() }, { merge: true }); toast('İçerik yayınlandı') }
+  try{ await FS.setDoc(cfgRef, { [cKey()]: vals(C_IDS), updatedAt: FS.serverTimestamp() }, { merge: true }); toast(cLang === 'en' ? 'İngilizce içerik yayınlandı' : 'İçerik yayınlandı') }
   catch(e){ $('cMsg').textContent = saveErr(e) }
 });
 $('cReset').addEventListener('click', async () => {
-  C_IDS.forEach(([k, id]) => $(id).value = ND.content[k]); cPreview();
-  try{ await FS.setDoc(cfgRef, { content: FS.deleteField(), updatedAt: FS.serverTimestamp() }, { merge: true }); toast('Varsayılan metinlere dönüldü') }
+  C_IDS.forEach(([k, id]) => $(id).value = cDef()[k]); cPreview();
+  try{ await FS.setDoc(cfgRef, { [cKey()]: FS.deleteField(), updatedAt: FS.serverTimestamp() }, { merge: true }); toast('Varsayılan metinlere dönüldü') }
   catch(e){ $('cMsg').textContent = saveErr(e) }
 });
 
@@ -740,26 +854,74 @@ function nPreview(){
 $('nSave').addEventListener('click', async () => {
   $('nMsg').textContent = '';
   const daily = Math.max(1, Math.min(120, parseInt($('gDaily').value, 10) || 10));
-  try{ await FS.setDoc(cfgRef, { notify: { title: $('nTitle').value.trim(), body: $('nBody').value.trim() }, goal: { dailyMin: daily }, updatedAt: FS.serverTimestamp() }, { merge: true }); toast('Bildirim ve hedef yayınlandı') }
+  try{ await FS.setDoc(cfgRef, { notify: { title: $('nTitle').value.trim(), body: $('nBody').value.trim() }, notify_en: { title: $('nTitleEn').value.trim(), body: $('nBodyEn').value.trim() }, goal: { dailyMin: daily }, updatedAt: FS.serverTimestamp() }, { merge: true }); toast('Bildirim ve hedef yayınlandı') }
   catch(e){ $('nMsg').textContent = saveErr(e) }
 });
 $('nReset').addEventListener('click', async () => {
   $('nTitle').value = ND.notify.title; $('nBody').value = ND.notify.body; $('gDaily').value = ND.goal.dailyMin; nPreview();
-  try{ await FS.setDoc(cfgRef, { notify: FS.deleteField(), goal: FS.deleteField(), updatedAt: FS.serverTimestamp() }, { merge: true }); toast('Varsayılana dönüldü') }
+  $('nTitleEn').value = ND.notify_en.title; $('nBodyEn').value = ND.notify_en.body;
+  try{ await FS.setDoc(cfgRef, { notify: FS.deleteField(), notify_en: FS.deleteField(), goal: FS.deleteField(), updatedAt: FS.serverTimestamp() }, { merge: true }); toast('Varsayılana dönüldü') }
   catch(e){ $('nMsg').textContent = saveErr(e) }
 });
 
+/* ---------- abonelik fiyatları ---------- */
+const B_IDS = { TRY: ['bTm','bTy','bTl'], USD: ['bUm','bUy','bUl'] };
+const readBill = () => {
+  const n = id => Math.max(0, parseFloat($(id).value) || 0);
+  return { trialDays: Math.max(0, Math.min(90, parseInt($('bTrial').value, 10) || 0)),
+    TRY: { monthly: n('bTm'), yearly: n('bTy'), lifetime: n('bTl') }, USD: { monthly: n('bUm'), yearly: n('bUy'), lifetime: n('bUl') } };
+};
+function fillBill(b){
+  $('bTrial').value = b.trialDays;
+  for(const c of ['TRY','USD']) B_IDS[c].forEach((id, i) => $(id).value = b[c][['monthly','yearly','lifetime'][i]]);
+  bCheck();
+}
+function bCheck(){
+  const b = readBill(); let html = '', ok = true;
+  for(const [c, sym] of [['TRY','₺'],['USD','$']]){
+    const P = b[c], save = P.monthly ? Math.round((1 - P.yearly / (P.monthly * 12)) * 100) : 0, yrs = P.yearly ? Math.round(P.lifetime / P.yearly * 10) / 10 : 0;
+    const y = P.yearly < P.monthly * 12, l = P.lifetime > P.yearly && P.lifetime <= P.yearly * 4;
+    ok = ok && y && l;
+    html += `<div class="bc"><strong>${c}</strong><br>
+      Yıllık, aylığa göre <strong>%${save}</strong> tasarruf (ayda ${sym}${(P.yearly / 12).toFixed(2)}) ${y ? '✓' : '⚠️ Yıllık, 12 aylıktan ucuz olmalı'}<br>
+      Ömür boyu = <strong>${yrs}</strong> yıllık fiyatı ${l ? '✓' : '⚠️ Ömür boyu, yıllıktan pahalı ama 4 yıllıktan ucuz olmalı'}</div>`;
+  }
+  html += `<p class="hint">Deneme: ${b.trialDays} gün. Deneme süresince tüm egzersizler açık; sonra yalnızca "ücretsiz" işaretli egzersizler açık kalır.</p>`;
+  $('bCheck').innerHTML = html;
+  return ok;
+}
+['bTrial', ...B_IDS.TRY, ...B_IDS.USD].forEach(id => $(id).addEventListener('input', bCheck));
+$('bSave').addEventListener('click', async () => {
+  $('bMsg').textContent = '';
+  if(!bCheck()){ $('bMsg').textContent = 'Plan fiyatlarında uyarı var; yine de kaydetmek için düzeltmen önerilir.'; }
+  try{ await FS.setDoc(cfgRef, { billing: readBill(), updatedAt: FS.serverTimestamp() }, { merge: true }); toast('Abonelik ayarları yayınlandı') }
+  catch(e){ $('bMsg').textContent = saveErr(e) }
+});
+$('bReset').addEventListener('click', async () => {
+  fillBill(ND.billing);
+  try{ await FS.setDoc(cfgRef, { billing: FS.deleteField(), updatedAt: FS.serverTimestamp() }, { merge: true }); toast('Varsayılan fiyatlara dönüldü') }
+  catch(e){ $('bMsg').textContent = saveErr(e) }
+});
+
 function fillForms(){
-  const ct = nefesMerge(ND.content, conf.content);
-  C_IDS.forEach(([k, id]) => $(id).value = ct[k] || ''); cPreview();
+  { const b = conf.billing || {}; fillBill({ trialDays: b.trialDays ?? ND.billing.trialDays, TRY: { ...ND.billing.TRY, ...(b.TRY || {}) }, USD: { ...ND.billing.USD, ...(b.USD || {}) } }) }
+  fillContent();
   const lk = nefesMerge(ND.look, conf.look);
   $('lBreath').value = lk.breath; $('lAccent').value = lk.accent; lTheme = lk.theme; lPreview();
   const nt = nefesMerge(ND.notify, conf.notify);
+  const ne = nefesMerge(ND.notify_en, conf.notify_en); $('nTitleEn').value = ne.title; $('nBodyEn').value = ne.body;
   $('nTitle').value = nt.title; $('nBody').value = nt.body; $('gDaily').value = nefesMerge(ND.goal, conf.goal).dailyMin; nPreview();
-  draft = (Array.isArray(conf.presets) && conf.presets.length ? conf.presets : BUILTIN).map(p => ({ ...p }));
+  const rl = Array.isArray(conf.presets) && conf.presets.length ? conf.presets : null;
+  if(!rl) draft = BUILTIN.map(p => ({ ...p }));
+  else if(conf.presetsVersion >= 2) draft = rl.map(p => ({ ...p }));
+  else { // eski 5'li liste: kataloğa paneldeki değişiklikleri işle
+    const byId = Object.fromEntries(rl.map(p => [String(p.id), p]));
+    draft = BUILTIN.map(c => byId[c.id] ? { ...c, name: byId[c.id].name || c.name, inhale: byId[c.id].inhale, hold: byId[c.id].hold, exhale: byId[c.id].exhale, hold2: byId[c.id].hold2, short: byId[c.id].short || c.short, desc: byId[c.id].desc || c.desc } : { ...c });
+    rl.forEach(p => { if(!BUILTIN.some(c => c.id === String(p.id))) draft.push({ cat: 'calm', free: true, ...p }) });
+  }
   renderPresets();
   const a = conf.announcement || {};
-  $('aTitle').value = a.title || ''; $('aText').value = a.text || ''; kind = a.kind || 'info'; preview();
+  $('aTitle').value = a.title || ''; $('aText').value = a.text || ''; $('aTitleEn').value = a.title_en || ''; $('aTextEn').value = a.text_en || ''; kind = a.kind || 'info'; preview();
   const d = conf.defaults || DEF, c = d.cfg || DEF.cfg, r = d.rem || DEF.rem;
   $('dIn').value = c.inhale; $('dHold').value = c.hold; $('dEx').value = c.exhale; $('dHold2').value = c.hold2; $('dRounds').value = c.rounds;
   $('dStart').value = r.start; $('dEnd').value = r.end; $('dInt').value = r.int;
