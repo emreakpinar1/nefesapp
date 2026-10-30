@@ -326,12 +326,18 @@ function applyTheme(p){
   document.documentElement.dataset.pref = p;
   const tc = document.getElementById('themeColor'); if(tc) tc.content = dark ? '#0F110E' : '#F1F3EE';
   document.querySelectorAll('#themeSeg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.t === p));
+  const tb = document.getElementById('themeBtn'); if(tb) tb.setAttribute('aria-pressed', dark);
   if(typeof applyLook === 'function') applyLook();
 }
 $('themeSeg').addEventListener('click', e => {
   const b = e.target.closest('button'); if(!b) return;
   try{ localStorage.setItem('nefes-theme', b.dataset.t) }catch(err){}
   applyTheme(b.dataset.t);
+});
+$('themeBtn').addEventListener('click', () => {
+  const t = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+  try{ localStorage.setItem('nefes-theme', t) }catch(err){}
+  applyTheme(t);
 });
 mq.addEventListener('change', () => { if(document.documentElement.dataset.pref === 'system') applyTheme('system') });
 applyTheme(document.documentElement.dataset.pref || 'light');

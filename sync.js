@@ -1,5 +1,5 @@
 // NefesApp hesap ve eşitleme (Firebase Auth + Firestore)
-import { firebaseConfig } from './firebase-config.js?v=12';
+import { firebaseConfig } from './firebase-config.js?v=13';
 
 const $ = id => document.getElementById(id);
 const panel = $('accPanel');
