@@ -428,11 +428,8 @@ document.addEventListener('nefes:ent', accessChanged);
 setInterval(renderAccess, 60 * 60 * 1000);
 
 /* ---------- dil ---------- */
-$('langCode').textContent = { tr: 'TR', en: 'EN', ar: 'ع', de: 'DE' }[LANG];
-$('langBtn').addEventListener('click', e => { e.stopPropagation(); $('langMenu').hidden = !$('langMenu').hidden });
-$('langMenu').addEventListener('click', e => { const b = e.target.closest('button[data-l]'); if(b && b.dataset.l !== LANG) window.nefesSetLang(b.dataset.l); $('langMenu').hidden = true });
-document.addEventListener('click', e => { if(!e.target.closest('#langMenu')) $('langMenu').hidden = true });
-document.querySelectorAll('#langMenu button').forEach(b => b.setAttribute('aria-pressed', b.dataset.l === LANG));
+$('langSeg').addEventListener('click', e => { const b = e.target.closest('button[data-l]'); if(b && b.dataset.l !== LANG) window.nefesSetLang(b.dataset.l) });
+document.querySelectorAll('#langSeg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.l === LANG));
 
 /* ---------- panelden gelen içerik ve görünüm ---------- */
 function shade(hex, f){

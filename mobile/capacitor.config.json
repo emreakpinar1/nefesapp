@@ -14,7 +14,7 @@
     ]
   },
   "android": {
-    "backgroundColor": "#EEF6DC"
+    "backgroundColor": "#DDE2D6"
   },
   "plugins": {
     "LocalNotifications": {

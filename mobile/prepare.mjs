@@ -10,9 +10,10 @@ mkdirSync('android/app/src/main/res/raw', { recursive: true });
 copyFileSync('res/silent.wav', 'android/app/src/main/res/raw/nefes_silent.wav');
 
 // Kenardan kenara ekran (Android 15+ zorunlu; eski sürümlerde de aynı görünüm)
-const act = 'android/app/src/main/java/com/emreakpinar/nefesapp/MainActivity.java';
-writeFileSync(act, `package com.emreakpinar.nefesapp;
+const jdir = 'android/app/src/main/java/com/emreakpinar/nefesapp/';
+writeFileSync(jdir + 'MainActivity.java', `package com.emreakpinar.nefesapp;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import androidx.activity.EdgeToEdge;
 import com.getcapacitor.BridgeActivity;
@@ -20,8 +21,35 @@ import com.getcapacitor.BridgeActivity;
 public class MainActivity extends BridgeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        registerPlugin(FerahWindow.class);
         EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
+        // Durum çubuğu boşluğunda açılış görseli yerine uygulamanın zemin rengi görünsün
+        getWindow().getDecorView().setBackgroundColor(Color.parseColor("#DDE2D6"));
+    }
+}
+`);
+writeFileSync(jdir + 'FerahWindow.java', `package com.emreakpinar.nefesapp;
+
+import android.graphics.Color;
+import com.getcapacitor.Plugin;
+import com.getcapacitor.PluginCall;
+import com.getcapacitor.PluginMethod;
+import com.getcapacitor.annotation.CapacitorPlugin;
+
+@CapacitorPlugin(name = "FerahWindow")
+public class FerahWindow extends Plugin {
+    @PluginMethod
+    public void setBackground(PluginCall call) {
+        final String c = call.getString("color", "#DDE2D6");
+        getActivity().runOnUiThread(() -> {
+            try {
+                int col = Color.parseColor(c);
+                getActivity().getWindow().getDecorView().setBackgroundColor(col);
+                if (getBridge().getWebView() != null) getBridge().getWebView().setBackgroundColor(col);
+            } catch (Exception e) { }
+            call.resolve();
+        });
     }
 }
 `);

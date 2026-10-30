@@ -136,6 +136,22 @@ async function init(){
   document.addEventListener('visibilitychange', () => { if(!document.hidden && rcOn) rcRefresh() });
   rcInit();
 
+  // --- Durum çubuğu: uygulama temasına göre simge rengi ve arka plan ---
+  const SB = registerPlugin('SystemBars');
+  const FW = registerPlugin('FerahWindow');
+  const toHex = c => { const m = String(c).match(/\d+/g); return m ? '#' + m.slice(0, 3).map(n => (+n).toString(16).padStart(2, '0')).join('') : null };
+  let lastBars = '';
+  function syncBars(){
+    const dark = document.documentElement.dataset.theme === 'dark';
+    const bg = toHex(getComputedStyle(document.body).backgroundColor) || (dark ? '#171a16' : '#dde2d6');
+    const key = dark + bg; if(key === lastBars) return; lastBars = key;
+    SB.setStyle({ style: dark ? 'DARK' : 'LIGHT' }).catch(() => {});
+    FW.setBackground({ color: bg }).catch(() => {});
+  }
+  new MutationObserver(() => setTimeout(syncBars, 50)).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'style'] });
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', syncBars); else syncBars();
+  setTimeout(syncBars, 800);
+
   window.__nefesNative = {
     sync,
     haptic: (style = 'MEDIUM') => H.impact({ style }).catch(() => {}),
