@@ -160,7 +160,8 @@ h1,h2,h3{font-family:var(--f-display);margin:0;font-weight:500;letter-spacing:-.
 .ex .meta{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:13px;color:var(--muted);flex-wrap:wrap}
 .ex .pill{display:inline-flex;align-items:center;gap:5px;background:#EADCC8;color:#8F4F14;border-radius:8px;padding:3px 8px;font-weight:600;font-size:12px}
 :root[data-theme="dark"] .ex .pill{background:#3A2A18;color:#F3A85C}
-.ex .go{width:42px;height:42px;border-radius:50%;background:var(--soft);display:grid;place-items:center;flex:none}
+.ex .go{width:42px;height:42px;border-radius:50%;background:var(--soft);display:grid;place-items:center;flex:none;border:2px solid var(--line);margin-right:6px}
+.ex .go:disabled{opacity:.5;cursor:default}
 .ex .go svg{width:18px;height:18px}
 .ex.active{outline:2px solid var(--green);outline-offset:-2px}
 .view.narrow{max-width:680px;width:100%;margin:0 auto}
@@ -201,7 +202,7 @@ h1,h2,h3{font-family:var(--f-display);margin:0;font-weight:500;letter-spacing:-.
 .ex-actions button:disabled{opacity:.45;cursor:default}
 .ex .badge{font-size:11px;font-weight:700;color:var(--green-strong);background:var(--green-soft);border-radius:6px;padding:2px 6px}
 body.dragging-list{user-select:none;-webkit-user-select:none}
-.ex.active .go{background:var(--green);color:#16181A}
+.ex.active .go{background:var(--green);border-color:var(--green);color:#16181A}
 .ex-list{display:flex;flex-direction:column;gap:10px}
 .next-card{display:flex;align-items:center;gap:12px;text-decoration:none}
 .next-card .txt{flex:1;min-width:0}
@@ -246,23 +247,26 @@ body.dragging-list{user-select:none;-webkit-user-select:none}
 .controls{display:flex;align-items:center;justify-content:center;gap:18px;padding:4px 0}
 .session{display:flex;flex-direction:column;gap:14px}
 .compact-name{display:none}
-/* ana sayfadaki küçük sürüm */
-.session.compact{gap:0;background:var(--breath-bg);color:var(--breath-ink);border-radius:26px;box-shadow:var(--shadow);overflow:hidden}
-.session.compact .breath{display:grid;grid-template-columns:150px minmax(0,1fr);grid-template-areas:"stage head" "stage foot";column-gap:12px;row-gap:10px;align-items:center;padding:12px 16px 4px 10px;box-shadow:none;border-radius:0;background:transparent}
-.session.compact .breath::before{opacity:.6}
-.session.compact .b-head{grid-area:head;flex-direction:column;align-items:flex-start;gap:6px;align-self:end}
+/* ana sayfadaki küçük sürüm: daire solda; ad, süre ve düğmeler sağda */
+.session.compact{display:grid;grid-template-columns:148px minmax(0,1fr);grid-template-areas:"stage head" "stage foot" "stage ctrl";column-gap:14px;row-gap:10px;align-items:center;
+  padding:14px 16px 14px 10px;background:var(--breath-bg);color:var(--breath-ink);border-radius:26px;box-shadow:var(--shadow);overflow:hidden;position:relative}
+.session.compact::before{content:"";position:absolute;inset:0;background:repeating-radial-gradient(circle at 84px 50%,transparent 0 22px,rgba(255,255,255,.04) 22px 23px);pointer-events:none}
+.session.compact .breath{display:contents}
+.session.compact .breath::before{display:none}
+.session.compact .b-head{grid-area:head;flex-direction:column;align-items:flex-start;gap:5px;align-self:end;position:relative}
 .session.compact .compact-name{display:block;font-family:var(--f-display);font-size:18px;font-weight:500;line-height:1.2}
-.session.compact .stage{grid-area:stage;width:150px;margin:0}
-.session.compact .b-foot{grid-area:foot;margin:0;gap:18px;justify-content:flex-start;align-self:start}
+.session.compact .stage{grid-area:stage;width:148px;margin:0;align-self:center}
+.session.compact .b-foot{grid-area:foot;margin:0;gap:18px;justify-content:flex-start;position:relative}
 .session.compact .b-foot .r{text-align:left}
 .session.compact .b-foot .v{font-size:17px}
 .session.compact .count{font-size:30px}
 .session.compact .phase-name{font-size:11px;margin-top:2px}
 .session.compact .strip{display:none}
-.session.compact .controls{gap:12px;padding:6px 16px 14px;justify-content:flex-end;margin-top:-6px}
+.session.compact .controls{grid-area:ctrl;gap:10px;padding:0;justify-content:flex-start;position:relative;align-self:start}
 .session.compact .controls button{width:42px;height:42px;box-shadow:none;background:rgba(255,255,255,.12);color:var(--breath-ink)}
 .session.compact .controls button svg{width:18px;height:18px}
-.session.compact .controls .play{width:54px;height:54px;background:var(--breath-lime);color:#1F2B17;box-shadow:none}
+.session.compact .controls .play{width:52px;height:52px;background:var(--breath-lime);color:#1F2B17;box-shadow:none}
+.session.compact .controls .play svg{width:22px;height:22px}
 .compact-tag{display:none}
 .session.compact .compact-tag{display:block;font-size:12px;color:var(--breath-muted);line-height:1.35;margin-top:-2px}
 .session.compact .controls .play svg{width:22px;height:22px}
@@ -441,7 +445,7 @@ body.running .nav .center span.c::after{content:"";position:absolute;inset:-6px;
     <div class="col">
       <div id="homeSlot"></div>
       <div class="sec-h"><h2>Egzersizler</h2><a href="#nefes">Süreleri ayarla</a></div>
-      <p class="hint" style="margin:-4px 2px 2px">Bir egzersize dokunarak süresini ayarla ve başlat. Sırayı değiştirmek için soldaki tutamaktan sürükle.</p>
+      <p class="hint" style="margin:-4px 2px 2px">Egzersize dokunarak süresini ayarla; sağdaki daireyle hemen seç. Sırayı değiştirmek için soldaki tutamaktan sürükle.</p>
       <div class="ex-list" id="exList"></div>
       <button class="card learn" data-open-info>
         <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.4-9.3-9A5.3 5.3 0 0 1 12 6.5 5.3 5.3 0 0 1 21.3 12C19 16.6 12 21 12 21z"/></svg></span>

@@ -115,16 +115,23 @@ function renderExercises(){
     const len = (p.cfg.inhale + p.cfg.hold + p.cfg.exhale + p.cfg.hold2) * c.rounds;
     return `<div class="ex${active ? ' active' : ''}" data-id="${esc(p.id)}">
       <button class="grip" aria-label="${esc(p.name)} sırasını değiştir (yukarı/aşağı ok tuşları)">${GRIP}</button>
-      <button class="e-main" aria-pressed="${active}" aria-label="${esc(p.name)} egzersizini seç">
+      <button class="e-main" aria-label="${esc(p.name)}: süreleri ayarla">
         <span class="e-txt"><b>${esc(p.name)}</b><span class="short">${esc(infoFor(p).short)}</span>
           <span class="meta"><span class="pill num">${esc(patt(p.cfg))}</span>${p.custom ? '<span class="badge">Düzenlendi</span>' : ''}<span class="num">${c.rounds} tur · ${fmtLen(len)} dk</span></span>
         </span>
-        <span class="go" aria-hidden="true">${active ? CHECK : ''}</span>
       </button>
+      <button class="go" data-act="select" aria-pressed="${active}" aria-label="${esc(p.name)} egzersizini seç" ${N.isRunning() ? 'disabled' : ''}>${active ? CHECK : ''}</button>
     </div>`;
   }).join('');
 }
 $('exList').addEventListener('click', e => {
+  const s = e.target.closest('[data-act="select"]');
+  if(s && !justDragged){
+    if(N.isRunning()) return;
+    N.applyPreset(s.closest('.ex').dataset.id);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
   const b = e.target.closest('.e-main'); if(!b || justDragged) return;
   openEx(b.closest('.ex').dataset.id);
 });
@@ -282,7 +289,7 @@ const refresh = () => { const v = document.body.dataset.screen; if(v === 'ana') 
 document.addEventListener('nefes:stats', refresh);
 document.addEventListener('nefes:cfg', () => { renderSessName(); if(document.body.dataset.screen === 'ana') renderExercises() });
 document.addEventListener('nefes:rem', () => { if(document.body.dataset.screen === 'ana') renderHomeNext(); else $('bellDot').hidden = !N.getNext().on });
-document.addEventListener('nefes:play', () => document.body.classList.toggle('running', N.isRunning()));
+document.addEventListener('nefes:play', () => { document.body.classList.toggle('running', N.isRunning()); if(document.body.dataset.screen === 'ana') renderExercises() });
 
 /* ---------- theme ---------- */
 const mq = matchMedia('(prefers-color-scheme: dark)');
