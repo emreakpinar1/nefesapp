@@ -1,0 +1,867 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#C7EA70">
+<meta name="description" content="Ayarlanabilir nefes egzersizleri ve hatırlatıcı">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="NefesApp">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>NefesApp</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Figtree:wght@400;500;600&display=swap">
+<style>
+/* Layout: tek sütun mobil uygulama; siyah "nefes kartı" kahraman, altında ayarlar ve istatistik, altta yüzen kontrol çubuğu */
+:root{
+  --bg:#EEF6DC; --surface:#FFFFFF; --ink:#151712; --muted:#6A7260;
+  --lime:#C7EA70; --lime-deep:#A9D04A; --lime-soft:#E2F3B6;
+  --card:#161813; --card-ink:#F3F8E6; --card-muted:#8E967F; --line:#E1E8CF;
+  --shadow:0 10px 30px rgba(60,80,20,.10);
+  --f-display:"Lexend",ui-rounded,"SF Pro Rounded",system-ui,sans-serif;
+  --f-body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F110C; --surface:#1A1D15; --ink:#EEF4DF; --muted:#9AA38B;
+  --lime:#C7EA70; --lime-deep:#B5DC55; --lime-soft:#2B3320;
+  --card:#22261B; --card-ink:#F3F8E6; --card-muted:#959D85; --line:#2A3021;
+  --shadow:0 10px 30px rgba(0,0,0,.35); color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0F110C; --surface:#1A1D15; --ink:#EEF4DF; --muted:#9AA38B;
+  --lime:#C7EA70; --lime-deep:#B5DC55; --lime-soft:#2B3320;
+  --card:#22261B; --card-ink:#F3F8E6; --card-muted:#959D85; --line:#2A3021;
+  --shadow:0 10px 30px rgba(0,0,0,.35); color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 130px}
+.app{max-width:460px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible,input:focus-visible{outline:3px solid var(--lime-deep);outline-offset:2px}
+h1,h2,h3{font-family:var(--f-display);margin:0;font-weight:600;text-wrap:balance}
+
+/* header */
+.top{display:flex;align-items:center;gap:12px}
+.logo{width:48px;height:48px;border-radius:50%;background:var(--card);display:grid;place-items:center;flex:none}
+.logo svg{width:26px;height:26px}
+.top .txt{flex:1;min-width:0}
+.top small{color:var(--muted);font-size:13px}
+.top h1{font-size:22px;letter-spacing:-.01em}
+.round-btn{width:48px;height:48px;border-radius:50%;background:var(--surface);display:grid;place-items:center;box-shadow:var(--shadow);flex:none;position:relative}
+.round-btn svg{width:22px;height:22px}
+.round-btn .dot{position:absolute;top:11px;right:12px;width:8px;height:8px;border-radius:50%;background:var(--lime-deep)}
+.round-btn.off .dot{background:var(--muted)}
+
+/* presets */
+.presets{display:flex;gap:10px;overflow-x:auto;padding:4px 2px 8px;margin:0 -2px;scrollbar-width:none}
+.presets::-webkit-scrollbar{display:none}
+.chip{flex:none;padding:12px 18px;border-radius:999px;background:var(--surface);font-family:var(--f-display);font-weight:500;font-size:14px;display:flex;flex-direction:column;align-items:center;line-height:1.15;box-shadow:var(--shadow)}
+.chip span{font-family:var(--f-body);font-size:11px;color:var(--muted);font-weight:500;letter-spacing:.04em;margin-top:2px}
+.chip[aria-pressed="true"]{background:var(--lime);color:#151712}
+.chip[aria-pressed="true"] span{color:#3E4A22}
+
+/* breath card */
+.breath{background:var(--card);color:var(--card-ink);border-radius:32px;padding:22px 22px 24px;position:relative;overflow:hidden}
+.breath::before{content:"";position:absolute;inset:0;background:repeating-radial-gradient(circle at 50% 56%,transparent 0 22px,rgba(255,255,255,.025) 22px 23px);pointer-events:none}
+.b-head{display:flex;justify-content:space-between;align-items:center;position:relative}
+.b-head .lbl{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--card-muted);font-weight:600}
+.tag{background:var(--lime);color:#151712;border-radius:999px;padding:6px 12px;font-family:var(--f-display);font-weight:600;font-size:13px;font-variant-numeric:tabular-nums}
+.stage{position:relative;width:min(280px,72vw);aspect-ratio:1;max-width:100%;margin:14px auto 6px}
+.stage svg.ring{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.blob{position:absolute;inset:14%;border-radius:50%;background:radial-gradient(circle at 38% 32%,#E4F7AE,var(--lime) 55%,#9FC744);
+  transform:scale(.55);box-shadow:0 0 60px rgba(199,234,112,.25)}
+.blob::after{content:"";position:absolute;inset:-9%;border-radius:50%;border:1.5px dashed rgba(199,234,112,.35)}
+.center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#151712;pointer-events:none}
+.count{font-family:var(--f-display);font-weight:700;font-size:64px;line-height:1;font-variant-numeric:tabular-nums}
+.phase-name{font-family:var(--f-display);font-weight:500;font-size:16px;margin-top:4px}
+.sparkle{position:absolute;width:26px;height:26px;color:var(--lime)}
+.b-foot{display:flex;justify-content:space-between;align-items:flex-end;position:relative;margin-top:8px}
+.b-foot .k{font-size:12px;color:var(--card-muted)}
+.b-foot .v{font-family:var(--f-display);font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
+.b-foot .r{text-align:right}
+
+/* phase strip */
+.strip{display:flex;gap:6px}
+.seg{flex:var(--w,1);min-width:0;background:var(--surface);border-radius:14px;padding:9px 6px;text-align:center;box-shadow:var(--shadow);position:relative;overflow:hidden;transition:background .3s}
+.seg b{display:block;font-family:var(--f-display);font-weight:600;font-size:15px;font-variant-numeric:tabular-nums}
+.seg small{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.seg .fill{position:absolute;left:0;bottom:0;height:3px;background:var(--lime-deep);width:0}
+.seg.active{background:var(--lime);color:#151712}
+.seg.active small{color:#3E4A22}
+.seg.active .fill{background:#151712}
+
+/* panels */
+.panel{background:var(--surface);border-radius:28px;padding:20px;box-shadow:var(--shadow)}
+.panel-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.panel-h h2{font-size:18px}
+.panel-h .note{font-size:12px;color:var(--muted)}
+.row{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.row:first-of-type{border-top:0}
+.ico{width:42px;height:42px;border-radius:50%;background:var(--card);color:var(--lime);display:grid;place-items:center;flex:none}
+.ico svg{width:20px;height:20px}
+.row .lab{flex:1;min-width:0}
+.row .lab b{display:block;font-family:var(--f-display);font-weight:500;font-size:15px}
+.row .lab small{color:var(--muted);font-size:12px}
+.stepper{display:flex;align-items:center;gap:4px;background:var(--bg);border-radius:999px;padding:4px}
+.stepper button{width:34px;height:34px;border-radius:50%;background:var(--surface);font-size:18px;font-weight:600;display:grid;place-items:center}
+.stepper button:active{background:var(--lime)}
+.stepper output{min-width:44px;text-align:center;font-family:var(--f-display);font-weight:600;font-variant-numeric:tabular-nums}
+
+.toggle{position:relative;width:50px;height:30px;flex:none}
+.toggle input{opacity:0;position:absolute;inset:0;margin:0;cursor:pointer;z-index:1}
+.toggle i{position:absolute;inset:0;border-radius:999px;background:var(--line);transition:background .2s}
+.toggle i::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:var(--surface);box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .2s}
+.toggle input:checked + i{background:var(--card)}
+.toggle input:checked + i::after{transform:translateX(20px);background:var(--lime)}
+.toggle input:focus-visible + i{outline:3px solid var(--lime-deep);outline-offset:2px}
+input[type=range]{width:100%;accent-color:var(--lime-deep)}
+
+/* stats */
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.stat{border-radius:26px;padding:16px;min-width:0}
+.stat.a{background:var(--lime);color:#151712}
+.stat.b{background:var(--card);color:var(--card-ink)}
+.stat .t{font-size:13px;font-weight:600;font-family:var(--f-display)}
+.stat .big{font-family:var(--f-display);font-weight:700;font-size:32px;line-height:1.1;margin:8px 0 4px;font-variant-numeric:tabular-nums}
+.stat .big small{font-size:14px;font-weight:500;opacity:.7}
+.stat p{margin:0;font-size:12px;opacity:.75}
+.dots{display:flex;gap:4px;margin-top:10px;background:rgba(255,255,255,.55);border-radius:999px;padding:4px}
+.dots i{flex:1;aspect-ratio:1;border-radius:50%;border:1.5px solid #151712;max-width:12px}
+.dots i.on{background:#151712}
+.stat.b .mini{display:flex;justify-content:space-between;margin-top:10px;font-size:12px;color:var(--card-muted)}
+.stat.b .mini b{color:var(--card-ink);font-family:var(--f-display)}
+
+/* dock */
+.dock{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));
+  background:#151712;border-radius:999px;padding:8px;display:flex;gap:8px;align-items:center;box-shadow:0 14px 34px rgba(0,0,0,.3);z-index:5}
+.dock button{width:54px;height:54px;border-radius:50%;background:#2A2E23;color:#F3F8E6;display:grid;place-items:center}
+.dock button svg{width:22px;height:22px}
+.dock .play{width:68px;height:68px;background:var(--lime);color:#151712}
+.dock .play svg{width:28px;height:28px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(104px + env(safe-area-inset-bottom,0px));background:var(--card);color:var(--card-ink);padding:10px 16px;border-radius:999px;font-size:13px;z-index:6;max-width:calc(100% - 32px);text-align:center}
+
+/* reminders */
+.r-body{display:flex;flex-direction:column;transition:opacity .2s}
+.panel.off .r-body{opacity:.5}
+.next{display:flex;align-items:center;gap:12px;background:var(--card);color:var(--card-ink);border-radius:22px;padding:14px;margin-bottom:6px}
+.next .ico{background:var(--lime);color:#151712}
+.next .txt{flex:1;min-width:0}
+.next .k{font-size:12px;color:var(--card-muted)}
+.next .v{font-family:var(--f-display);font-size:18px;font-weight:600;font-variant-numeric:tabular-nums}
+.small-btn{padding:10px 14px;border-radius:999px;background:var(--bg);font-weight:600;font-size:13px;flex:none}
+.next .small-btn{background:#2E3326;color:#F3F8E6}
+.r-block{display:flex;flex-direction:column;gap:10px;padding:14px 0;border-top:1px solid var(--line)}
+.lbl2{font-family:var(--f-display);font-weight:500;font-size:15px}
+.hint{font-size:12px;color:var(--muted);margin:0}
+.times{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field{background:var(--bg);border-radius:18px;padding:10px 14px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.field label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.field input{border:0;background:none;font-family:var(--f-display);font-size:20px;font-weight:600;color:var(--ink);padding:0;width:100%;font-variant-numeric:tabular-nums}
+.days{display:flex;gap:6px}
+.days button{flex:1;min-width:0;height:42px;border-radius:999px;background:var(--bg);font-size:13px;font-weight:600;font-family:var(--f-display)}
+.days button[aria-pressed="true"]{background:var(--lime);color:#151712}
+.seg-ctl{display:flex;background:var(--bg);border-radius:999px;padding:4px;gap:4px}
+.seg-ctl button{flex:1;min-width:0;padding:10px 6px;border-radius:999px;font-family:var(--f-display);font-weight:500;font-size:14px;display:flex;align-items:center;justify-content:center;gap:6px}
+.seg-ctl button svg{width:16px;height:16px;flex:none}
+.seg-ctl button[aria-pressed="true"]{background:var(--card);color:var(--lime)}
+
+/* alarm overlay */
+.alarm{position:fixed;inset:0;z-index:20;background:rgba(15,17,12,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:grid;place-items:center;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px}
+.alarm-card{background:var(--lime);color:#151712;border-radius:32px;padding:28px 22px 22px;width:min(380px,100%);text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center}
+.pulse{width:96px;height:96px;border-radius:50%;background:#151712;color:#C7EA70;display:grid;place-items:center;animation:pulse 1.6s ease-in-out infinite;margin-bottom:6px}
+.pulse svg{width:44px;height:44px}
+@keyframes pulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(21,23,18,.35)}50%{transform:scale(1.06);box-shadow:0 0 0 18px rgba(21,23,18,0)}}
+.alarm-card h2{font-size:28px}
+.alarm-card p{margin:0;color:#3E4A22}
+.alarm-time{font-family:var(--f-display);font-size:14px;font-weight:600;background:rgba(21,23,18,.1);padding:5px 12px;border-radius:999px}
+.alarm-actions{display:flex;flex-direction:column;gap:8px;width:100%;margin-top:8px}
+.btn-dark{background:#151712;color:#C7EA70;border-radius:999px;padding:16px;font-family:var(--f-display);font-weight:600;font-size:16px}
+.btn-ghost{background:rgba(21,23,18,.08);color:#151712;border-radius:999px;padding:14px;font-weight:600}
+.alarm-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+@media (prefers-reduced-motion: reduce){.seg,.toggle i,.toggle i::after,.r-body{transition:none}.pulse{animation:none}}
+</style>
+
+</head>
+<body>
+<main class="app">
+  <header class="top">
+    <div class="logo" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#C7EA70" stroke-width="2" stroke-linecap="round"><path d="M3 9h11a3 3 0 1 0-3-3"/><path d="M3 14h15a3 3 0 1 1-3 3"/><path d="M3 19h6"/></svg>
+    </div>
+    <div class="txt">
+      <small>NefesApp</small>
+      <h1>Nefesine odaklan</h1>
+    </div>
+    <button class="round-btn" id="soundBtn" aria-label="Sesleri aç veya kapat">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>
+      <span class="dot"></span>
+    </button>
+  </header>
+
+  <nav class="presets" id="presets" aria-label="Hazır egzersizler"></nav>
+
+  <section class="breath" aria-live="polite">
+    <div class="b-head">
+      <span class="lbl" id="status">Hazır</span>
+      <span class="tag" id="pattern">4 · 7 · 8</span>
+    </div>
+    <div class="stage">
+      <svg class="ring" viewBox="0 0 100 100" aria-hidden="true">
+        <circle cx="50" cy="50" r="47" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="2.5"/>
+        <circle id="ringP" cx="50" cy="50" r="47" fill="none" stroke="#C7EA70" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="295.3" stroke-dashoffset="295.3"/>
+      </svg>
+      <div class="blob" id="blob"></div>
+      <div class="center">
+        <div class="count" id="count">4</div>
+        <div class="phase-name" id="phaseName">Nefes Al</div>
+      </div>
+      <svg class="sparkle" style="top:2%;right:6%" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0c.8 6.4 4.6 10.6 12 12-7.4 1.4-11.2 5.6-12 12-.8-6.4-4.6-10.6-12-12C7.4 10.6 11.2 6.4 12 0z"/></svg>
+    </div>
+    <div class="b-foot">
+      <div><div class="k">Tur</div><div class="v" id="roundTxt">0 / 8</div></div>
+      <div class="r"><div class="k">Kalan süre</div><div class="v" id="remainTxt">2:32</div></div>
+    </div>
+  </section>
+
+  <div class="strip" id="strip"></div>
+
+  <section class="panel">
+    <div class="panel-h"><h2>Süreleri ayarla</h2><span class="note">saniye</span></div>
+    <div id="rows"></div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-h"><h2>Ses ayarları</h2></div>
+    <div class="row">
+      <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
+      <div class="lab"><b>Geçiş sesleri</b><small>Her aşama değişiminde ton</small></div>
+      <label class="toggle"><input type="checkbox" id="tSound" checked aria-label="Geçiş sesleri"><i></i></label>
+    </div>
+    <div class="row">
+      <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5"/></svg></div>
+      <div class="lab"><b>Sesli yönlendirme</b><small>"Nefes al", "Tut", "Ver" der</small></div>
+      <label class="toggle"><input type="checkbox" id="tVoice" aria-label="Sesli yönlendirme"><i></i></label>
+    </div>
+    <div class="row">
+      <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg></div>
+      <div class="lab"><b>Saniye tıkı</b><small>Her saniyede hafif tık</small></div>
+      <label class="toggle"><input type="checkbox" id="tTick" aria-label="Saniye tıkı"><i></i></label>
+    </div>
+    <div class="row" style="flex-wrap:wrap">
+      <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg></div>
+      <div class="lab"><b>Ses seviyesi</b><small id="volTxt">%60</small></div>
+      <input type="range" id="vol" min="0" max="100" value="60" aria-label="Ses seviyesi" style="flex:1 1 140px">
+    </div>
+  </section>
+
+  <section class="panel" id="remPanel">
+    <div class="panel-h">
+      <h2>Hatırlatıcı</h2>
+      <label class="toggle"><input type="checkbox" id="rOn" aria-label="Hatırlatıcıyı aç veya kapat"><i></i></label>
+    </div>
+    <div class="next">
+      <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></div>
+      <div class="txt"><div class="k" id="nextK">Hatırlatıcı kapalı</div><div class="v" id="nextV">Açmak için düğmeye dokun</div></div>
+      <button class="small-btn" id="rTest">Dene</button>
+    </div>
+    <p class="hint">Hatırlatıcı bu sayfa açıkken çalışır. Sekme arka planda kalabilir ama kapatılmamalı.</p>
+    <div class="r-body">
+      <div class="r-block">
+        <span class="lbl2">Saat aralığı</span>
+        <div class="times">
+          <div class="field"><label for="rStart">Başlangıç</label><input type="time" id="rStart"></div>
+          <div class="field"><label for="rEnd">Bitiş</label><input type="time" id="rEnd"></div>
+        </div>
+      </div>
+      <div class="row" style="border-top:1px solid var(--line)">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg></div>
+        <div class="lab"><b>Sıklık</b><small>Ne kadar arayla hatırlatsın</small></div>
+        <div class="stepper">
+          <button id="rIntM" aria-label="Sıklığı azalt">−</button>
+          <output id="rInt" style="min-width:58px">60 dk</output>
+          <button id="rIntP" aria-label="Sıklığı artır">+</button>
+        </div>
+      </div>
+      <div class="r-block">
+        <span class="lbl2">Günler</span>
+        <div class="days" id="rDays"></div>
+      </div>
+      <div class="r-block">
+        <span class="lbl2">Alarm türü</span>
+        <div class="seg-ctl" id="rMode">
+          <button data-m="sound" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg>Sesli</button>
+          <button data-m="vibrate" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="3" width="10" height="18" rx="2"/><path d="M3 8v8M21 8v8"/></svg>Titreşim</button>
+          <button data-m="silent" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M3 3l18 18"/></svg>Sessiz</button>
+        </div>
+        <p class="hint" id="modeHint"></p>
+      </div>
+      <div class="r-block" id="tonePick">
+        <span class="lbl2">Alarm sesi</span>
+        <div class="seg-ctl" id="rTone">
+          <button data-t="bell" aria-pressed="false">Çan</button>
+          <button data-t="soft" aria-pressed="false">Yumuşak</button>
+          <button data-t="bird" aria-pressed="false">Kuş</button>
+        </div>
+      </div>
+      <div class="r-block">
+        <span class="lbl2">Sistem bildirimi</span>
+        <p class="hint" id="notifHint"></p>
+        <button class="small-btn" id="notifBtn" style="align-self:flex-start" hidden>Bildirimlere izin ver</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="stats">
+    <div class="stat a">
+      <div class="t">Bugün</div>
+      <div class="big" id="todayMin">0<small> dk</small></div>
+      <p>Günlük hedef 10 dakika</p>
+      <div class="dots" id="dots"></div>
+    </div>
+    <div class="stat b">
+      <div class="t">Toplam</div>
+      <div class="big" id="totalSes">0<small> seans</small></div>
+      <p>Tamamlanan egzersizler</p>
+      <div class="mini"><span>Süre</span><b id="totalMin">0 dk</b></div>
+    </div>
+  </section>
+</main>
+
+<div class="dock" role="toolbar" aria-label="Kontroller">
+  <button id="resetBtn" aria-label="Sıfırla"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button>
+  <button class="play" id="playBtn" aria-label="Başlat"></button>
+  <button id="skipBtn" aria-label="Sonraki aşama"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 4 10 8-10 8z"/><path d="M19 5v14"/></svg></button>
+</div>
+<div class="toast" id="toast" hidden></div>
+<div class="alarm" id="alarm" hidden role="alertdialog" aria-modal="true" aria-labelledby="alarmT">
+  <div class="alarm-card">
+    <div class="pulse"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 9h11a3 3 0 1 0-3-3"/><path d="M3 14h15a3 3 0 1 1-3 3"/><path d="M3 19h6"/></svg></div>
+    <span class="alarm-time" id="alarmTime">14:00</span>
+    <h2 id="alarmT">Nefes zamanı</h2>
+    <p id="alarmP">Birkaç dakikanı ayır.</p>
+    <div class="alarm-actions">
+      <button class="btn-dark" id="aStart">Egzersize başla</button>
+      <div class="alarm-row">
+        <button class="btn-ghost" id="aSnooze">10 dk ertele</button>
+        <button class="btn-ghost" id="aClose">Kapat</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+const $ = id => document.getElementById(id);
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d }catch(e){ return d } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)) }catch(e){} }
+};
+
+const PRESETS = [
+  {id:'478',  name:'Rahatla', cfg:{inhale:4,hold:7,exhale:8,hold2:0}},
+  {id:'box',  name:'Kutu',    cfg:{inhale:4,hold:4,exhale:4,hold2:4}},
+  {id:'calm', name:'Sakin',   cfg:{inhale:4,hold:2,exhale:6,hold2:0}},
+  {id:'bal',  name:'Denge',   cfg:{inhale:5,hold:0,exhale:5,hold2:0}},
+  {id:'deep', name:'Derin',   cfg:{inhale:6,hold:6,exhale:8,hold2:2}},
+];
+const PHASES = [
+  {key:'inhale', name:'Nefes Al', short:'Al',   voice:'Nefes al'},
+  {key:'hold',   name:'Nefes Tut',short:'Tut',  voice:'Tut'},
+  {key:'exhale', name:'Nefes Ver',short:'Ver',  voice:'Nefes ver'},
+  {key:'hold2',  name:'Bekle',    short:'Bekle',voice:'Bekle'},
+];
+const FIELDS = [
+  {key:'inhale',name:'Nefes al',desc:'Burundan yavaşça', min:1,max:20,
+    icon:'<path d="M12 19V5M5 12l7-7 7 7"/>'},
+  {key:'hold',name:'Nefes tut',desc:'Ciğerler dolu',min:0,max:30,
+    icon:'<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>'},
+  {key:'exhale',name:'Nefes ver',desc:'Ağızdan, uzun',min:1,max:30,
+    icon:'<path d="M12 5v14M5 12l7 7 7-7"/>'},
+  {key:'hold2',name:'Bekle',desc:'Ciğerler boş (0 = kapalı)',min:0,max:30,
+    icon:'<circle cx="12" cy="12" r="8"/><path d="M8 12h8"/>'},
+  {key:'rounds',name:'Tur sayısı',desc:'Kaç döngü yapılacak',min:1,max:50,unit:'',
+    icon:'<path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/>'},
+];
+
+let cfg = Object.assign({inhale:4,hold:7,exhale:8,hold2:0,rounds:8}, store.get('nefes-cfg', {}));
+let opts = Object.assign({sound:true,voice:false,tick:false,vol:60,muted:false}, store.get('nefes-opts', {}));
+
+/* ---------- UI build ---------- */
+function renderPresets(){
+  const match = PRESETS.find(p => ['inhale','hold','exhale','hold2'].every(k => p.cfg[k] === cfg[k]));
+  $('presets').innerHTML = PRESETS.map(p =>
+    `<button class="chip" data-id="${p.id}" aria-pressed="${match && match.id===p.id}">${p.name}<span>${[p.cfg.inhale,p.cfg.hold,p.cfg.exhale,p.cfg.hold2].filter((v,i)=>v||i%2===0).join('·')}</span></button>`
+  ).join('') + `<button class="chip" disabled aria-pressed="${!match}">Özel<span>${!match ? patternText() : 'ayarla'}</span></button>`;
+}
+function renderRows(){
+  $('rows').innerHTML = FIELDS.map(f => `
+    <div class="row">
+      <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${f.icon}</svg></div>
+      <div class="lab"><b>${f.name}</b><small>${f.desc}</small></div>
+      <div class="stepper">
+        <button data-k="${f.key}" data-d="-1" aria-label="${f.name} azalt">−</button>
+        <output id="o-${f.key}">${cfg[f.key]}${f.unit===''?'':' sn'}</output>
+        <button data-k="${f.key}" data-d="1" aria-label="${f.name} artır">+</button>
+      </div>
+    </div>`).join('');
+}
+function patternText(){
+  return [cfg.inhale,cfg.hold,cfg.exhale,cfg.hold2].filter((v,i)=>v||i%2===0).join(' · ');
+}
+function activePhases(){ return PHASES.filter(p => cfg[p.key] > 0) }
+function cycleLen(){ return cfg.inhale+cfg.hold+cfg.exhale+cfg.hold2 }
+function fmt(s){ s=Math.max(0,Math.ceil(s)); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0') }
+
+function renderStrip(){
+  $('strip').innerHTML = activePhases().map(p =>
+    `<div class="seg" data-k="${p.key}" style="--w:${cfg[p.key]}"><b>${cfg[p.key]}</b><small>${p.short}</small><span class="fill"></span></div>`).join('');
+}
+function refreshAll(){
+  renderPresets(); renderStrip();
+  $('pattern').textContent = patternText();
+  FIELDS.forEach(f => { const o=$('o-'+f.key); if(o) o.textContent = cfg[f.key] + (f.unit===''?'':' sn') });
+  if(!S.running) showIdle();
+  store.set('nefes-cfg', cfg);
+}
+
+/* ---------- audio ---------- */
+let ac = null, master = null, alarmG = null;
+function audio(){
+  if(!ac){ try{ ac = new (window.AudioContext||window.webkitAudioContext)(); master = ac.createGain(); master.connect(ac.destination); alarmG = ac.createGain(); alarmG.connect(ac.destination) }catch(e){ return null } }
+  if(ac.state === 'suspended') ac.resume();
+  master.gain.value = opts.muted ? 0 : opts.vol/100;
+  alarmG.gain.value = Math.max(opts.vol, 50)/100;
+  return ac;
+}
+function tone(f1, f2, dur, type='sine', peak=.35, delay=0, dest=null){
+  const a = audio(); if(!a) return;
+  const t = a.currentTime + delay;
+  const o = a.createOscillator(), g = a.createGain();
+  o.type = type; o.frequency.setValueAtTime(f1, t);
+  if(f2 !== f1) o.frequency.exponentialRampToValueAtTime(f2, t+dur*.8);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(peak, t+Math.min(.12, dur*.2));
+  g.gain.exponentialRampToValueAtTime(0.0001, t+dur);
+  o.connect(g); g.connect(dest || master); o.start(t); o.stop(t+dur+.05);
+}
+function bell(f, delay=0, peak=.3, dest=null){ tone(f,f,1.6,'sine',peak,delay,dest); tone(f*2.01,f*2.01,1.0,'sine',peak*.25,delay,dest); tone(f*3.0,f*3.0,.5,'triangle',peak*.08,delay,dest) }
+const SOUNDS = {
+  inhale(){ tone(392, 587, 1.2, 'sine', .32); tone(196, 294, 1.2, 'triangle', .08) },
+  hold(){ bell(784) },
+  exhale(){ tone(587, 330, 1.4, 'sine', .32); tone(294, 165, 1.4, 'triangle', .08) },
+  hold2(){ bell(523, 0, .22) },
+  done(){ [523,659,784,1047].forEach((f,i)=>bell(f, i*.18, .25)) },
+  tick(){ tone(1400,1400,.05,'square',.03) },
+  prep(){ tone(880,880,.12,'sine',.18) },
+};
+function play(name){
+  if(opts.muted) return;
+  if(name==='tick'){ if(opts.tick) SOUNDS.tick(); return }
+  if(opts.sound || name==='prep') SOUNDS[name] && SOUNDS[name]();
+}
+function say(text){
+  if(!opts.voice || opts.muted || !('speechSynthesis' in window)) return;
+  try{
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'tr-TR'; u.rate = .9; u.volume = Math.min(1, opts.vol/100 + .2);
+    const v = speechSynthesis.getVoices().find(v => v.lang && v.lang.toLowerCase().startsWith('tr'));
+    if(v) u.voice = v;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+/* ---------- session engine ---------- */
+const S = { running:false, paused:false, prep:0, idx:0, round:1, phaseStart:0, pausedAt:0, lastSec:null, elapsedTotal:0, raf:0 };
+const MIN=.55, MAX=1, CIRC=295.3;
+const ease = p => .5 - Math.cos(Math.PI*p)/2;
+let wake = null;
+async function lockWake(){ try{ if('wakeLock' in navigator) wake = await navigator.wakeLock.request('screen') }catch(e){} }
+function releaseWake(){ try{ wake && wake.release() }catch(e){} wake=null }
+
+function setBlob(scale){ $('blob').style.transform = `scale(${scale})` }
+function setRing(p){ $('ringP').style.strokeDashoffset = CIRC*(1-p) }
+function setPlayIcon(){
+  const playing = S.running && !S.paused;
+  $('playBtn').innerHTML = playing
+    ? '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1.5"/><rect x="14" y="5" width="4" height="14" rx="1.5"/></svg>'
+    : '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>';
+  $('playBtn').setAttribute('aria-label', playing ? 'Duraklat' : 'Başlat');
+}
+function highlight(key, p){
+  document.querySelectorAll('.seg').forEach(s => {
+    const on = s.dataset.k === key; s.classList.toggle('active', on);
+    s.querySelector('.fill').style.width = on ? (p*100)+'%' : '0';
+  });
+}
+function showIdle(){
+  const first = activePhases()[0];
+  $('status').textContent = 'Hazır';
+  $('count').textContent = cfg[first.key];
+  $('phaseName').textContent = first.name;
+  $('roundTxt').textContent = `0 / ${cfg.rounds}`;
+  $('remainTxt').textContent = fmt(cycleLen()*cfg.rounds);
+  setBlob(MIN); setRing(0); highlight(null, 0);
+}
+
+function start(){
+  audio();
+  S.running = true; S.paused = false; S.idx = 0; S.round = 1; S.elapsedTotal = 0;
+  S.prep = 3; S.phaseStart = performance.now(); S.lastSec = null;
+  $('status').textContent = 'Hazırlan';
+  lockWake(); setPlayIcon();
+  cancelAnimationFrame(S.raf); S.raf = requestAnimationFrame(loop);
+}
+function enterPhase(i, now){
+  const ph = activePhases()[i];
+  S.idx = i; S.phaseStart = now; S.lastSec = null;
+  play(ph.key); say(ph.voice);
+  $('phaseName').textContent = ph.name;
+  $('status').textContent = 'Egzersiz sürüyor';
+}
+function nextPhase(now){
+  const list = activePhases();
+  if(S.idx + 1 < list.length) return enterPhase(S.idx+1, now);
+  if(S.round >= cfg.rounds) return finish();
+  S.round++; enterPhase(0, now);
+}
+function loop(now){
+  if(!S.running || S.paused) return;
+  const t = (now - S.phaseStart)/1000;
+
+  if(S.prep > 0){
+    const left = S.prep - t;
+    const sec = Math.ceil(left);
+    if(sec !== S.lastSec && sec > 0){ S.lastSec = sec; play('prep') }
+    $('count').textContent = Math.max(1, sec);
+    $('phaseName').textContent = 'Hazırlan';
+    setBlob(MIN); setRing(1 - left/S.prep);
+    if(left <= 0){ S.prep = 0; enterPhase(0, now) }
+    S.raf = requestAnimationFrame(loop); return;
+  }
+
+  const list = activePhases();
+  if(S.idx >= list.length) S.idx = 0;
+  const ph = list[S.idx], dur = cfg[ph.key];
+  if(t >= dur){ S.elapsedTotal += dur; nextPhase(now); if(S.running) S.raf = requestAnimationFrame(loop); return }
+
+  const p = t/dur;
+  let sc = MIN;
+  if(ph.key==='inhale') sc = MIN + (MAX-MIN)*ease(p);
+  else if(ph.key==='hold') sc = MAX;
+  else if(ph.key==='exhale') sc = MAX - (MAX-MIN)*ease(p);
+  setBlob(sc); setRing(p); highlight(ph.key, p);
+
+  const sec = Math.ceil(dur - t);
+  if(sec !== S.lastSec){ if(S.lastSec !== null) play('tick'); S.lastSec = sec }
+  $('count').textContent = sec;
+  $('roundTxt').textContent = `${S.round} / ${cfg.rounds}`;
+  const total = cycleLen()*cfg.rounds;
+  $('remainTxt').textContent = fmt(total - S.elapsedTotal - t);
+  S.raf = requestAnimationFrame(loop);
+}
+function pause(){
+  S.paused = true; S.pausedAt = performance.now();
+  $('status').textContent = 'Duraklatıldı'; setPlayIcon();
+  try{ speechSynthesis.cancel() }catch(e){}
+}
+function resume(){
+  audio();
+  S.phaseStart += performance.now() - S.pausedAt; S.paused = false;
+  $('status').textContent = S.prep ? 'Hazırlan' : 'Egzersiz sürüyor';
+  setPlayIcon(); S.raf = requestAnimationFrame(loop);
+}
+function stop(){
+  const did = S.elapsedTotal;
+  S.running = false; S.paused = false; cancelAnimationFrame(S.raf);
+  releaseWake(); setPlayIcon(); showIdle();
+  return did;
+}
+function finish(){
+  const secs = cycleLen()*cfg.rounds;
+  S.running = false; cancelAnimationFrame(S.raf); releaseWake();
+  play('done'); say('Tebrikler, egzersiz tamamlandı');
+  addStats(secs, true);
+  setPlayIcon(); showIdle();
+  $('status').textContent = 'Tamamlandı';
+  $('count').textContent = '✓';
+  $('phaseName').textContent = 'Harika iş';
+  toast(`${cfg.rounds} tur tamamlandı. ${fmt(secs)} dakika nefes egzersizi.`);
+}
+
+/* ---------- stats ---------- */
+function today(){ const d=new Date(); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate() }
+function getStats(){
+  const s = store.get('nefes-stats', {date:today(), todaySec:0, sessions:0, totalSec:0});
+  if(s.date !== today()){ s.date = today(); s.todaySec = 0 }
+  return s;
+}
+function addStats(sec, complete){
+  const s = getStats(); s.todaySec += sec; s.totalSec += sec; if(complete) s.sessions++;
+  store.set('nefes-stats', s); renderStats();
+}
+function renderStats(){
+  const s = getStats();
+  const m = Math.floor(s.todaySec/60);
+  $('todayMin').innerHTML = `${m}<small> dk</small>`;
+  $('totalSes').innerHTML = `${s.sessions}<small> seans</small>`;
+  $('totalMin').textContent = `${Math.round(s.totalSec/60)} dk`;
+  $('dots').innerHTML = Array.from({length:10}, (_,i) => `<i class="${i < m ? 'on':''}"></i>`).join('');
+}
+
+/* ---------- misc ---------- */
+let tt; function toast(msg){ const el=$('toast'); el.textContent=msg; el.hidden=false; clearTimeout(tt); tt=setTimeout(()=>el.hidden=true, 3200) }
+function saveOpts(){ store.set('nefes-opts', opts); if(master) master.gain.value = opts.muted?0:opts.vol/100; $('soundBtn').classList.toggle('off', opts.muted) }
+
+/* ---------- events ---------- */
+$('presets').addEventListener('click', e => {
+  const b = e.target.closest('.chip[data-id]'); if(!b) return;
+  const p = PRESETS.find(x => x.id === b.dataset.id);
+  Object.assign(cfg, p.cfg); refreshAll();
+  if(S.running) toast('Yeni süreler bir sonraki aşamada geçerli olur');
+});
+$('rows').addEventListener('click', e => {
+  const b = e.target.closest('button[data-k]'); if(!b) return;
+  const f = FIELDS.find(x => x.key === b.dataset.k);
+  let v = cfg[f.key] + Number(b.dataset.d);
+  v = Math.max(f.min, Math.min(f.max, v));
+  if(f.key==='hold' || f.key==='hold2' || f.key==='inhale' || f.key==='exhale'){
+    const tmp = Object.assign({}, cfg, {[f.key]:v});
+    if(tmp.inhale + tmp.exhale < 1) return;
+  }
+  cfg[f.key] = v; refreshAll();
+});
+$('playBtn').addEventListener('click', () => {
+  if(!S.running) start(); else if(S.paused) resume(); else pause();
+});
+$('resetBtn').addEventListener('click', () => {
+  if(!S.running){ showIdle(); return }
+  const did = stop(); if(did > 5) addStats(Math.round(did), false);
+  toast('Egzersiz sıfırlandı');
+});
+$('skipBtn').addEventListener('click', () => {
+  if(!S.running || S.paused) return;
+  const now = performance.now();
+  if(S.prep){ S.prep = 0; enterPhase(0, now); return }
+  S.elapsedTotal += Math.min(cfg[activePhases()[S.idx].key], (now - S.phaseStart)/1000);
+  nextPhase(now); if(S.running){ cancelAnimationFrame(S.raf); S.raf = requestAnimationFrame(loop) }
+});
+$('soundBtn').addEventListener('click', () => { opts.muted = !opts.muted; saveOpts(); toast(opts.muted ? 'Sesler kapalı' : 'Sesler açık'); if(!opts.muted){ audio(); SOUNDS.hold2() } });
+$('tSound').checked = opts.sound; $('tVoice').checked = opts.voice; $('tTick').checked = opts.tick;
+$('vol').value = opts.vol; $('volTxt').textContent = '%'+opts.vol;
+$('tSound').addEventListener('change', e => { opts.sound = e.target.checked; saveOpts(); if(opts.sound) SOUNDS.inhale() });
+$('tVoice').addEventListener('change', e => { opts.voice = e.target.checked; saveOpts(); if(opts.voice){ say('Nefes al'); if(!('speechSynthesis' in window)) toast('Bu tarayıcı sesli yönlendirmeyi desteklemiyor') } });
+$('tTick').addEventListener('change', e => { opts.tick = e.target.checked; saveOpts(); if(opts.tick) SOUNDS.tick() });
+$('vol').addEventListener('input', e => { opts.vol = +e.target.value; $('volTxt').textContent = '%'+opts.vol; saveOpts() });
+$('vol').addEventListener('change', () => { audio(); SOUNDS.hold() });
+document.addEventListener('keydown', e => {
+  if(e.code === 'Space' && $('alarm').hidden && !/INPUT|BUTTON/.test(document.activeElement.tagName)){ e.preventDefault(); $('playBtn').click() }
+});
+document.addEventListener('visibilitychange', () => { if(document.visibilityState==='visible' && S.running && !S.paused) lockWake() });
+try{ speechSynthesis.getVoices() }catch(e){}
+
+/* ---------- reminders ---------- */
+let rem = Object.assign({on:false,start:'09:00',end:'21:00',int:60,days:[1,2,3,4,5],mode:'sound',tone:'bell',snooze:0,last:0}, store.get('nefes-rem', {}));
+const INTS = [5,10,15,20,30,45,60,90,120,180,240];
+const DAYV = [1,2,3,4,5,6,0], DAYN = ['Pt','Sa','Ça','Pe','Cu','Ct','Pz'];
+const DAYFULL = ['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
+const canVib = 'vibrate' in navigator;
+const baseTitle = document.title;
+let due = null, alarmLoop = 0, vibLoop = 0, titleFlash = 0;
+
+const toMin = s => { const [h,m] = String(s || '0:0').split(':').map(Number); return (h||0)*60 + (m||0) };
+const hhmm = t => { const d = new Date(t); return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0') };
+const fmtInt = m => m < 60 ? m + ' dk' : (m % 60 ? String(m/60).replace('.', ',') + ' sa' : (m/60) + ' sa');
+function saveRem(){ store.set('nefes-rem', rem) }
+
+function nextSlot(from){
+  const s = toMin(rem.start), e = toMin(rem.end);
+  if(e < s || !rem.days.length) return null;
+  const base = new Date(from); base.setHours(0,0,0,0);
+  for(let d = 0; d < 8; d++){
+    const day = new Date(base); day.setDate(base.getDate() + d);
+    if(!rem.days.includes(day.getDay())) continue;
+    for(let m = s; m <= e; m += rem.int){
+      const t = new Date(day); t.setHours(0, m, 0, 0);
+      if(t.getTime() > from) return t.getTime();
+    }
+  }
+  return null;
+}
+function schedule(){
+  due = null;
+  if(rem.on){
+    due = nextSlot(Math.max(Date.now(), rem.last || 0));
+    if(rem.snooze > Date.now() && (!due || rem.snooze < due)) due = rem.snooze;
+  }
+  renderNext();
+}
+function whenText(t){
+  const d = new Date(t), today0 = new Date(); today0.setHours(0,0,0,0);
+  const diff = Math.round((new Date(t).setHours(0,0,0,0) - today0) / 864e5);
+  const label = diff === 0 ? 'Bugün' : diff === 1 ? 'Yarın' : DAYFULL[DAYV.indexOf(d.getDay())];
+  return label + ' ' + hhmm(t);
+}
+function renderNext(){
+  if(!rem.on){ $('nextK').textContent = 'Hatırlatıcı kapalı'; $('nextV').textContent = 'Yukarıdaki düğmeyle aç'; return }
+  if(!due){
+    $('nextK').textContent = 'Sonraki hatırlatma yok';
+    $('nextV').textContent = !rem.days.length ? 'En az bir gün seç' : 'Bitiş, başlangıçtan sonra olmalı';
+    return;
+  }
+  const mins = Math.max(0, Math.round((due - Date.now()) / 60000));
+  const rel = mins < 1 ? 'birazdan' : mins < 60 ? `${mins} dk sonra` : `${Math.floor(mins/60)} sa ${mins%60} dk sonra`;
+  $('nextK').textContent = (rem.snooze === due ? 'Ertelendi · ' : 'Sonraki · ') + rel;
+  $('nextV').textContent = whenText(due);
+}
+function check(){
+  renderNext();
+  if(!rem.on || !due) return;
+  const now = Date.now();
+  if(now < due) return;
+  const late = now - due;
+  rem.last = due;
+  if(rem.snooze && rem.snooze <= now) rem.snooze = 0;
+  saveRem();
+  if(late < 5*60000 && !S.running && $('alarm').hidden) fireAlarm();
+  schedule();
+}
+
+function ring(){
+  const a = audio(); if(!a) return;
+  if(rem.tone === 'bell'){ bell(880, 0, .35, alarmG); bell(659, .45, .32, alarmG) }
+  else if(rem.tone === 'soft'){ [523,659,784].forEach((f,i) => tone(f, f, 1.3, 'sine', .3, i*.35, alarmG)) }
+  else { [0,.16,.32,.9,1.06,1.22].forEach(d => tone(2300, 3300, .11, 'sine', .18, d, alarmG)) }
+}
+function vib(){ try{ return canVib ? navigator.vibrate([500,250,500,250,800]) : false }catch(e){ return false } }
+function notifState(){ return ('Notification' in window) ? Notification.permission : 'none' }
+function notify(){
+  if(notifState() !== 'granted') return;
+  const title = 'NefesApp · Nefes zamanı';
+  const o = { body: `${patternText()} düzeninde ${cfg.rounds} tur`, tag: 'nefesapp', renotify: true, silent: rem.mode !== 'sound', requireInteraction: true };
+  if(navigator.serviceWorker && navigator.serviceWorker.controller){
+    if(rem.mode !== 'silent') o.vibrate = [500,250,500,250,800];
+    o.icon = 'icon-192.png'; o.badge = 'icon-192.png';
+    navigator.serviceWorker.ready.then(r => r.showNotification(title, o)).catch(() => {});
+    return;
+  }
+  try{
+    const n = new Notification(title, o);
+    n.onclick = () => { window.focus(); n.close() };
+  }catch(e){}
+}
+function fireAlarm(){
+  $('alarmTime').textContent = hhmm(Date.now());
+  $('alarmP').textContent = `${patternText()} düzeninde ${cfg.rounds} tur, yaklaşık ${fmt(cycleLen()*cfg.rounds)} dakika.`;
+  $('alarm').hidden = false;
+  clearInterval(alarmLoop); clearInterval(vibLoop); clearInterval(titleFlash);
+  if(rem.mode === 'sound'){
+    ring(); let n = 0;
+    alarmLoop = setInterval(() => { if(++n >= 20){ clearInterval(alarmLoop); return } ring() }, 3000);
+  }
+  if(rem.mode !== 'silent'){
+    vib(); let v = 0;
+    vibLoop = setInterval(() => { if(++v >= 6){ clearInterval(vibLoop); return } vib() }, 4000);
+  }
+  notify();
+  let on = false;
+  titleFlash = setInterval(() => { document.title = (on = !on) ? '⏰ Nefes zamanı' : baseTitle }, 1000);
+  $('aStart').focus();
+}
+function stopAlarm(){
+  clearInterval(alarmLoop); clearInterval(vibLoop); clearInterval(titleFlash);
+  document.title = baseTitle;
+  try{ canVib && navigator.vibrate(0) }catch(e){}
+  $('alarm').hidden = true;
+}
+
+function renderNotif(){
+  const st = notifState(), btn = $('notifBtn'), h = $('notifHint');
+  btn.hidden = st !== 'default';
+  h.textContent = st === 'granted' ? 'Açık. Sekme arka plandayken de ekranın köşesinde bildirim görünür.'
+    : st === 'default' ? 'İzin verirsen sekme arka plandayken de bildirim alırsın.'
+    : st === 'denied' ? 'Sistem bildirimi kapalı. Uygulama içindeki alarm yine çalışır. Claude içinde açılan sayfalarda bildirimler engelli olabilir; kendi sitende yayınladığında izin verebilirsin.'
+    : 'Bu tarayıcı sistem bildirimlerini desteklemiyor. Uygulama içindeki alarm yine çalışır.';
+}
+async function askNotif(){
+  try{ if(notifState() === 'default') await Notification.requestPermission() }catch(e){}
+  renderNotif();
+}
+function renderRem(){
+  $('rOn').checked = rem.on;
+  $('remPanel').classList.toggle('off', !rem.on);
+  $('rStart').value = rem.start; $('rEnd').value = rem.end;
+  $('rInt').textContent = fmtInt(rem.int);
+  $('rDays').innerHTML = DAYV.map((v,i) => `<button data-d="${v}" aria-pressed="${rem.days.includes(v)}" aria-label="${DAYFULL[i]}">${DAYN[i]}</button>`).join('');
+  document.querySelectorAll('#rMode button').forEach(b => b.setAttribute('aria-pressed', b.dataset.m === rem.mode));
+  document.querySelectorAll('#rTone button').forEach(b => b.setAttribute('aria-pressed', b.dataset.t === rem.tone));
+  $('tonePick').hidden = rem.mode !== 'sound';
+  $('modeHint').textContent =
+    rem.mode === 'sound' ? 'Alarm sesi, sen kapatana kadar yaklaşık 1 dakika çalar. Sayfayı açtıktan sonra bir kez dokunman sesin çalmasını sağlar.'
+    : rem.mode === 'vibrate' ? (canVib ? 'Telefon titrer, ses çalmaz. Titreşim Android tarayıcılarda çalışır.' : 'Bu cihaz titreşimi desteklemiyor (iPhone ve bilgisayarlarda tarayıcı titreşimi yok). Ekranda sessiz bildirim gösterilir.')
+    : 'Ses ve titreşim yok. Ekranda bildirim ve sekme başlığında yanıp sönen uyarı görünür.';
+  renderNotif(); schedule();
+}
+
+$('rOn').addEventListener('change', e => {
+  rem.on = e.target.checked; rem.snooze = 0; rem.last = Date.now();
+  if(rem.on){ audio(); askNotif() }
+  saveRem(); renderRem();
+  toast(rem.on ? (due ? 'Hatırlatıcı açık · ' + whenText(due) : 'Hatırlatıcı açık') : 'Hatırlatıcı kapalı');
+});
+['rStart','rEnd'].forEach(id => $(id).addEventListener('change', e => {
+  if(!e.target.value) return;
+  rem[id === 'rStart' ? 'start' : 'end'] = e.target.value;
+  if(toMin(rem.end) < toMin(rem.start)) toast('Bitiş saati başlangıçtan sonra olmalı');
+  saveRem(); schedule();
+}));
+function stepInt(d){
+  let i = INTS.indexOf(rem.int); if(i < 0) i = 6;
+  rem.int = INTS[Math.max(0, Math.min(INTS.length-1, i + d))];
+  $('rInt').textContent = fmtInt(rem.int); saveRem(); schedule();
+}
+$('rIntM').addEventListener('click', () => stepInt(-1));
+$('rIntP').addEventListener('click', () => stepInt(1));
+$('rDays').addEventListener('click', e => {
+  const b = e.target.closest('button'); if(!b) return;
+  const v = +b.dataset.d;
+  rem.days = rem.days.includes(v) ? rem.days.filter(x => x !== v) : rem.days.concat(v);
+  saveRem(); renderRem();
+});
+$('rMode').addEventListener('click', e => {
+  const b = e.target.closest('button'); if(!b) return;
+  rem.mode = b.dataset.m; saveRem(); renderRem();
+  if(rem.mode === 'vibrate') vib();
+});
+$('rTone').addEventListener('click', e => {
+  const b = e.target.closest('button'); if(!b) return;
+  rem.tone = b.dataset.t; saveRem(); renderRem(); ring();
+});
+$('notifBtn').addEventListener('click', askNotif);
+$('rTest').addEventListener('click', () => { audio(); fireAlarm() });
+$('aStart').addEventListener('click', () => { stopAlarm(); window.scrollTo({top:0, behavior:'smooth'}); if(!S.running) start() });
+$('aSnooze').addEventListener('click', () => {
+  stopAlarm(); rem.snooze = Date.now() + 10*60000; saveRem(); schedule();
+  toast('10 dakika sonra tekrar hatırlatırım');
+});
+$('aClose').addEventListener('click', stopAlarm);
+document.addEventListener('keydown', e => { if(e.key === 'Escape' && !$('alarm').hidden) stopAlarm() });
+document.addEventListener('pointerdown', () => { if(rem.on && (!ac || ac.state !== 'running')) audio() });
+document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'visible') check() });
+setInterval(check, 10000);
+
+renderRows(); refreshAll(); renderStats(); setPlayIcon(); saveOpts(); renderRem();
+})();
+</script>
+
+<script>if('serviceWorker' in navigator) addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));</script>
+</body>
+</html>
