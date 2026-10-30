@@ -188,6 +188,18 @@ h1,h2,h3{font-family:var(--f-display);margin:0;font-weight:500;letter-spacing:-.
 :root[data-theme="dark"] .sheet-body .warn{background:#3A2C1C;color:#F0D3AE}
 .sheet-body .src{font-size:12px;color:var(--muted)}
 .sheet-body .src a{color:inherit}
+.ex-sum{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px}
+.ex-sum div{background:var(--soft);border-radius:16px;padding:10px 12px;min-width:0}
+.ex-sum span{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+.ex-sum b{font-family:var(--f-display);font-weight:500;font-size:17px;font-variant-numeric:tabular-nums}
+.ex-reset{margin:4px 0 6px}
+.ex-run{background:var(--soft);border-radius:14px;padding:10px 12px;margin:6px 0}
+.ex-more{margin:6px 0 4px;font-size:14px}
+.ex-more summary{cursor:pointer;font-weight:600;color:var(--green-strong);padding:6px 0}
+.ex-more p{margin:6px 0 0;line-height:1.55;color:var(--ink)}
+.ex-actions{display:grid;grid-template-columns:1fr 1.3fr;gap:10px;margin-top:16px}
+.ex-actions button:disabled{opacity:.45;cursor:default}
+.ex .badge{font-size:11px;font-weight:700;color:var(--green-strong);background:var(--green-soft);border-radius:6px;padding:2px 6px}
 body.dragging-list{user-select:none;-webkit-user-select:none}
 .ex.active .go{background:var(--green);color:#16181A}
 .ex-list{display:flex;flex-direction:column;gap:10px}
@@ -429,7 +441,7 @@ body.running .nav .center span.c::after{content:"";position:absolute;inset:-6px;
     <div class="col">
       <div id="homeSlot"></div>
       <div class="sec-h"><h2>Egzersizler</h2><a href="#nefes">Süreleri ayarla</a></div>
-      <p class="hint" style="margin:-4px 2px 2px">Bir egzersize dokunarak seç, yukarıdaki kartta başlat. Sırayı değiştirmek için soldaki tutamaktan sürükle.</p>
+      <p class="hint" style="margin:-4px 2px 2px">Bir egzersize dokunarak süresini ayarla ve başlat. Sırayı değiştirmek için soldaki tutamaktan sürükle.</p>
       <div class="ex-list" id="exList"></div>
       <button class="card learn" data-open-info>
         <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.4-9.3-9A5.3 5.3 0 0 1 12 6.5 5.3 5.3 0 0 1 21.3 12C19 16.6 12 21 12 21z"/></svg></span>
@@ -674,6 +686,25 @@ body.running .nav .center span.c::after{content:"";position:absolute;inset:-6px;
   </ul>
 </nav>
 
+<div class="sheet" id="exSheet" hidden role="dialog" aria-modal="true" aria-labelledby="exT">
+  <div class="sheet-card">
+    <div class="sheet-h"><h2 id="exT">Egzersiz</h2><button class="round" id="exClose" aria-label="Kapat" style="box-shadow:none;background:var(--soft)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+    <p class="hint" id="exShort" style="margin:-2px 0 12px"></p>
+    <div class="ex-sum">
+      <div><span>Düzen</span><b id="exPat">4 · 7 · 8</b></div>
+      <div><span>Bir tur</span><b id="exCycle">19 sn</b></div>
+      <div><span>Toplam</span><b id="exTotal">2:32</b></div>
+    </div>
+    <div class="rows" id="exRows"></div>
+    <div class="ex-reset"><button class="link-btn" id="exReset" type="button">Varsayılan sürelere dön</button></div>
+    <p class="hint ex-run" id="exRunNote" hidden>Egzersiz sürerken değişiklik yapılamaz. Önce durdur ya da sıfırla.</p>
+    <details class="ex-more"><summary>Bu egzersiz ne işe yarar?</summary><p id="exDesc"></p></details>
+    <div class="ex-actions">
+      <button class="btn-ghost" id="exSelect">Kaydet ve seç</button>
+      <button class="btn-main" id="exStart">Başlat</button>
+    </div>
+  </div>
+</div>
 <div class="sheet" id="infoSheet" hidden role="dialog" aria-modal="true" aria-labelledby="sheetT">
   <div class="sheet-card">
     <div class="sheet-h"><h2 id="sheetT">Nefes egzersizleri ne işe yarar?</h2><button class="round" id="sheetClose" aria-label="Kapat" style="box-shadow:none;background:var(--soft)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
@@ -761,6 +792,7 @@ let cfg = Object.assign({inhale:4,hold:7,exhale:8,hold2:0,rounds:8}, freshInstal
 let opts = Object.assign({sound:true,voice:false,tick:false,vol:60,muted:false}, store.get('nefes-opts', {}));
 
 /* ---------- UI build ---------- */
+function pc(p){ const o = (opts.custom || {})[p.id]; return o ? { ...p.cfg, ...o } : p.cfg }
 function sortPresets(){
   const o = Array.isArray(opts.order) ? opts.order : [];
   const pos = id => { const i = o.indexOf(id); return i < 0 ? 1e6 : i };
@@ -768,9 +800,9 @@ function sortPresets(){
 }
 function renderPresets(){
   sortPresets();
-  const match = PRESETS.find(p => ['inhale','hold','exhale','hold2'].every(k => p.cfg[k] === cfg[k]));
+  const match = PRESETS.find(p => ['inhale','hold','exhale','hold2'].every(k => pc(p)[k] === cfg[k]));
   $('presets').innerHTML = PRESETS.map(p =>
-    `<button class="chip" data-id="${p.id}" aria-pressed="${match && match.id===p.id}">${p.name}<span>${[p.cfg.inhale,p.cfg.hold,p.cfg.exhale,p.cfg.hold2].filter((v,i)=>v||i%2===0).join('·')}</span></button>`
+    `<button class="chip" data-id="${p.id}" aria-pressed="${match && match.id===p.id}">${p.name}<span>${[pc(p).inhale,pc(p).hold,pc(p).exhale,pc(p).hold2].filter((v,i)=>v||i%2===0).join('·')}</span></button>`
   ).join('') + `<button class="chip" disabled aria-pressed="${!match}">Özel<span>${!match ? patternText() : 'ayarla'}</span></button>`;
   document.dispatchEvent(new Event('nefes:cfg'));
 }
@@ -1008,7 +1040,7 @@ function saveOpts(){ store.set('nefes-opts', opts); if(master) master.gain.value
 $('presets').addEventListener('click', e => {
   const b = e.target.closest('.chip[data-id]'); if(!b) return;
   const p = PRESETS.find(x => x.id === b.dataset.id);
-  touched = true; Object.assign(cfg, p.cfg); refreshAll();
+  touched = true; Object.assign(cfg, pc(p)); refreshAll();
   if(S.running) toast('Yeni süreler bir sonraki aşamada geçerli olur');
 });
 $('rows').addEventListener('click', e => {
@@ -1280,10 +1312,16 @@ window.__nefes = {
       saveOpts(); refreshAll(); renderRem(); renderStats();
     }finally{ window.__nefesApplying = false }
   },
-  getPresets(){ return PRESETS.map(p => ({ ...p, cfg: { ...p.cfg } })) },
+  getPresets(){ return PRESETS.map(p => ({ ...p, cfg: { ...pc(p) }, base: { ...p.cfg }, custom: !!(opts.custom || {})[p.id] })) },
   getCfg(){ return { ...cfg } },
   setOrder(ids){ opts.order = ids.slice(0, 20); saveOpts(); renderPresets() },
-  applyPreset(id){ const p = PRESETS.find(x => x.id === id); if(!p) return; touched = true; Object.assign(cfg, p.cfg); refreshAll() },
+  applyPreset(id){ const p = PRESETS.find(x => x.id === id); if(!p) return; touched = true; Object.assign(cfg, pc(p)); refreshAll() },
+  setCustom(id, vals){
+    const c = { ...(opts.custom || {}) };
+    if(vals) c[id] = { inhale: vals.inhale, hold: vals.hold, exhale: vals.exhale, hold2: vals.hold2 }; else delete c[id];
+    opts.custom = c; saveOpts(); renderPresets();
+  },
+  setRounds(n){ touched = true; cfg.rounds = Math.max(1, Math.min(50, n)); refreshAll() },
   start(){ if(!S.running) start(); else if(S.paused) resume() },
   isRunning(){ return S.running && !S.paused },
   getNext(){ return { k: $('nextK').textContent, v: $('nextV').textContent, on: rem.on } },
@@ -1444,7 +1482,7 @@ function renderExercises(){
       <button class="grip" aria-label="${esc(p.name)} sırasını değiştir (yukarı/aşağı ok tuşları)">${GRIP}</button>
       <button class="e-main" aria-pressed="${active}" aria-label="${esc(p.name)} egzersizini seç">
         <span class="e-txt"><b>${esc(p.name)}</b><span class="short">${esc(infoFor(p).short)}</span>
-          <span class="meta"><span class="pill num">${esc(patt(p.cfg))}</span><span class="num">${c.rounds} tur · ${fmtLen(len)} dk</span></span>
+          <span class="meta"><span class="pill num">${esc(patt(p.cfg))}</span>${p.custom ? '<span class="badge">Düzenlendi</span>' : ''}<span class="num">${c.rounds} tur · ${fmtLen(len)} dk</span></span>
         </span>
         <span class="go" aria-hidden="true">${active ? CHECK : ''}</span>
       </button>
@@ -1453,11 +1491,70 @@ function renderExercises(){
 }
 $('exList').addEventListener('click', e => {
   const b = e.target.closest('.e-main'); if(!b || justDragged) return;
-  const id = b.closest('.ex').dataset.id;
-  if(N.isRunning()){ window.scrollTo({ top: 0, behavior: 'smooth' }); return }
-  N.applyPreset(id);
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  openEx(b.closest('.ex').dataset.id);
 });
+
+/* egzersiz penceresi: süreleri ayarla, seç, başlat */
+const EXF = [
+  ['inhale','Nefes al','Burundan yavaşça',1,30,'sn'],
+  ['hold','Nefes tut','Ciğerler dolu',0,30,'sn'],
+  ['exhale','Nefes ver','Ağızdan, uzun',1,30,'sn'],
+  ['hold2','Bekle','Ciğerler boş (0 = kapalı)',0,30,'sn'],
+  ['rounds','Tur sayısı','Kaç döngü yapılacak',1,50,''],
+];
+let exD = null, exLast = null;
+function openEx(id){
+  const p = N.getPresets().find(x => x.id === id); if(!p) return;
+  exD = { id, name: p.name, base: p.base, ...p.cfg, rounds: N.getCfg().rounds };
+  $('exT').textContent = p.name;
+  const inf = infoFor(p);
+  $('exShort').textContent = inf.short; $('exDesc').textContent = inf.desc;
+  renderExSheet();
+  exLast = document.activeElement;
+  $('exSheet').hidden = false; document.body.style.overflow = 'hidden';
+  $('exClose').focus();
+}
+function closeEx(){ $('exSheet').hidden = true; document.body.style.overflow = ''; exD = null; if(exLast) exLast.focus() }
+function renderExSheet(){
+  const d = exD, running = N.isRunning();
+  const cyc = d.inhale + d.hold + d.exhale + d.hold2;
+  $('exPat').textContent = patt(d);
+  $('exCycle').textContent = cyc + ' sn';
+  $('exTotal').textContent = fmtLen(cyc * d.rounds) + ' dk';
+  $('exRows').innerHTML = EXF.map(([k, lab, sub, , , unit]) => `
+    <div class="row">
+      <div class="lab"><b>${lab}</b><small>${sub}</small></div>
+      <div class="stepper">
+        <button data-k="${k}" data-d="-1" aria-label="${lab} azalt" ${running ? 'disabled' : ''}>−</button>
+        <output>${d[k]}${unit ? ' ' + unit : ''}</output>
+        <button data-k="${k}" data-d="1" aria-label="${lab} artır" ${running ? 'disabled' : ''}>+</button>
+      </div>
+    </div>`).join('');
+  const changed = ['inhale','hold','exhale','hold2'].some(k => d[k] !== d.base[k]);
+  $('exReset').hidden = !changed || running;
+  $('exRunNote').hidden = !running;
+  $('exSelect').disabled = running; $('exStart').disabled = running;
+}
+$('exRows').addEventListener('click', e => {
+  const b = e.target.closest('button[data-k]'); if(!b || !exD) return;
+  const f = EXF.find(x => x[0] === b.dataset.k);
+  const v = Math.max(f[3], Math.min(f[4], exD[f[0]] + Number(b.dataset.d)));
+  exD[f[0]] = v; renderExSheet();
+});
+$('exReset').addEventListener('click', () => { Object.assign(exD, exD.base); renderExSheet() });
+function saveEx(){
+  const d = exD;
+  const changed = ['inhale','hold','exhale','hold2'].some(k => d[k] !== d.base[k]);
+  N.setCustom(d.id, changed ? d : null);
+  N.setRounds(d.rounds);
+  N.applyPreset(d.id);
+}
+$('exSelect').addEventListener('click', () => { saveEx(); closeEx(); window.scrollTo({ top: 0, behavior: 'smooth' }); toast2('Egzersiz seçildi') });
+$('exStart').addEventListener('click', () => { saveEx(); closeEx(); window.scrollTo({ top: 0, behavior: 'smooth' }); N.start() });
+$('exClose').addEventListener('click', closeEx);
+$('exSheet').addEventListener('click', e => { if(e.target === $('exSheet')) closeEx() });
+document.addEventListener('keydown', e => { if(e.key === 'Escape' && !$('exSheet').hidden) closeEx() });
+let t2; function toast2(m){ const t = $('toast'); t.textContent = m; t.hidden = false; clearTimeout(t2); t2 = setTimeout(() => t.hidden = true, 2000) }
 
 /* sürükleyerek sıralama (dokunmatik ve fare) */
 let drag = null, justDragged = false;

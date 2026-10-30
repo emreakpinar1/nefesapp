@@ -117,7 +117,7 @@ function renderExercises(){
       <button class="grip" aria-label="${esc(p.name)} sırasını değiştir (yukarı/aşağı ok tuşları)">${GRIP}</button>
       <button class="e-main" aria-pressed="${active}" aria-label="${esc(p.name)} egzersizini seç">
         <span class="e-txt"><b>${esc(p.name)}</b><span class="short">${esc(infoFor(p).short)}</span>
-          <span class="meta"><span class="pill num">${esc(patt(p.cfg))}</span><span class="num">${c.rounds} tur · ${fmtLen(len)} dk</span></span>
+          <span class="meta"><span class="pill num">${esc(patt(p.cfg))}</span>${p.custom ? '<span class="badge">Düzenlendi</span>' : ''}<span class="num">${c.rounds} tur · ${fmtLen(len)} dk</span></span>
         </span>
         <span class="go" aria-hidden="true">${active ? CHECK : ''}</span>
       </button>
@@ -126,11 +126,70 @@ function renderExercises(){
 }
 $('exList').addEventListener('click', e => {
   const b = e.target.closest('.e-main'); if(!b || justDragged) return;
-  const id = b.closest('.ex').dataset.id;
-  if(N.isRunning()){ window.scrollTo({ top: 0, behavior: 'smooth' }); return }
-  N.applyPreset(id);
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  openEx(b.closest('.ex').dataset.id);
 });
+
+/* egzersiz penceresi: süreleri ayarla, seç, başlat */
+const EXF = [
+  ['inhale','Nefes al','Burundan yavaşça',1,30,'sn'],
+  ['hold','Nefes tut','Ciğerler dolu',0,30,'sn'],
+  ['exhale','Nefes ver','Ağızdan, uzun',1,30,'sn'],
+  ['hold2','Bekle','Ciğerler boş (0 = kapalı)',0,30,'sn'],
+  ['rounds','Tur sayısı','Kaç döngü yapılacak',1,50,''],
+];
+let exD = null, exLast = null;
+function openEx(id){
+  const p = N.getPresets().find(x => x.id === id); if(!p) return;
+  exD = { id, name: p.name, base: p.base, ...p.cfg, rounds: N.getCfg().rounds };
+  $('exT').textContent = p.name;
+  const inf = infoFor(p);
+  $('exShort').textContent = inf.short; $('exDesc').textContent = inf.desc;
+  renderExSheet();
+  exLast = document.activeElement;
+  $('exSheet').hidden = false; document.body.style.overflow = 'hidden';
+  $('exClose').focus();
+}
+function closeEx(){ $('exSheet').hidden = true; document.body.style.overflow = ''; exD = null; if(exLast) exLast.focus() }
+function renderExSheet(){
+  const d = exD, running = N.isRunning();
+  const cyc = d.inhale + d.hold + d.exhale + d.hold2;
+  $('exPat').textContent = patt(d);
+  $('exCycle').textContent = cyc + ' sn';
+  $('exTotal').textContent = fmtLen(cyc * d.rounds) + ' dk';
+  $('exRows').innerHTML = EXF.map(([k, lab, sub, , , unit]) => `
+    <div class="row">
+      <div class="lab"><b>${lab}</b><small>${sub}</small></div>
+      <div class="stepper">
+        <button data-k="${k}" data-d="-1" aria-label="${lab} azalt" ${running ? 'disabled' : ''}>−</button>
+        <output>${d[k]}${unit ? ' ' + unit : ''}</output>
+        <button data-k="${k}" data-d="1" aria-label="${lab} artır" ${running ? 'disabled' : ''}>+</button>
+      </div>
+    </div>`).join('');
+  const changed = ['inhale','hold','exhale','hold2'].some(k => d[k] !== d.base[k]);
+  $('exReset').hidden = !changed || running;
+  $('exRunNote').hidden = !running;
+  $('exSelect').disabled = running; $('exStart').disabled = running;
+}
+$('exRows').addEventListener('click', e => {
+  const b = e.target.closest('button[data-k]'); if(!b || !exD) return;
+  const f = EXF.find(x => x[0] === b.dataset.k);
+  const v = Math.max(f[3], Math.min(f[4], exD[f[0]] + Number(b.dataset.d)));
+  exD[f[0]] = v; renderExSheet();
+});
+$('exReset').addEventListener('click', () => { Object.assign(exD, exD.base); renderExSheet() });
+function saveEx(){
+  const d = exD;
+  const changed = ['inhale','hold','exhale','hold2'].some(k => d[k] !== d.base[k]);
+  N.setCustom(d.id, changed ? d : null);
+  N.setRounds(d.rounds);
+  N.applyPreset(d.id);
+}
+$('exSelect').addEventListener('click', () => { saveEx(); closeEx(); window.scrollTo({ top: 0, behavior: 'smooth' }); toast2('Egzersiz seçildi') });
+$('exStart').addEventListener('click', () => { saveEx(); closeEx(); window.scrollTo({ top: 0, behavior: 'smooth' }); N.start() });
+$('exClose').addEventListener('click', closeEx);
+$('exSheet').addEventListener('click', e => { if(e.target === $('exSheet')) closeEx() });
+document.addEventListener('keydown', e => { if(e.key === 'Escape' && !$('exSheet').hidden) closeEx() });
+let t2; function toast2(m){ const t = $('toast'); t.textContent = m; t.hidden = false; clearTimeout(t2); t2 = setTimeout(() => t.hidden = true, 2000) }
 
 /* sürükleyerek sıralama (dokunmatik ve fare) */
 let drag = null, justDragged = false;
