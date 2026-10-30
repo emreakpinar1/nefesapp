@@ -1,5 +1,5 @@
 // NefesApp hesap ve eşitleme (Firebase Auth + Firestore)
-import { firebaseConfig } from './firebase-config.js?v=6';
+import { firebaseConfig } from './firebase-config.js?v=7';
 
 const $ = id => document.getElementById(id);
 const panel = $('accPanel');
@@ -101,6 +101,7 @@ async function init(){
   function renderUser(u){
     $('accOut').hidden = !!u; $('accIn').hidden = !u;
     document.dispatchEvent(new CustomEvent('nefes:user', { detail: { signedIn: !!u } }));
+    const al = $('adminLink'); if(al) al.hidden = !(u && u.email === 'emreakpinar46@gmail.com');
     const hello = $('topHello'), logo = $('topLogo');
     if(!u){
       $('topName').textContent = 'Misafir'; setStatus('');

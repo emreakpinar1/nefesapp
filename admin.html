@@ -6,6 +6,7 @@
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#161813">
 <title>NefesApp Yönetim</title>
+<script src="defaults.js?v=7"></script>
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,18 +14,14 @@
 <style>
 /* Layout: geniş ekranda iki sütunlu kart ızgarası, telefonda tek sütun; üstte sekmeler */
 :root{
-  --bg:#EEF6DC; --surface:#FFFFFF; --ink:#151712; --muted:#6A7260;
-  --lime:#C7EA70; --lime-deep:#A9D04A; --card:#161813; --card-ink:#F3F8E6; --card-muted:#8E967F;
-  --line:#E1E8CF; --bar:#161813; --grid:#E6ECD8; --bad:#B4410C;
-  --shadow:0 10px 30px rgba(60,80,20,.10);
+  --bg:#DDE2D6; --surface:#EDF0E8; --ink:#283026; --muted:#687062;
+  --lime:#C5DBA0; --lime-deep:#84AE48; --card:#2B3328; --card-ink:#EEF2E8; --card-muted:#A9B3A2;
+  --line:#D3D9CB; --bar:#3F5C42; --grid:#D3D9CB; --bad:#A63D0C;
+  --shadow:0 1px 2px rgba(40,48,38,.05), 0 6px 18px rgba(40,48,38,.06);
   --f-display:"Lexend",ui-rounded,system-ui,sans-serif;
   --f-body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
   color-scheme:light;
 }
-@media (prefers-color-scheme: dark){:root{
-  --bg:#0F110C; --surface:#1A1D15; --ink:#EEF4DF; --muted:#9AA38B;
-  --card:#22261B; --card-ink:#F3F8E6; --card-muted:#959D85; --line:#2A3021; --bar:#C7EA70; --grid:#2A3021; --bad:#F59E6B;
-  --shadow:0 10px 30px rgba(0,0,0,.35); color-scheme:dark }}
 *{box-sizing:border-box}
 html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;
@@ -158,6 +155,32 @@ tr:last-child td{border-bottom:0}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--line)}
 .dot.on{background:var(--lime-deep)}
 
+.md-prev{line-height:1.6;font-size:14px}
+.md-prev h3{font-size:15px;margin:14px 0 6px}
+.md-prev p{margin:0 0 10px}
+.md-prev ul{margin:0 0 10px;padding-left:20px}
+.md-prev li{margin-bottom:5px}
+.md-prev .warn{background:#EFE1CF;color:#5A3A12;border-radius:14px;padding:10px 12px;margin:12px 0}
+.md-prev .src{font-size:12px;color:var(--muted)}
+.md-prev a{color:inherit}
+.fmt-help{font-size:12px;color:var(--muted);background:var(--bg);border-radius:12px;padding:8px 12px;line-height:1.6}
+.fmt-help code{font-family:ui-monospace,Menlo,monospace;font-size:12px;background:var(--surface);padding:1px 5px;border-radius:5px}
+.field textarea.tall{min-height:260px;font-size:14px;line-height:1.55}
+.colors{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:10px}
+.color-field{display:flex;align-items:center;gap:12px;background:var(--bg);border-radius:16px;padding:10px 12px}
+.color-field input[type=color]{width:44px;height:44px;border:0;padding:0;background:none;border-radius:12px;cursor:pointer}
+.color-field b{display:block;font-family:var(--f-display);font-weight:500}
+.color-field small{color:var(--muted);font-family:ui-monospace,Menlo,monospace}
+.look-prev{border-radius:24px;padding:18px;color:#EEF4E6;display:flex;align-items:center;gap:16px}
+.look-prev .lp-blob{width:84px;height:84px;border-radius:50%;background:radial-gradient(circle at 38% 32%,#EEF6DF,#C6E39A 55%,#9CC566);display:grid;place-items:center;color:#1F2B17;font-family:var(--f-display);font-weight:600;font-size:26px;flex:none}
+.look-prev b{font-family:var(--f-display);font-weight:500;font-size:18px;display:block}
+.look-prev small{opacity:.75}
+.look-btn{margin-top:14px;display:inline-flex;padding:12px 20px;border-radius:999px;color:#16181A;font-family:var(--f-display);font-weight:600}
+.notif-prev{display:flex;gap:12px;align-items:flex-start;background:var(--bg);border-radius:18px;padding:14px}
+.notif-prev .ni{width:40px;height:40px;border-radius:10px;background:#2B3328;display:grid;place-items:center;flex:none}
+.notif-prev .ni svg{width:22px;height:22px}
+.notif-prev b{display:block;font-family:var(--f-display);font-weight:500}
+.notif-prev span{font-size:14px;color:var(--muted)}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(24px + env(safe-area-inset-bottom,0px));background:var(--card);color:var(--card-ink);padding:10px 18px;border-radius:999px;font-size:14px;z-index:9;max-width:calc(100% - 32px);text-align:center}
 @media (prefers-reduced-motion: reduce){.toggle i::after{transition:none}}
 </style>
@@ -191,6 +214,9 @@ tr:last-child td{border-bottom:0}
       <a href="#egzersizler">Hazır egzersizler</a>
       <a href="#duyuru">Duyuru</a>
       <a href="#varsayilan">Varsayılan ayarlar</a>
+      <a href="#icerik">İçerik</a>
+      <a href="#gorunum">Görünüm</a>
+      <a href="#bildirim">Bildirim ve hedef</a>
     </nav>
 
     <!-- ÖZET -->
@@ -293,12 +319,94 @@ tr:last-child td{border-bottom:0}
       <div class="row-actions"><button class="btn primary" id="dSave">Kaydet</button></div>
       <p class="msg" id="dMsg"></p>
     </section>
+
+    <!-- İÇERİK -->
+    <section data-view="icerik" class="grid2">
+      <div class="panel">
+        <div class="panel-h"><h2>İçerik</h2><span class="note">uygulamadaki metinler</span></div>
+        <div class="stack">
+          <div class="sub">Ana sayfa</div>
+          <div class="field"><label for="cHomeTitle">Liste başlığı</label><input id="cHomeTitle" maxlength="40"></div>
+          <div class="field"><label for="cHomeHint">Liste açıklaması</label><textarea id="cHomeHint" maxlength="220"></textarea></div>
+          <div class="sub">"Ne işe yarar?" sayfası</div>
+          <div class="field"><label for="cBTitle">Sayfa başlığı</label><input id="cBTitle" maxlength="60"></div>
+          <div class="field"><label for="cBenefits">Metin</label><textarea id="cBenefits" class="tall" maxlength="6000"></textarea></div>
+          <div class="fmt-help">Boş satır yeni paragraf · <code>## Başlık</code> ara başlık · <code>- madde</code> liste · <code>**kalın**</code> · <code>[metin](https://adres)</code> bağlantı</div>
+          <div class="field"><label for="cWarning">Güvenlik notu (turuncu kutu)</label><textarea id="cWarning" maxlength="1200"></textarea></div>
+          <div class="field"><label for="cSources">Kaynaklar</label><textarea id="cSources" maxlength="1200"></textarea></div>
+        </div>
+        <div class="row-actions">
+          <button class="btn primary" id="cSave">Kaydet ve yayınla</button>
+          <button class="btn ghost" id="cReset">Varsayılan metinlere dön</button>
+        </div>
+        <p class="msg" id="cMsg"></p>
+      </div>
+      <div class="panel">
+        <div class="panel-h"><h2>Önizleme</h2><span class="note">uygulamada böyle görünür</span></div>
+        <div class="md-prev"><h3 id="cPrevT" style="font-size:18px;margin-top:0"></h3><div id="cPrev"></div></div>
+      </div>
+    </section>
+
+    <!-- GÖRÜNÜM -->
+    <section data-view="gorunum" class="grid2">
+      <div class="panel">
+        <div class="panel-h"><h2>Görünüm</h2><span class="note">renkler ve tema</span></div>
+        <div class="stack">
+          <div class="colors">
+            <label class="color-field"><input type="color" id="lBreath"><span><b>Nefes kartı</b><small id="lBreathHex"></small></span></label>
+            <label class="color-field"><input type="color" id="lAccent"><span><b>Vurgu rengi</b><small id="lAccentHex"></small></span></label>
+          </div>
+          <div class="sub">Varsayılan tema</div>
+          <div class="seg" id="lTheme">
+            <button data-t="light" aria-pressed="true">Açık</button>
+            <button data-t="dark" aria-pressed="false">Koyu</button>
+            <button data-t="system" aria-pressed="false">Sistem</button>
+          </div>
+          <p class="hint">Kullanıcı Profil'den kendi temasını seçtiyse onunki geçerli olur.</p>
+        </div>
+        <div class="row-actions">
+          <button class="btn primary" id="lSave">Kaydet ve yayınla</button>
+          <button class="btn ghost" id="lReset">Varsayılan renklere dön</button>
+        </div>
+        <p class="msg" id="lMsg"></p>
+      </div>
+      <div class="panel">
+        <div class="panel-h"><h2>Önizleme</h2></div>
+        <div class="look-prev" id="lPrev"><div class="lp-blob">4</div><div><b>Rahatla</b><small>Uykuya geçiş ve derin gevşeme</small></div></div>
+        <span class="look-btn" id="lPrevBtn">Başlat</span>
+      </div>
+    </section>
+
+    <!-- BİLDİRİM VE HEDEF -->
+    <section data-view="bildirim" class="grid2">
+      <div class="panel">
+        <div class="panel-h"><h2>Bildirim ve hedef</h2></div>
+        <div class="stack">
+          <div class="sub">Hatırlatma bildirimi</div>
+          <div class="field"><label for="nTitle">Başlık</label><input id="nTitle" maxlength="50"></div>
+          <div class="field"><label for="nBody">Metin</label><input id="nBody" maxlength="140"></div>
+          <div class="fmt-help">Metinde kullanabileceklerin: <code>{duzen}</code> nefes düzeni (4 · 7 · 8) · <code>{tur}</code> tur sayısı · <code>{sure}</code> toplam süre</div>
+          <div class="sub">Günlük hedef</div>
+          <div class="field" style="max-width:220px"><label for="gDaily">Dakika / gün</label><input id="gDaily" type="number" min="1" max="120"></div>
+          <p class="hint">İstatistik ekranındaki hedef çizgisi, haftalık hedef ve bugünkü ilerleme noktaları buna göre hesaplanır.</p>
+        </div>
+        <div class="row-actions">
+          <button class="btn primary" id="nSave">Kaydet ve yayınla</button>
+          <button class="btn ghost" id="nReset">Varsayılana dön</button>
+        </div>
+        <p class="msg" id="nMsg"></p>
+      </div>
+      <div class="panel">
+        <div class="panel-h"><h2>Önizleme</h2><span class="note">telefondaki bildirim</span></div>
+        <div class="notif-prev"><div class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="#C6E39A" stroke-width="2" stroke-linecap="round"><path d="M3 9h11a3 3 0 1 0-3-3"/><path d="M3 14h15a3 3 0 1 1-3 3"/><path d="M3 19h6"/></svg></div><div><b id="nPrevT"></b><span id="nPrevB"></span></div></div>
+      </div>
+    </section>
   </div>
 </div>
 <div class="toast" id="toast" hidden></div>
 
 <script type="module">
-import { firebaseConfig } from './firebase-config.js?v=6';
+import { firebaseConfig } from './firebase-config.js?v=7';
 
 const ADMIN_EMAIL = 'emreakpinar46@gmail.com';
 const BUILTIN = [
@@ -332,7 +440,7 @@ function ago(d){
 const fmtDay = k => { const [y,m,d] = k.split('-').map(Number); return `${d} ${MONTHS[m-1]}` };
 
 /* ---------- views (hash) ---------- */
-const VIEWS = ['ozet','kullanicilar','egzersizler','duyuru','varsayilan'];
+const VIEWS = ['ozet','kullanicilar','egzersizler','duyuru','varsayilan','icerik','gorunum','bildirim'];
 function route(){
   const v = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'ozet';
   document.querySelectorAll('[data-view]').forEach(s => s.hidden = s.dataset.view !== v);
@@ -505,8 +613,8 @@ function renderPresets(){
     <div class="preset" data-i="${i}">
       <div class="field f-name"><label for="pn${i}">Ad</label><input id="pn${i}" data-k="name" maxlength="18" value="${esc(p.name)}"></div>
       ${NUMS.map(([k, lab, min]) => `<div class="field"><label for="p${k}${i}">${lab}</label><input id="p${k}${i}" data-k="${k}" type="number" min="${min}" max="60" value="${p[k]}"></div>`).join('')}
-      <div class="field f-wide"><label for="ps${i}">Kısa açıklama</label><input id="ps${i}" data-k="short" maxlength="70" value="${esc(p.short || '')}" placeholder="Boş bırakırsan varsayılan metin gösterilir"></div>
-      <div class="field f-wide"><label for="pd${i}">Ne işe yarar?</label><textarea id="pd${i}" data-k="desc" maxlength="600" placeholder="Boş bırakırsan varsayılan metin gösterilir">${esc(p.desc || '')}</textarea></div>
+      <div class="field f-wide"><label for="ps${i}">Kısa açıklama</label><input id="ps${i}" data-k="short" maxlength="70" value="${esc(p.short || '')}" placeholder="${esc((ND.info[p.id] || {}).short || 'Boş bırakırsan nefes düzenine göre açıklama gösterilir')}"></div>
+      <div class="field f-wide"><label for="pd${i}">Ne işe yarar?</label><textarea id="pd${i}" data-k="desc" maxlength="600" placeholder="${esc((ND.info[p.id] || {}).desc || 'Boş bırakırsan nefes düzenine göre açıklama gösterilir')}">${esc(p.desc || '')}</textarea></div>
       <div class="p-tools">
         <button class="icon-btn" data-act="up" aria-label="Yukarı taşı" ${i === 0 ? 'disabled' : ''}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 15 6-6 6 6"/></svg></button>
         <button class="icon-btn" data-act="down" aria-label="Aşağı taşı" ${i === draft.length-1 ? 'disabled' : ''}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
@@ -580,7 +688,74 @@ $('dSave').addEventListener('click', async () => {
   catch(e){ $('dMsg').textContent = saveErr(e) }
 });
 
+/* ---------- içerik, görünüm, bildirim ---------- */
+const ND = window.NEFES_DEFAULTS;
+const vals = ids => Object.fromEntries(ids.map(([k, id]) => [k, $(id).value.trim()]));
+const C_IDS = [['homeTitle','cHomeTitle'],['homeHint','cHomeHint'],['benefitsTitle','cBTitle'],['benefits','cBenefits'],['warning','cWarning'],['sources','cSources']];
+function cPreview(){
+  const c = nefesMerge(ND.content, vals(C_IDS));
+  $('cPrevT').textContent = c.benefitsTitle;
+  $('cPrev').innerHTML = nefesMd(c.benefits) + (c.warning ? `<div class="warn">${nefesMd(c.warning)}</div>` : '') + (c.sources ? `<div class="src">${nefesMd(c.sources)}</div>` : '');
+}
+C_IDS.forEach(([, id]) => $(id).addEventListener('input', cPreview));
+$('cSave').addEventListener('click', async () => {
+  $('cMsg').textContent = '';
+  try{ await FS.setDoc(cfgRef, { content: vals(C_IDS), updatedAt: FS.serverTimestamp() }, { merge: true }); toast('İçerik yayınlandı') }
+  catch(e){ $('cMsg').textContent = saveErr(e) }
+});
+$('cReset').addEventListener('click', async () => {
+  C_IDS.forEach(([k, id]) => $(id).value = ND.content[k]); cPreview();
+  try{ await FS.setDoc(cfgRef, { content: FS.deleteField(), updatedAt: FS.serverTimestamp() }, { merge: true }); toast('Varsayılan metinlere dönüldü') }
+  catch(e){ $('cMsg').textContent = saveErr(e) }
+});
+
+let lTheme = 'light';
+const shade = (hex, f) => { const n = parseInt(hex.slice(1), 16); const ch = [(n>>16)&255,(n>>8)&255,n&255].map(c => Math.round(f < 0 ? c*(1+f) : c+(255-c)*f)); return '#' + ch.map(c => c.toString(16).padStart(2,'0')).join('') };
+function lPreview(){
+  const b = $('lBreath').value, ac = $('lAccent').value;
+  $('lBreathHex').textContent = b.toUpperCase(); $('lAccentHex').textContent = ac.toUpperCase();
+  $('lPrev').style.background = `linear-gradient(160deg, ${b} 0%, ${shade(b, -.28)} 100%)`;
+  $('lPrevBtn').style.background = ac;
+  document.querySelectorAll('#lTheme button').forEach(x => x.setAttribute('aria-pressed', x.dataset.t === lTheme));
+}
+['lBreath','lAccent'].forEach(id => $(id).addEventListener('input', lPreview));
+$('lTheme').addEventListener('click', e => { const b = e.target.closest('button'); if(b){ lTheme = b.dataset.t; lPreview() } });
+$('lSave').addEventListener('click', async () => {
+  $('lMsg').textContent = '';
+  try{ await FS.setDoc(cfgRef, { look: { breath: $('lBreath').value, accent: $('lAccent').value, theme: lTheme }, updatedAt: FS.serverTimestamp() }, { merge: true }); toast('Görünüm yayınlandı') }
+  catch(e){ $('lMsg').textContent = saveErr(e) }
+});
+$('lReset').addEventListener('click', async () => {
+  $('lBreath').value = ND.look.breath; $('lAccent').value = ND.look.accent; lTheme = ND.look.theme; lPreview();
+  try{ await FS.setDoc(cfgRef, { look: FS.deleteField(), updatedAt: FS.serverTimestamp() }, { merge: true }); toast('Varsayılan renklere dönüldü') }
+  catch(e){ $('lMsg').textContent = saveErr(e) }
+});
+
+function nPreview(){
+  const fill = t => String(t || '').replace(/\{duzen\}/g, '4 · 7 · 8').replace(/\{tur\}/g, '8').replace(/\{sure\}/g, '2:32');
+  $('nPrevT').textContent = fill($('nTitle').value || ND.notify.title);
+  $('nPrevB').textContent = fill($('nBody').value || ND.notify.body);
+}
+['nTitle','nBody'].forEach(id => $(id).addEventListener('input', nPreview));
+$('nSave').addEventListener('click', async () => {
+  $('nMsg').textContent = '';
+  const daily = Math.max(1, Math.min(120, parseInt($('gDaily').value, 10) || 10));
+  try{ await FS.setDoc(cfgRef, { notify: { title: $('nTitle').value.trim(), body: $('nBody').value.trim() }, goal: { dailyMin: daily }, updatedAt: FS.serverTimestamp() }, { merge: true }); toast('Bildirim ve hedef yayınlandı') }
+  catch(e){ $('nMsg').textContent = saveErr(e) }
+});
+$('nReset').addEventListener('click', async () => {
+  $('nTitle').value = ND.notify.title; $('nBody').value = ND.notify.body; $('gDaily').value = ND.goal.dailyMin; nPreview();
+  try{ await FS.setDoc(cfgRef, { notify: FS.deleteField(), goal: FS.deleteField(), updatedAt: FS.serverTimestamp() }, { merge: true }); toast('Varsayılana dönüldü') }
+  catch(e){ $('nMsg').textContent = saveErr(e) }
+});
+
 function fillForms(){
+  const ct = nefesMerge(ND.content, conf.content);
+  C_IDS.forEach(([k, id]) => $(id).value = ct[k] || ''); cPreview();
+  const lk = nefesMerge(ND.look, conf.look);
+  $('lBreath').value = lk.breath; $('lAccent').value = lk.accent; lTheme = lk.theme; lPreview();
+  const nt = nefesMerge(ND.notify, conf.notify);
+  $('nTitle').value = nt.title; $('nBody').value = nt.body; $('gDaily').value = nefesMerge(ND.goal, conf.goal).dailyMin; nPreview();
   draft = (Array.isArray(conf.presets) && conf.presets.length ? conf.presets : BUILTIN).map(p => ({ ...p }));
   renderPresets();
   const a = conf.announcement || {};

@@ -14,6 +14,7 @@
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>NefesApp</title>
+<script src="defaults.js?v=7"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Figtree:wght@400;500;600;700&display=swap">
@@ -444,12 +445,12 @@ body.running .nav .center span.c::after{content:"";position:absolute;inset:-6px;
 
     <div class="col">
       <div id="homeSlot"></div>
-      <div class="sec-h"><h2>Egzersizler</h2><a href="#nefes">Süreleri ayarla</a></div>
-      <p class="hint" style="margin:-4px 2px 2px">Egzersize dokunarak süresini ayarla; sağdaki daireyle hemen seç. Sırayı değiştirmek için soldaki tutamaktan sürükle.</p>
+      <div class="sec-h"><h2 id="homeTitle">Egzersizler</h2><a href="#nefes">Süreleri ayarla</a></div>
+      <p class="hint" id="homeHint" style="margin:-4px 2px 2px"></p>
       <div class="ex-list" id="exList"></div>
       <button class="card learn" data-open-info>
         <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.4-9.3-9A5.3 5.3 0 0 1 12 6.5 5.3 5.3 0 0 1 21.3 12C19 16.6 12 21 12 21z"/></svg></span>
-        <span class="txt"><b>Nefes egzersizleri ne işe yarar?</b><small>Sağlığa faydaları ve dikkat edilmesi gerekenler</small></span>
+        <span class="txt"><b id="learnTitle">Nefes egzersizleri ne işe yarar?</b><small>Sağlığa faydaları ve dikkat edilmesi gerekenler</small></span>
         <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg>
       </button>
       <a class="card next-card" href="#hatirlatici">
@@ -520,9 +521,9 @@ body.running .nav .center span.c::after{content:"";position:absolute;inset:-6px;
             <button id="sNext" aria-label="Sonraki hafta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
           </div>
         </div>
-        <div class="big"><b id="sTotal">0</b><span>dk</span><span class="tgt">Hedef: <strong>70 dk</strong></span></div>
+        <div class="big"><b id="sTotal">0</b><span>dk</span><span class="tgt">Hedef: <strong id="weekGoal">70 dk</strong></span></div>
         <div class="bars" id="bars" role="img" aria-label="Haftalık egzersiz dakikaları"></div>
-        <div class="legend"><span><i style="background:var(--hero)"></i>Egzersiz süresi</span><span><i style="background:repeating-linear-gradient(135deg,var(--hatch) 0 2px,transparent 2px 4px)"></i>Günlük hedef (10 dk)</span></div>
+        <div class="legend"><span><i style="background:var(--hero)"></i>Egzersiz süresi</span><span><i style="background:repeating-linear-gradient(135deg,var(--hatch) 0 2px,transparent 2px 4px)"></i><span id="legendGoal">Günlük hedef (10 dk)</span></span></div>
       </section>
     </div>
     <div class="col">
@@ -530,7 +531,7 @@ body.running .nav .center span.c::after{content:"";position:absolute;inset:-6px;
         <div class="tile">
           <div class="t-h"><span class="ico warm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg></span>Bugün</div>
           <div class="bigv" id="todayMin">0<small> dk</small></div>
-          <p>Günlük hedef 10 dakika</p>
+          <p id="goalTxt">Günlük hedef 10 dakika</p>
           <div class="dots" id="dots"></div>
         </div>
         <div class="tile">
@@ -636,6 +637,7 @@ body.running .nav .center span.c::after{content:"";position:absolute;inset:-6px;
             <div class="lab"><b id="accName"></b><small id="accMail"></small></div>
             <button class="small-btn" id="accOutBtn" type="button">Çıkış yap</button>
           </div>
+          <a class="link-btn" id="adminLink" href="admin.html" hidden style="margin-top:14px;text-decoration:none">Yönetim paneline git <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></a>
         </div>
         <p class="hint acc-msg" id="accMsg" role="status"></p>
       </section>
@@ -712,25 +714,7 @@ body.running .nav .center span.c::after{content:"";position:absolute;inset:-6px;
 <div class="sheet" id="infoSheet" hidden role="dialog" aria-modal="true" aria-labelledby="sheetT">
   <div class="sheet-card">
     <div class="sheet-h"><h2 id="sheetT">Nefes egzersizleri ne işe yarar?</h2><button class="round" id="sheetClose" aria-label="Kapat" style="box-shadow:none;background:var(--soft)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
-    <div class="sheet-body">
-      <p>Nefes, vücudun bilinçli olarak kontrol edebildiğimiz birkaç otomatik işlevinden biri. Nefesi yavaşlatmak ve özellikle nefes vermeyi uzatmak, vücudun dinlenme ve toparlanma sistemini (parasempatik sinir sistemi) öne çıkarır. Bunun sonucunda kalp atışı yavaşlar, kaslar gevşer ve zihin sakinleşir.</p>
-      <h3>Araştırmalar ne söylüyor?</h3>
-      <ul>
-        <li><b>Stres ve kaygı:</b> Stanford Üniversitesi'nin 2023 çalışmasında, bir ay boyunca günde 5 dakika nefes egzersizi yapanların ruh hali iyileşti ve kaygı düzeyleri düştü. Nefes vermenin uzun olduğu düzen en güçlü etkiyi gösterdi.</li>
-        <li><b>Kalp ve dolaşım:</b> Dakikada yaklaşık 6 nefese inen yavaş nefes, çok sayıda çalışmanın ortak sonucuna göre kalp hızı değişkenliğini artırıyor. Bu değer, vücudun strese uyum sağlama yeteneğinin bir göstergesi.</li>
-        <li><b>Uyku:</b> Yatmadan önce yapılan yavaş nefes, zihni sakinleştirerek uykuya geçişi kolaylaştırabilir.</li>
-        <li><b>Odak:</b> Eşit ritimli nefes (kutu nefesi gibi) dikkati toplamaya ve baskı altında sakin kalmaya yardımcı olur.</li>
-      </ul>
-      <h3>Nasıl yapmalı?</h3>
-      <ul>
-        <li>Rahat bir pozisyonda otur ya da uzan, omuzlarını gevşet.</li>
-        <li>Mümkünse burundan al, nefes verirken dudaklarını hafifçe aralayabilirsin.</li>
-        <li>Göğüs yerine karnını şişirmeye çalış.</li>
-        <li>Günde birkaç dakika ile başla. Düzenli yapmak, uzun yapmaktan daha önemli.</li>
-      </ul>
-      <div class="warn"><b>Dikkat:</b> Baş dönmesi, karıncalanma ya da nefes darlığı hissedersen egzersizi bırak ve normal nefesine dön. Hamileysen, kalp veya akciğer hastalığın, yüksek tansiyonun ya da panik bozukluğun varsa nefes tutma sürelerini kısa tut (ya da 0 yap) ve doktoruna danış. Bu uygulama bilgilendirme amaçlıdır, tıbbi tedavinin yerine geçmez.</div>
-      <p class="src">Kaynaklar: Balban ve ark., <i>Cell Reports Medicine</i> (2023), <a href="https://med.stanford.edu/news/insights/2023/02/cyclic-sighing-can-help-breathe-away-anxiety.html" target="_blank" rel="noopener">Stanford Medicine</a>; Laborde ve ark., yavaş nefes ve kalp hızı değişkenliği üzerine meta-analiz (2022); <a href="https://link.springer.com/article/10.1007/s12671-023-02294-2" target="_blank" rel="noopener">Mindfulness (2023)</a>.</p>
-    </div>
+    <div class="sheet-body" id="sheetBody"></div>
   </div>
 </div>
 <div class="toast" id="toast" hidden></div>
@@ -753,8 +737,8 @@ body.running .nav .center span.c::after{content:"";position:absolute;inset:-6px;
 <script>
 {{UI}}
 </script>
-<script type="module" src="native.js?v=6"></script>
-<script type="module" src="sync.js?v=6"></script>
+<script type="module" src="native.js?v=7"></script>
+<script type="module" src="sync.js?v=7"></script>
 <script>if('serviceWorker' in navigator) addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));</script>
 </body>
 </html>

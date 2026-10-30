@@ -4,7 +4,10 @@ const $ = id => document.getElementById(id);
 const N = window.__nefes;
 const DAY_SHORT = ['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'];
 const MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
-const GOAL_MIN = 10;
+let GOAL_MIN = 10;
+const DEF = window.NEFES_DEFAULTS;
+let REMOTE = {};
+try{ REMOTE = JSON.parse(localStorage.getItem('nefes-remote') || '{}') || {} }catch(e){}
 const iso = d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const hist = () => (N.getState().hist) || {};
@@ -54,18 +57,7 @@ function greet(){
 }
 
 /* ---------- egzersiz açıklamaları ---------- */
-const INFO = {
-  '478': { short: 'Uykuya geçiş ve derin gevşeme',
-    desc: 'Dr. Andrew Weil\'in yaygınlaştırdığı 4-7-8 tekniği. Uzun nefes tutma ve ondan da uzun nefes verme, kalp atışını yavaşlatıp vücudu dinlenme moduna geçirir. Yatmadan önce ya da gergin anlarda kullanılır. Bilimsel kanıtlar küçük çalışmalara dayanıyor ama sonuçlar kalp hızı ve kaygıda azalma yönünde.' },
-  'box': { short: 'Odaklanma ve baskı altında sakin kalma',
-    desc: 'Kutu nefesi: al, tut, ver, bekle; hepsi eşit sürede. Sporcular, pilotlar ve askerler stresli anlarda dikkatini toplamak için kullanır. Eşit ritim zihni sabitler, dağınık düşünceleri toparlamaya yardım eder.' },
-  'calm': { short: 'Gün içinde birkaç dakikalık hızlı rahatlama',
-    desc: 'Nefes vermenin almaktan uzun olduğu kısa bir düzen. Uzun nefes verme, vücudun sakinleşme tepkisini en güçlü tetikleyen unsurlardan biri. Toplantı öncesi ya da yoğun bir anda birkaç tur yeterli.' },
-  'bal': { short: 'Kalp ritmini dengeleyen rezonans nefesi',
-    desc: 'Beş saniye al, beş saniye ver: dakikada 6 nefes. Araştırmalarda en çok çalışılan ritim bu. Düzenli yapıldığında kalp hızı değişkenliğini (vücudun strese uyum yeteneğinin göstergesi) artırdığı, bazı çalışmalarda tansiyona olumlu etki ettiği görülmüş. Nefes tutma olmadığı için herkes için uygun.' },
-  'deep': { short: 'Meditasyona hazırlık, uzun ve derin nefes',
-    desc: 'Yavaş, derin ve uzun bir döngü. Nefes kapasitesini zorlamadan genişletir, meditasyon ya da esneme öncesinde zihni yavaşlatmak için iyi bir başlangıç. Tutma süreleri zor gelirse kısaltabilirsin.' },
-};
+const INFO = DEF.info;
 function infoFor(p){
   if(p && (p.short || p.desc)) return { short: p.short || '', desc: p.desc || (INFO[p.id] || {}).desc || '' };
   if(p && INFO[p.id]) return INFO[p.id];
@@ -299,6 +291,7 @@ function applyTheme(p){
   document.documentElement.dataset.pref = p;
   const tc = document.getElementById('themeColor'); if(tc) tc.content = dark ? '#0F110E' : '#F1F3EE';
   document.querySelectorAll('#themeSeg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.t === p));
+  if(typeof applyLook === 'function') applyLook();
 }
 $('themeSeg').addEventListener('click', e => {
   const b = e.target.closest('button'); if(!b) return;
@@ -307,6 +300,42 @@ $('themeSeg').addEventListener('click', e => {
 });
 mq.addEventListener('change', () => { if(document.documentElement.dataset.pref === 'system') applyTheme('system') });
 applyTheme(document.documentElement.dataset.pref || 'light');
+
+/* ---------- panelden gelen içerik ve görünüm ---------- */
+function shade(hex, f){
+  const n = parseInt(String(hex).replace('#',''), 16); if(isNaN(n)) return hex;
+  const ch = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map(c => Math.round(f < 0 ? c * (1 + f) : c + (255 - c) * f));
+  return '#' + ch.map(c => c.toString(16).padStart(2, '0')).join('');
+}
+function applyLook(){
+  const look = nefesMerge(DEF.look, REMOTE.look), r = document.documentElement, dark = r.dataset.theme === 'dark';
+  if(REMOTE.look && (REMOTE.look.breath || REMOTE.look.accent)){
+    const b = dark ? shade(look.breath, -.35) : look.breath;
+    r.style.setProperty('--breath-bg', `linear-gradient(160deg, ${b} 0%, ${shade(b, -.28)} 100%)`);
+    r.style.setProperty('--green', dark ? shade(look.accent, .2) : look.accent);
+    r.style.setProperty('--green-strong', dark ? shade(look.accent, .35) : shade(look.accent, -.32));
+  }else{ ['--breath-bg','--green','--green-strong'].forEach(v => r.style.removeProperty(v)) }
+}
+function applyRemote(c){
+  REMOTE = c || {};
+  const ct = nefesMerge(DEF.content, REMOTE.content);
+  $('homeTitle').textContent = ct.homeTitle;
+  $('homeHint').textContent = ct.homeHint;
+  $('learnTitle').textContent = ct.benefitsTitle;
+  $('sheetT').textContent = ct.benefitsTitle;
+  $('sheetBody').innerHTML = nefesMd(ct.benefits) + (ct.warning ? `<div class="warn">${nefesMd(ct.warning)}</div>` : '') + (ct.sources ? `<div class="src">${nefesMd(ct.sources)}</div>` : '');
+  GOAL_MIN = Math.max(1, Math.min(120, +(nefesMerge(DEF.goal, REMOTE.goal).dailyMin) || 10));
+  window.__nefesGoal = GOAL_MIN;
+  $('goalTxt').textContent = `Günlük hedef ${GOAL_MIN} dakika`;
+  $('weekGoal').textContent = `${GOAL_MIN * 7} dk`;
+  $('legendGoal').textContent = `Günlük hedef (${GOAL_MIN} dk)`;
+  let userTheme = null; try{ userTheme = localStorage.getItem('nefes-theme') }catch(e){}
+  if(!userTheme){ const t = nefesMerge(DEF.look, REMOTE.look).theme; applyTheme(['light','dark','system'].includes(t) ? t : 'light') }
+  applyLook();
+  refresh(); renderSessName();
+}
+document.addEventListener('nefes:remote', e => applyRemote(e.detail));
+applyRemote(REMOTE);
 
 route();
 })();

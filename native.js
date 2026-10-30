@@ -30,7 +30,7 @@ async function init(){
     queue = queue.then(() => doSync(r)).catch(e => { console.warn(e); return 'error' });
     return queue;
   }
-  async function doSync({ on, start, end, int, days, mode, body }){
+  async function doSync({ on, start, end, int, days, mode, title, body }){
     const pend = await LN.getPending();
     if(pend.notifications && pend.notifications.length) await LN.cancel({ notifications: pend.notifications.map(n => ({ id: n.id })) });
     if(!on) return 'off';
@@ -43,7 +43,7 @@ async function init(){
     for(const d of (days || [])){
       for(let m = s; m <= e && list.length < 400; m += step){
         list.push({
-          id: id++, title: 'Nefes zamanı', body,
+          id: id++, title: title || 'Nefes zamanı', body,
           channelId: (CH[mode] || CH.sound).id,
           // Capacitor'da haftanın günleri 1 = Pazar ... 7 = Cumartesi
           schedule: { on: { weekday: d + 1, hour: Math.floor(m / 60), minute: m % 60 }, allowWhileIdle: true },
