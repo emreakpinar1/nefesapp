@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#161813">
 <title>Ferah Yönetim</title>
-<script src="defaults.js?v=16"></script>
+<script src="defaults.js?v=17"></script>
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -411,7 +411,7 @@ tr:last-child td{border-bottom:0}
           <div class="field" style="max-width:220px"><label for="bTrial">Ücretsiz deneme (gün)</label><input id="bTrial" type="number" min="0" max="90"></div>
           <div id="bCur"></div>
           <div class="field"><label for="bRcKey">RevenueCat Android API anahtarı (goog_…)</label><input id="bRcKey" type="text" autocomplete="off" spellcheck="false" placeholder="goog_..."></div>
-          <div class="field" style="max-width:260px"><label for="bRcEnt">RevenueCat yetki (entitlement) kimliği</label><input id="bRcEnt" type="text" autocomplete="off" spellcheck="false" placeholder="premium"></div>
+          <div class="field" style="max-width:260px"><label for="bRcEnt">RevenueCat yetki (entitlement) kimliği</label><input id="bRcEnt" type="text" autocomplete="off" spellcheck="false" placeholder="ferah_pro"></div>
           <p class="hint">Android uygulamasında kullanıcı, Google Play'de tanımlı fiyatı görür ve öder; buradaki fiyatlar web'de ve uygulama mağazaya bağlanamazsa gösterilir, Play'dekilerle aynı tut. Kullanıcılara elle premium vermek için Kullanıcılar sekmesindeki Abonelik sütununu kullan.</p>
         </div>
         <div class="row-actions"><button class="btn primary" id="bSave">Kaydet ve yayınla</button><button class="btn ghost" id="bReset">Varsayılan fiyatlara dön</button></div>
@@ -881,13 +881,13 @@ const readBill = () => {
   const out = { trialDays: Math.max(0, Math.min(90, parseInt($('bTrial').value, 10) || 0)) };
   CURS.forEach(([c]) => out[c] = Object.fromEntries(PLANS.map(pl => [pl, n(`b_${c}_${pl}`)])));
   out.rcAndroid = $('bRcKey').value.trim();
-  out.rcEntitlement = $('bRcEnt').value.trim() || 'premium';
+  out.rcEntitlement = $('bRcEnt').value.trim() || ND.billing.rcEntitlement || 'premium';
   return out;
 };
 function fillBill(b){
   $('bTrial').value = b.trialDays;
   CURS.forEach(([c]) => PLANS.forEach(pl => $(`b_${c}_${pl}`).value = (b[c] || {})[pl] ?? ''));
-  $('bRcKey').value = b.rcAndroid || ''; $('bRcEnt').value = b.rcEntitlement || 'premium';
+  $('bRcKey').value = b.rcAndroid || ND.billing.rcAndroid || ''; $('bRcEnt').value = b.rcEntitlement || ND.billing.rcEntitlement || 'premium';
   bCheck();
 }
 function bCheck(){

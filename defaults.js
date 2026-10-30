@@ -217,6 +217,9 @@ window.NEFES_DEFAULTS.notify_en = { title: 'Time to breathe', body: '{duzen} pat
 /* ---------- Abonelik ---------- */
 window.NEFES_DEFAULTS.billing = {
   trialDays: 30,
+  // RevenueCat (Google Play satın alma). Açık SDK anahtarıdır; uygulamaya gömülmek üzere tasarlanmıştır.
+  rcAndroid: 'goog_lfqtheWuxQeexDdIhWIBgeObRLU',
+  rcEntitlement: 'ferah_pro',
   // Google Play'deki fiyatlarla aynı (vergi dahil, Play'in yuvarlamasıyla)
   TRY: { monthly: 68.99, yearly: 499.99, lifetime: 4989.99 },
   USD: { monthly: 3.99, yearly: 28.99, lifetime: 149.99 },

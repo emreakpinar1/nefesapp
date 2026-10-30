@@ -63,7 +63,10 @@ async function init(){
   // Anahtar ve yetki kimliği yönetim panelinden gelir: config/app.billing.rcAndroid / rcEntitlement
   const RC = registerPlugin('Purchases');
   const remote = () => { try{ return JSON.parse(localStorage.getItem('nefes-remote') || '{}') || {} }catch(e){ return {} } };
-  const bcfg = () => remote().billing || {};
+  const bcfg = () => {
+    const d = (window.NEFES_DEFAULTS && window.NEFES_DEFAULTS.billing) || {}, r = remote().billing || {};
+    return { rcAndroid: r.rcAndroid || d.rcAndroid, rcEntitlement: r.rcEntitlement || d.rcEntitlement || 'premium' };
+  };
   let rcOn = false, rcBusy = null, rcUser = window.__nefesUid || null, pkgs = {};
   function applyCI(ci){
     const id = bcfg().rcEntitlement || 'premium';
