@@ -1,0 +1,660 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#F1F3EE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F110E" media="(prefers-color-scheme: dark)">
+<meta name="description" content="Ayarlanabilir nefes egzersizleri ve hatırlatıcı">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="NefesApp">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>NefesApp</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: telefonda tek sütun + alt sekme çubuğu; 960px üstünde solda dikey menü ve iki sütunlu içerik */
+:root{
+  --bg:#F1F3EE; --surface:#FFFFFF; --ink:#16181A; --muted:#878C83; --line:#ECEEE7;
+  --soft:#F5F7F1;                 /* kart içi alanlar, giriş kutuları */
+  --hero:#D9F1AE; --hero-ink:#1D2A0D;
+  --green:#8CC63F; --green-strong:#5F9A1F; --green-ink:#24380A; --green-soft:#E8F6D2;
+  --dark:#16181A; --dark-ink:#F3F6EE;
+  --hatch:#E4E8DE; --bad:#B4410C;
+  --shadow:0 1px 2px rgba(22,24,26,.04), 0 8px 24px rgba(22,24,26,.05);
+  --f-display:"Lexend",ui-rounded,"SF Pro Rounded",system-ui,sans-serif;
+  --f-body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --nav-h:76px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#0F110E; --surface:#1A1D18; --ink:#EEF2EA; --muted:#979D91; --line:#262A23; --soft:#22261F;
+  --hero:#2C3A1C; --hero-ink:#E6F5CF;
+  --green:#A6DA5C; --green-strong:#B9E77A; --green-ink:#E6F5CF; --green-soft:#2A3520;
+  --dark:#E9EEE3; --dark-ink:#16181A; --hatch:#2A2F26; --bad:#F59E6B;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+  color-scheme:dark }}
+
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;-webkit-tap-highlight-color:transparent;
+  padding-top:env(safe-area-inset-top,0px)}
+[hidden]{display:none!important}
+img{max-width:100%}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0}
+input,textarea{font:inherit;color:inherit}
+a{color:inherit}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(--green);outline-offset:2px;border-radius:12px}
+h1,h2,h3{font-family:var(--f-display);margin:0;font-weight:600;letter-spacing:-.01em;text-wrap:balance}
+.num{font-variant-numeric:tabular-nums}
+
+/* ---------- shell ---------- */
+.main{max-width:520px;margin:0 auto;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:14px calc(var(--nav-h) + 28px + env(safe-area-inset-bottom,0px))}
+.view{display:flex;flex-direction:column;gap:14px}
+.card{background:var(--surface);border-radius:24px;padding:18px;box-shadow:var(--shadow);min-width:0}
+.card-h{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.card-h h2{font-size:17px}
+.note{font-size:12px;color:var(--muted)}
+.hint{font-size:13px;color:var(--muted);margin:0}
+.sec-h{display:flex;align-items:center;justify-content:space-between;margin:6px 2px -2px}
+.sec-h h2{font-size:18px}
+.sec-h a{font-size:13px;color:var(--muted);text-decoration:none;font-weight:600}
+.round{width:44px;height:44px;border-radius:50%;background:var(--surface);display:grid;place-items:center;box-shadow:var(--shadow);flex:none;position:relative}
+.round svg{width:20px;height:20px}
+.round .dot{position:absolute;top:10px;right:11px;width:8px;height:8px;border-radius:50%;background:var(--green);border:2px solid var(--surface)}
+.round.off .dot{background:var(--muted)}
+.ico{width:40px;height:40px;border-radius:50%;background:var(--soft);color:var(--green-strong);display:grid;place-items:center;flex:none}
+.ico svg{width:19px;height:19px}
+
+/* header */
+.top{display:flex;align-items:center;gap:12px;padding:4px 2px}
+.logo{width:48px;height:48px;border-radius:50%;background:var(--dark);display:grid;place-items:center;flex:none;overflow:hidden;text-decoration:none}
+.logo svg{width:26px;height:26px}
+.logo img{width:100%;height:100%;object-fit:cover}
+.top .txt{flex:1;min-width:0}
+.top small{color:var(--muted);font-size:13px;display:block}
+.top h1{font-size:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top .acts{display:flex;gap:8px}
+.login-chip{display:inline-flex;align-items:center;gap:6px;margin-top:2px;font-size:12px;font-weight:600;color:var(--green-strong);text-decoration:none}
+.page-top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:4px 2px}
+.page-top h1{font-size:22px}
+
+/* announcement */
+.announce{display:flex;gap:12px;align-items:flex-start;border-radius:20px;padding:14px 12px 14px 14px}
+.announce .a-ico{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;flex:none}
+.announce .a-ico svg{width:17px;height:17px}
+.announce .a-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;font-size:14px;line-height:1.4;padding-top:1px}
+.announce .a-txt b{font-family:var(--f-display);font-weight:600;font-size:15px}
+.announce .a-close{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;flex:none;opacity:.7}
+.announce .a-close svg{width:16px;height:16px}
+.announce.k-info{background:var(--hero);color:var(--hero-ink)}
+.announce.k-info .a-ico{background:var(--hero-ink);color:var(--hero)}
+.announce.k-tip{background:var(--dark);color:var(--dark-ink)}
+.announce.k-tip .a-ico{background:var(--green);color:#16181A}
+.announce.k-warn{background:#F6D9A8;color:#3A2A0C}
+.announce.k-warn .a-ico{background:#3A2A0C;color:#F6D9A8}
+
+/* hero */
+.hero{background:var(--hero);color:var(--hero-ink);border-radius:26px;padding:20px;display:flex;align-items:center;gap:14px}
+.hero .h-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+.hero .tag{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600}
+.hero .tag i{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.7);display:grid;place-items:center}
+@media (prefers-color-scheme: dark){.hero .tag i{background:rgba(0,0,0,.25)}}
+.hero .tag svg{width:15px;height:15px}
+.hero h2{font-size:24px;line-height:1.15}
+.hero p{margin:0;font-size:13px;opacity:.75}
+.ring{width:108px;height:108px;flex:none;position:relative}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring .rt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.ring .rt b{font-family:var(--f-display);font-size:28px;font-weight:700}
+.ring .rt span{font-size:12px;opacity:.75;margin-top:4px}
+
+/* small stats */
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mini{background:var(--surface);border-radius:22px;padding:16px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:10px;min-width:0}
+.mini .m-h{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.mini .m-h span{font-size:14px;font-weight:500;line-height:1.25}
+.mini .v{font-family:var(--f-display);font-size:26px;font-weight:600;line-height:1}
+.mini .v small{font-family:var(--f-body);font-size:13px;color:var(--muted);font-weight:500}
+.ico.warm{background:#FFF1E2;color:#E07A1F}
+.ico.cool{background:#E7F2FF;color:#3B82D6}
+@media (prefers-color-scheme: dark){.ico.warm{background:#3A2A18;color:#F3A85C}.ico.cool{background:#1C2A3A;color:#7DB4F0}}
+
+/* week strip */
+.week-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.week-h h2{font-size:17px}
+.arrows{display:flex;gap:6px}
+.arrows button{width:32px;height:32px;border-radius:50%;background:var(--soft);display:grid;place-items:center}
+.arrows button svg{width:15px;height:15px}
+.arrows button:disabled{opacity:.35;cursor:default}
+.days7{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.days7 button{display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 0 10px;border-radius:999px;font-variant-numeric:tabular-nums}
+.days7 small{font-size:12px;color:var(--muted)}
+.days7 b{font-family:var(--f-display);font-size:16px;font-weight:600}
+.days7 i{width:5px;height:5px;border-radius:50%;background:transparent}
+.days7 button.done i{background:var(--green)}
+.days7 button.today{background:var(--hero);color:var(--hero-ink)}
+.days7 button.today small{color:inherit;opacity:.75}
+.days7 button.sel{outline:2px solid var(--green);outline-offset:-2px}
+.day-info{margin-top:10px;font-size:13px;color:var(--muted);text-align:center}
+
+/* exercise list */
+.ex{display:flex;align-items:center;gap:12px;background:var(--surface);border-radius:22px;padding:14px 14px 14px 16px;box-shadow:var(--shadow);text-align:left;width:100%}
+.ex .e-txt{flex:1;min-width:0}
+.ex b{font-family:var(--f-display);font-weight:600;font-size:16px;display:block}
+.ex .meta{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:13px;color:var(--muted);flex-wrap:wrap}
+.ex .pill{display:inline-flex;align-items:center;gap:5px;background:#FFF1E2;color:#B85C0F;border-radius:8px;padding:3px 8px;font-weight:600;font-size:12px}
+@media (prefers-color-scheme: dark){.ex .pill{background:#3A2A18;color:#F3A85C}}
+.ex .go{width:42px;height:42px;border-radius:50%;background:var(--soft);display:grid;place-items:center;flex:none}
+.ex .go svg{width:18px;height:18px}
+.ex.active{outline:2px solid var(--green);outline-offset:-2px}
+.ex.active .go{background:var(--green);color:#16181A}
+.ex-list{display:flex;flex-direction:column;gap:10px}
+.next-card{display:flex;align-items:center;gap:12px;text-decoration:none}
+.next-card .txt{flex:1;min-width:0}
+.next-card .k{font-size:12px;color:var(--muted)}
+.next-card .v{font-family:var(--f-display);font-weight:600;font-size:16px}
+.chev{width:18px;height:18px;color:var(--muted);flex:none}
+
+/* ---------- session ---------- */
+.presets{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px;margin:0 -2px;scrollbar-width:none}
+.presets::-webkit-scrollbar{display:none}
+.chip{flex:none;padding:10px 16px;border-radius:999px;background:var(--surface);font-family:var(--f-display);font-weight:500;font-size:14px;display:flex;flex-direction:column;align-items:center;line-height:1.15;box-shadow:var(--shadow)}
+.chip span{font-family:var(--f-body);font-size:11px;color:var(--muted);font-weight:600;margin-top:2px;font-variant-numeric:tabular-nums}
+.chip[aria-pressed="true"]{background:var(--hero);color:var(--hero-ink)}
+.chip[aria-pressed="true"] span{color:inherit;opacity:.7}
+.chip:disabled{cursor:default}
+.breath{background:var(--surface);border-radius:28px;padding:18px 18px 20px;position:relative;overflow:hidden;box-shadow:var(--shadow)}
+.breath::before{content:"";position:absolute;inset:0;background:repeating-radial-gradient(circle at 50% 50%,transparent 0 22px,var(--soft) 22px 23px);pointer-events:none;opacity:.9}
+.b-head{display:flex;justify-content:space-between;align-items:center;position:relative}
+.b-head .lbl{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.tag2{background:var(--hero);color:var(--hero-ink);border-radius:999px;padding:6px 12px;font-family:var(--f-display);font-weight:600;font-size:13px;font-variant-numeric:tabular-nums}
+.stage{position:relative;width:min(270px,68vw);aspect-ratio:1;max-width:100%;margin:10px auto 4px}
+.stage svg.ringp{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.ringp .trk{stroke:var(--line)}
+.ringp .prg{stroke:var(--green)}
+.blob{position:absolute;inset:14%;border-radius:50%;background:radial-gradient(circle at 38% 32%,#EEFAD6,#C9EA8E 55%,#9CCB55);transform:scale(.55);box-shadow:0 10px 40px rgba(140,198,63,.35)}
+.blob::after{content:"";position:absolute;inset:-9%;border-radius:50%;border:1.5px dashed rgba(140,198,63,.5)}
+.b-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#16181A;pointer-events:none}
+.count{font-family:var(--f-display);font-weight:700;font-size:60px;line-height:1;font-variant-numeric:tabular-nums}
+.phase-name{font-family:var(--f-display);font-weight:500;font-size:16px;margin-top:4px}
+.b-foot{display:flex;justify-content:space-between;align-items:flex-end;position:relative;margin-top:6px}
+.b-foot .k{font-size:12px;color:var(--muted)}
+.b-foot .v{font-family:var(--f-display);font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
+.b-foot .r{text-align:right}
+.strip{display:flex;gap:6px}
+.seg{flex:var(--w,1);min-width:0;background:var(--surface);border-radius:14px;padding:8px 6px;text-align:center;box-shadow:var(--shadow);position:relative;overflow:hidden;transition:background .3s}
+.seg b{display:block;font-family:var(--f-display);font-weight:600;font-size:15px;font-variant-numeric:tabular-nums}
+.seg small{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.seg .fill{position:absolute;left:0;bottom:0;height:3px;background:var(--green);width:0}
+.seg.active{background:var(--hero);color:var(--hero-ink)}
+.seg.active small{color:inherit;opacity:.7}
+.seg.active .fill{background:var(--hero-ink)}
+.controls{display:flex;align-items:center;justify-content:center;gap:18px;padding:4px 0}
+.controls button{width:56px;height:56px;border-radius:50%;background:var(--surface);display:grid;place-items:center;box-shadow:var(--shadow)}
+.controls button svg{width:22px;height:22px}
+.controls .play{width:76px;height:76px;background:var(--green);color:#16181A;box-shadow:0 10px 24px rgba(140,198,63,.4)}
+.controls .play svg{width:30px;height:30px}
+
+/* rows / steppers / toggles */
+.row{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.rows > .row:first-child,.card > .row:first-of-type{border-top:0}
+.row .lab{flex:1;min-width:0}
+.row .lab b{display:block;font-family:var(--f-display);font-weight:500;font-size:15px}
+.row .lab small{color:var(--muted);font-size:12px}
+.stepper{display:flex;align-items:center;gap:4px;background:var(--soft);border-radius:999px;padding:4px}
+.stepper button{width:34px;height:34px;border-radius:50%;background:var(--surface);font-size:18px;font-weight:600;display:grid;place-items:center}
+.stepper button:active{background:var(--hero)}
+.stepper output{min-width:46px;text-align:center;font-family:var(--f-display);font-weight:600;font-variant-numeric:tabular-nums}
+.toggle{position:relative;width:50px;height:30px;flex:none}
+.toggle input{opacity:0;position:absolute;inset:0;margin:0;cursor:pointer;z-index:1}
+.toggle i{position:absolute;inset:0;border-radius:999px;background:var(--line);transition:background .2s}
+.toggle i::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .2s}
+.toggle input:checked + i{background:var(--green)}
+.toggle input:checked + i::after{transform:translateX(20px)}
+.toggle input:focus-visible + i{outline:3px solid var(--green);outline-offset:2px}
+input[type=range]{width:100%;accent-color:var(--green-strong)}
+
+/* reminders */
+.next{display:flex;align-items:center;gap:12px;background:var(--hero);color:var(--hero-ink);border-radius:20px;padding:14px;margin-bottom:8px}
+.next .ico{background:rgba(255,255,255,.75);color:var(--hero-ink)}
+@media (prefers-color-scheme: dark){.next .ico{background:rgba(0,0,0,.25)}}
+.next .txt{flex:1;min-width:0}
+.next .k{font-size:12px;opacity:.75}
+.next .v{font-family:var(--f-display);font-size:18px;font-weight:600;font-variant-numeric:tabular-nums}
+.small-btn{padding:10px 14px;border-radius:999px;background:var(--soft);font-weight:600;font-size:13px;flex:none}
+.next .small-btn{background:var(--hero-ink);color:var(--hero)}
+.r-body{display:flex;flex-direction:column;transition:opacity .2s}
+.card.off .r-body{opacity:.5}
+.r-block{display:flex;flex-direction:column;gap:10px;padding:14px 0;border-top:1px solid var(--line)}
+.lbl2{font-family:var(--f-display);font-weight:500;font-size:15px}
+.times{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field{background:var(--soft);border-radius:16px;padding:10px 14px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.field label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+.field input{border:0;background:none;font-family:var(--f-display);font-size:19px;font-weight:600;color:var(--ink);padding:0;width:100%;font-variant-numeric:tabular-nums;min-width:0}
+.days{display:flex;gap:6px}
+.days button{flex:1;min-width:0;height:42px;border-radius:999px;background:var(--soft);font-size:13px;font-weight:600;font-family:var(--f-display)}
+.days button[aria-pressed="true"]{background:var(--hero);color:var(--hero-ink)}
+.seg-ctl{display:flex;background:var(--soft);border-radius:999px;padding:4px;gap:4px}
+.seg-ctl button{flex:1;min-width:0;padding:10px 6px;border-radius:999px;font-family:var(--f-display);font-weight:500;font-size:14px;display:flex;align-items:center;justify-content:center;gap:6px}
+.seg-ctl button svg{width:16px;height:16px;flex:none}
+.seg-ctl button[aria-pressed="true"]{background:var(--surface);color:var(--green-strong);box-shadow:var(--shadow)}
+
+/* stats */
+.big{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+.big b{font-family:var(--f-display);font-size:44px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums}
+.big span{color:var(--muted);font-size:15px}
+.big .tgt{margin-left:auto;font-size:13px;color:var(--muted)}
+.big .tgt strong{color:var(--ink)}
+.bars{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:30px;align-items:end}
+.bar-col{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:0}
+.bar-col .pct{position:absolute;left:-6px;right:-6px;text-align:center;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;line-height:1}
+.bar-col .track{position:relative;width:100%;max-width:44px;height:170px;display:flex;align-items:flex-end;justify-content:center;gap:4px}
+.bar-col .goal{width:44%;border-radius:8px 8px 4px 4px;background:repeating-linear-gradient(135deg,var(--hatch) 0 3px,transparent 3px 7px)}
+.bar-col .val{width:44%;border-radius:8px 8px 4px 4px;background:var(--hero);min-height:0}
+.bar-col.today .val{background:var(--green)}
+.bar-col small{font-size:12px;color:var(--muted)}
+.bar-col.today small{color:var(--ink);font-weight:700}
+.legend{display:flex;gap:14px;margin-top:14px;font-size:12px;color:var(--muted);flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tile{background:var(--surface);border-radius:22px;padding:16px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:6px;min-width:0}
+.tile .t-h{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:500}
+.tile .t-h .ico{width:32px;height:32px}
+.tile .t-h .ico svg{width:16px;height:16px}
+.tile .bigv{font-family:var(--f-display);font-weight:600;font-size:26px;line-height:1.1;margin-top:6px;font-variant-numeric:tabular-nums}
+.tile .bigv small{font-family:var(--f-body);font-size:13px;color:var(--muted);font-weight:500}
+.tile p{margin:0;font-size:12px;color:var(--muted)}
+.dots{display:flex;gap:4px;margin-top:6px}
+.dots i{flex:1;aspect-ratio:1;border-radius:50%;max-width:12px;background:var(--soft);border:1.5px solid var(--line)}
+.dots i.on{background:var(--green);border-color:var(--green)}
+
+/* profile / account */
+.profile-head{display:flex;align-items:center;gap:14px}
+.avatar{width:56px;height:56px;border-radius:50%;background:var(--hero);color:var(--hero-ink);display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:22px;overflow:hidden;flex:none}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.profile-head .lab{flex:1;min-width:0}
+.profile-head b{display:block;font-family:var(--f-display);font-weight:600;font-size:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.profile-head small{color:var(--muted);font-size:13px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acc-intro{margin-bottom:14px}
+.btn-google{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:14px;border-radius:999px;background:var(--soft);font-family:var(--f-display);font-weight:500;font-size:15px;border:1px solid var(--line)}
+.btn-google svg{width:20px;height:20px}
+.or{display:flex;align-items:center;gap:10px;margin:16px 0 12px;color:var(--muted);font-size:12px}
+.or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
+.acc-form{display:flex;flex-direction:column;gap:10px}
+.acc-form .field input{font-family:var(--f-body);font-size:16px;font-weight:500}
+.acc-form .field input::placeholder{color:var(--muted);opacity:.7}
+.btn-main{background:var(--green);color:#16181A;border-radius:999px;padding:15px;font-family:var(--f-display);font-weight:600;font-size:16px}
+.btn-main:disabled{opacity:.6}
+.acc-links{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.acc-links button{font-size:13px;color:var(--muted);text-decoration:underline;text-underline-offset:3px;padding:4px 0}
+.acc-msg{margin-top:10px}
+.acc-msg:empty{display:none}
+.acc-msg.bad{color:var(--bad)}
+.about{display:flex;align-items:center;gap:12px}
+.about .lab{flex:1;min-width:0}
+.about b{font-family:var(--f-display);font-weight:500}
+
+/* ---------- bottom nav ---------- */
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:8;background:var(--surface);
+  padding:8px max(12px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));
+  box-shadow:0 -6px 24px rgba(22,24,26,.06);border-radius:24px 24px 0 0}
+.nav ul{list-style:none;margin:0 auto;padding:0;max-width:520px;display:grid;grid-template-columns:repeat(5,1fr);align-items:end}
+.nav a{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;white-space:nowrap;font-weight:600;color:var(--muted);text-decoration:none;padding:6px 0}
+.nav a svg{width:23px;height:23px}
+.nav a.active{color:var(--ink)}
+.nav .center a{gap:0;margin-top:-30px}
+.nav .center span.c{width:62px;height:62px;border-radius:50%;background:var(--green);color:#16181A;display:grid;place-items:center;box-shadow:0 10px 24px rgba(140,198,63,.45);border:5px solid var(--surface);position:relative}
+.nav .center span.c svg{width:26px;height:26px}
+.nav .center .lbl{margin-top:4px}
+body.running .nav .center span.c::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:2px solid var(--green);animation:pulse 1.8s ease-out infinite}
+@keyframes pulse{from{transform:scale(.9);opacity:1}to{transform:scale(1.25);opacity:0}}
+
+/* alarm overlay */
+.alarm{position:fixed;inset:0;z-index:20;background:rgba(15,17,12,.6);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:grid;place-items:center;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px}
+.alarm-card{background:var(--surface);color:var(--ink);border-radius:30px;padding:28px 22px 22px;width:min(380px,100%);text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center}
+.pulse{width:96px;height:96px;border-radius:50%;background:var(--hero);color:var(--hero-ink);display:grid;place-items:center;animation:pulseb 1.6s ease-in-out infinite;margin-bottom:6px}
+.pulse svg{width:44px;height:44px}
+@keyframes pulseb{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.alarm-card h2{font-size:26px}
+.alarm-card p{margin:0;color:var(--muted)}
+.alarm-time{font-family:var(--f-display);font-size:14px;font-weight:600;background:var(--soft);padding:5px 12px;border-radius:999px}
+.alarm-actions{display:flex;flex-direction:column;gap:8px;width:100%;margin-top:8px}
+.btn-ghost{background:var(--soft);border-radius:999px;padding:14px;font-weight:600}
+.alarm-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--nav-h) + 24px + env(safe-area-inset-bottom,0px));background:var(--dark);color:var(--dark-ink);padding:10px 16px;border-radius:999px;font-size:13px;z-index:9;max-width:calc(100% - 32px);text-align:center}
+
+/* ---------- wide screens ---------- */
+@media (min-width:960px){
+  .main{max-width:1040px;padding-left:calc(112px + 32px);padding-right:32px;padding-block:28px 40px}
+  .nav{top:0;right:auto;width:96px;border-radius:0 28px 28px 0;padding:24px 10px;display:flex;flex-direction:column;justify-content:center}
+  .nav ul{grid-template-columns:1fr;gap:10px;max-width:none}
+  .nav .center a{margin:6px 0}
+  .nav .center span.c{border-width:0}
+  .toast{bottom:28px}
+  .view.cols{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:16px;align-items:start}
+  .view.cols > .span{grid-column:1/-1}
+  .view.cols > .col{display:flex;flex-direction:column;gap:14px;min-width:0}
+}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<main class="main">
+
+  <!-- ============ ANA SAYFA ============ -->
+  <section class="view cols" data-view="ana">
+    <header class="top span">
+      <a class="logo" id="topLogo" href="#profil" aria-label="Profil"><svg viewBox="0 0 24 24" fill="none" stroke="#C9EA8E" stroke-width="2" stroke-linecap="round"><path d="M3 9h11a3 3 0 1 0-3-3"/><path d="M3 14h15a3 3 0 1 1-3 3"/><path d="M3 19h6"/></svg></a>
+      <div class="txt">
+        <small id="topHello">Merhaba</small>
+        <h1 id="topName">Misafir</h1>
+      </div>
+      <div class="acts">
+        <a class="round" href="#istatistik" aria-label="İstatistik"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg></a>
+        <a class="round" href="#hatirlatici" aria-label="Hatırlatıcı" id="bellBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="dot" id="bellDot" hidden></span></a>
+      </div>
+    </header>
+
+    <div class="announce span" id="announce" hidden role="status">
+      <div class="a-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1z"/><path d="M15 9a4 4 0 0 1 0 6M18 6a8 8 0 0 1 0 12"/></svg></div>
+      <div class="a-txt"><b id="annTitle"></b><span id="annText"></span></div>
+      <button class="a-close" id="annClose" aria-label="Duyuruyu kapat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+
+    <div class="col">
+      <div class="hero">
+        <div class="h-txt">
+          <span class="tag"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></i>Bu hafta</span>
+          <h2 id="heroTitle">Haftalık ilerlemen</h2>
+          <p id="heroSub">Günde birkaç dakika yeter.</p>
+        </div>
+        <div class="ring" aria-hidden="true">
+          <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,.65)" stroke-width="10"/><circle id="heroRing" cx="50" cy="50" r="40" fill="none" stroke="var(--green-strong)" stroke-width="10" stroke-linecap="round" stroke-dasharray="251.3" stroke-dashoffset="251.3"/></svg>
+          <div class="rt"><b id="heroDays">0</b><span>/ 7 gün</span></div>
+        </div>
+      </div>
+
+      <div class="duo">
+        <div class="mini">
+          <div class="m-h"><span>Bugünkü<br>egzersiz</span><span class="ico warm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg></span></div>
+          <div class="v num" id="homeToday">0 <small>dk</small></div>
+        </div>
+        <div class="mini">
+          <div class="m-h"><span>Kesintisiz<br>seri</span><span class="ico cool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c1 3 4 4.5 4 8.5a4 4 0 0 1-8 0c0-1.6.8-2.7 1.7-3.6C10.6 9.8 12 6 12 3z"/><path d="M12 21a7 7 0 0 0 7-7"/></svg></span></div>
+          <div class="v num" id="homeStreak">0 <small>gün</small></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="week-h">
+          <h2 id="weekTitle">Ekim 2026</h2>
+          <div class="arrows">
+            <button id="wPrev" aria-label="Önceki hafta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>
+            <button id="wNext" aria-label="Sonraki hafta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+          </div>
+        </div>
+        <div class="days7" id="days7"></div>
+        <div class="day-info" id="dayInfo"></div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="sec-h"><h2>Egzersizler</h2><a href="#nefes">Ayarla</a></div>
+      <div class="ex-list" id="exList"></div>
+      <a class="card next-card" href="#hatirlatici">
+        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></span>
+        <span class="txt"><span class="k" id="homeNextK">Hatırlatıcı kapalı</span><span class="v" id="homeNextV" style="display:block">Hatırlatma kur</span></span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg>
+      </a>
+    </div>
+  </section>
+
+  <!-- ============ NEFES (egzersiz) ============ -->
+  <section class="view cols" data-view="nefes" hidden>
+    <div class="page-top span">
+      <h1>Nefes egzersizi</h1>
+      <button class="round" id="soundBtn" aria-label="Sesleri aç veya kapat">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>
+        <span class="dot"></span>
+      </button>
+    </div>
+    <div class="col">
+      <nav class="presets" id="presets" aria-label="Hazır egzersizler"></nav>
+      <section class="breath" aria-live="polite">
+        <div class="b-head"><span class="lbl" id="status">Hazır</span><span class="tag2" id="pattern">4 · 7 · 8</span></div>
+        <div class="stage">
+          <svg class="ringp" viewBox="0 0 100 100" aria-hidden="true">
+            <circle class="trk" cx="50" cy="50" r="47" fill="none" stroke-width="2.5"/>
+            <circle class="prg" id="ringP" cx="50" cy="50" r="47" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="295.3" stroke-dashoffset="295.3"/>
+          </svg>
+          <div class="blob" id="blob"></div>
+          <div class="b-center"><div class="count" id="count">4</div><div class="phase-name" id="phaseName">Nefes Al</div></div>
+        </div>
+        <div class="b-foot">
+          <div><div class="k">Tur</div><div class="v" id="roundTxt">0 / 8</div></div>
+          <div class="r"><div class="k">Kalan süre</div><div class="v" id="remainTxt">2:32</div></div>
+        </div>
+      </section>
+      <div class="strip" id="strip"></div>
+      <div class="controls" role="toolbar" aria-label="Kontroller">
+        <button id="resetBtn" aria-label="Sıfırla"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button>
+        <button class="play" id="playBtn" aria-label="Başlat"></button>
+        <button id="skipBtn" aria-label="Sonraki aşama"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 4 10 8-10 8z"/><path d="M19 5v14"/></svg></button>
+      </div>
+    </div>
+    <div class="col">
+      <section class="card">
+        <div class="card-h"><h2>Süreleri ayarla</h2><span class="note">saniye</span></div>
+        <div class="rows" id="rows"></div>
+      </section>
+    </div>
+  </section>
+
+  <!-- ============ İSTATİSTİK ============ -->
+  <section class="view cols" data-view="istatistik" hidden>
+    <div class="page-top span"><h1>İstatistik</h1></div>
+    <div class="col">
+      <section class="card">
+        <div class="week-h">
+          <h2 id="sWeekTitle">Bu hafta</h2>
+          <div class="arrows">
+            <button id="sPrev" aria-label="Önceki hafta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>
+            <button id="sNext" aria-label="Sonraki hafta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+          </div>
+        </div>
+        <div class="big"><b id="sTotal">0</b><span>dk</span><span class="tgt">Hedef: <strong>70 dk</strong></span></div>
+        <div class="bars" id="bars" role="img" aria-label="Haftalık egzersiz dakikaları"></div>
+        <div class="legend"><span><i style="background:var(--hero)"></i>Egzersiz süresi</span><span><i style="background:repeating-linear-gradient(135deg,var(--hatch) 0 2px,transparent 2px 4px)"></i>Günlük hedef (10 dk)</span></div>
+      </section>
+    </div>
+    <div class="col">
+      <div class="tiles">
+        <div class="tile">
+          <div class="t-h"><span class="ico warm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg></span>Bugün</div>
+          <div class="bigv" id="todayMin">0<small> dk</small></div>
+          <p>Günlük hedef 10 dakika</p>
+          <div class="dots" id="dots"></div>
+        </div>
+        <div class="tile">
+          <div class="t-h"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Seans</div>
+          <div class="bigv" id="totalSes">0<small> seans</small></div>
+          <p>Tamamlanan egzersizler</p>
+        </div>
+        <div class="tile">
+          <div class="t-h"><span class="ico cool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></span>Toplam süre</div>
+          <div class="bigv" id="totalMin">0 dk</div>
+          <p>Bugüne kadar</p>
+        </div>
+        <div class="tile">
+          <div class="t-h"><span class="ico warm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c1 3 4 4.5 4 8.5a4 4 0 0 1-8 0c0-1.6.8-2.7 1.7-3.6C10.6 9.8 12 6 12 3z"/></svg></span>Seri</div>
+          <div class="bigv" id="sStreak">0<small> gün</small></div>
+          <p id="sAvg">Haftalık ortalama 0 dk</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ HATIRLATICI ============ -->
+  <section class="view cols" data-view="hatirlatici" hidden>
+    <div class="page-top span"><h1>Hatırlatıcı</h1></div>
+    <section class="card col span" id="remPanel" style="max-width:640px">
+      <div class="card-h">
+        <h2>Nefes hatırlatıcısı</h2>
+        <label class="toggle"><input type="checkbox" id="rOn" aria-label="Hatırlatıcıyı aç veya kapat"><i></i></label>
+      </div>
+      <div class="next">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></div>
+        <div class="txt"><div class="k" id="nextK">Hatırlatıcı kapalı</div><div class="v" id="nextV">Açmak için düğmeye dokun</div></div>
+        <button class="small-btn" id="rTest">Dene</button>
+      </div>
+      <p class="hint" id="remHint">Hatırlatıcı bu sayfa açıkken çalışır. Sekme arka planda kalabilir ama kapatılmamalı.</p>
+      <div class="r-body">
+        <div class="r-block" style="border-top:0">
+          <span class="lbl2">Saat aralığı</span>
+          <div class="times">
+            <div class="field"><label for="rStart">Başlangıç</label><input type="time" id="rStart"></div>
+            <div class="field"><label for="rEnd">Bitiş</label><input type="time" id="rEnd"></div>
+          </div>
+        </div>
+        <div class="row" style="border-top:1px solid var(--line)">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg></div>
+          <div class="lab"><b>Sıklık</b><small>Ne kadar arayla hatırlatsın</small></div>
+          <div class="stepper">
+            <button id="rIntM" aria-label="Sıklığı azalt">−</button>
+            <output id="rInt" style="min-width:58px">60 dk</output>
+            <button id="rIntP" aria-label="Sıklığı artır">+</button>
+          </div>
+        </div>
+        <div class="r-block"><span class="lbl2">Günler</span><div class="days" id="rDays"></div></div>
+        <div class="r-block">
+          <span class="lbl2">Alarm türü</span>
+          <div class="seg-ctl" id="rMode">
+            <button data-m="sound" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg>Sesli</button>
+            <button data-m="vibrate" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="3" width="10" height="18" rx="2"/><path d="M3 8v8M21 8v8"/></svg>Titreşim</button>
+            <button data-m="silent" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M3 3l18 18"/></svg>Sessiz</button>
+          </div>
+          <p class="hint" id="modeHint"></p>
+        </div>
+        <div class="r-block" id="tonePick">
+          <span class="lbl2">Alarm sesi</span>
+          <div class="seg-ctl" id="rTone">
+            <button data-t="bell" aria-pressed="false">Çan</button>
+            <button data-t="soft" aria-pressed="false">Yumuşak</button>
+            <button data-t="bird" aria-pressed="false">Kuş</button>
+          </div>
+        </div>
+        <div class="r-block" id="notifBlock">
+          <span class="lbl2">Sistem bildirimi</span>
+          <p class="hint" id="notifHint"></p>
+          <button class="small-btn" id="notifBtn" style="align-self:flex-start" hidden>Bildirimlere izin ver</button>
+        </div>
+      </div>
+    </section>
+  </section>
+
+  <!-- ============ PROFİL ============ -->
+  <section class="view cols" data-view="profil" hidden>
+    <div class="page-top span"><h1>Profil</h1></div>
+    <div class="col">
+      <section class="card" id="accPanel" hidden>
+        <div class="card-h"><h2>Hesap</h2><span class="note" id="accStatus"></span></div>
+        <div id="accOut">
+          <p class="hint acc-intro">Giriş yaparsan süre ayarların, hatırlatıcıların ve istatistiklerin tüm cihazlarında eşitlenir.</p>
+          <button class="btn-google" id="gBtn" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5a5.6 5.6 0 0 1-2.4 3.6v3h3.9c2.2-2.1 3.5-5.1 3.5-8.8z"/><path fill="#34A853" d="M12 24c3.2 0 6-1.1 8-2.9l-3.9-3c-1.1.7-2.5 1.2-4.1 1.2-3.1 0-5.8-2.1-6.7-5H1.3v3.1A12 12 0 0 0 12 24z"/><path fill="#FBBC05" d="M5.3 14.3a7.2 7.2 0 0 1 0-4.6V6.6H1.3a12 12 0 0 0 0 10.8z"/><path fill="#EA4335" d="M12 4.8c1.8 0 3.3.6 4.6 1.8l3.4-3.4A12 12 0 0 0 1.3 6.6l4 3.1c.9-2.8 3.6-4.9 6.7-4.9z"/></svg>
+            Google ile devam et
+          </button>
+          <div class="or"><span>veya e-posta ile</span></div>
+          <form id="emailForm" class="acc-form" novalidate>
+            <div class="field"><label for="accEmail">E-posta</label><input id="accEmail" type="email" autocomplete="email" inputmode="email" placeholder="ornek@mail.com"></div>
+            <div class="field"><label for="accPass">Şifre</label><input id="accPass" type="password" autocomplete="current-password" placeholder="En az 6 karakter"></div>
+            <button class="btn-main" type="submit" id="accSubmit">Giriş yap</button>
+            <div class="acc-links"><button type="button" id="accMode">Hesabın yok mu? Kayıt ol</button><button type="button" id="accReset">Şifremi unuttum</button></div>
+          </form>
+        </div>
+        <div id="accIn" hidden>
+          <div class="profile-head">
+            <div class="avatar" id="accAvatar"></div>
+            <div class="lab"><b id="accName"></b><small id="accMail"></small></div>
+            <button class="small-btn" id="accOutBtn" type="button">Çıkış yap</button>
+          </div>
+        </div>
+        <p class="hint acc-msg" id="accMsg" role="status"></p>
+      </section>
+      <section class="card about">
+        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 9h11a3 3 0 1 0-3-3"/><path d="M3 14h15a3 3 0 1 1-3 3"/><path d="M3 19h6"/></svg></span>
+        <span class="lab"><b>NefesApp</b><br><small class="note">Ayarların bu cihazda saklanır. Giriş yaparsan tüm cihazlarında eşitlenir.</small></span>
+      </section>
+    </div>
+    <div class="col">
+      <section class="card">
+        <div class="card-h"><h2>Ses ayarları</h2></div>
+        <div class="row" style="border-top:0">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
+          <div class="lab"><b>Geçiş sesleri</b><small>Her aşama değişiminde ton</small></div>
+          <label class="toggle"><input type="checkbox" id="tSound" checked aria-label="Geçiş sesleri"><i></i></label>
+        </div>
+        <div class="row">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5"/></svg></div>
+          <div class="lab"><b>Sesli yönlendirme</b><small>"Nefes al", "Tut", "Ver" der</small></div>
+          <label class="toggle"><input type="checkbox" id="tVoice" aria-label="Sesli yönlendirme"><i></i></label>
+        </div>
+        <div class="row">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg></div>
+          <div class="lab"><b>Saniye tıkı</b><small>Her saniyede hafif tık</small></div>
+          <label class="toggle"><input type="checkbox" id="tTick" aria-label="Saniye tıkı"><i></i></label>
+        </div>
+        <div class="row" style="flex-wrap:wrap">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg></div>
+          <div class="lab"><b>Ses seviyesi</b><small id="volTxt">%60</small></div>
+          <input type="range" id="vol" min="0" max="100" value="60" aria-label="Ses seviyesi" style="flex:1 1 140px">
+        </div>
+      </section>
+    </div>
+  </section>
+</main>
+
+<nav class="nav" aria-label="Ana menü">
+  <ul>
+    <li><a href="#ana" data-nav="ana"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 12 4l8 6.5V19a1.5 1.5 0 0 1-1.5 1.5H15v-6H9v6H5.5A1.5 1.5 0 0 1 4 19z"/></svg>Ana sayfa</a></li>
+    <li><a href="#istatistik" data-nav="istatistik"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M8 16v-3M12 16V8M16 16v-5"/></svg>İstatistik</a></li>
+    <li class="center"><a href="#nefes" data-nav="nefes" id="navNefes" aria-label="Nefes egzersizi"><span class="c"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M3 9h11a3 3 0 1 0-3-3"/><path d="M3 14h15a3 3 0 1 1-3 3"/><path d="M3 19h6"/></svg></span><span class="lbl">Nefes</span></a></li>
+    <li><a href="#hatirlatici" data-nav="hatirlatici"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>Hatırlatıcı</a></li>
+    <li><a href="#profil" data-nav="profil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-3.5 4.5-5 8-5s6.5 1.5 8 5"/></svg>Profil</a></li>
+  </ul>
+</nav>
+
+<div class="toast" id="toast" hidden></div>
+<div class="alarm" id="alarm" hidden role="alertdialog" aria-modal="true" aria-labelledby="alarmT">
+  <div class="alarm-card">
+    <div class="pulse"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 9h11a3 3 0 1 0-3-3"/><path d="M3 14h15a3 3 0 1 1-3 3"/><path d="M3 19h6"/></svg></div>
+    <span class="alarm-time" id="alarmTime">14:00</span>
+    <h2 id="alarmT">Nefes zamanı</h2>
+    <p id="alarmP">Birkaç dakikanı ayır.</p>
+    <div class="alarm-actions">
+      <button class="btn-main" id="aStart">Egzersize başla</button>
+      <div class="alarm-row"><button class="btn-ghost" id="aSnooze">10 dk ertele</button><button class="btn-ghost" id="aClose">Kapat</button></div>
+    </div>
+  </div>
+</div>
+
+<script>
+{{CORE}}
+</script>
+<script>
+{{UI}}
+</script>
+<script type="module" src="native.js?v=6"></script>
+<script type="module" src="sync.js?v=6"></script>
+<script>if('serviceWorker' in navigator) addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));</script>
+</body>
+</html>
