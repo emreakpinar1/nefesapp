@@ -34,6 +34,9 @@ function route(){
   document.querySelectorAll('section.view[data-view]').forEach(s => s.hidden = s.dataset.view !== v);
   document.querySelectorAll('[data-nav]').forEach(a => { a.classList.toggle('active', a.dataset.nav === v); if(a.dataset.nav === v) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current') });
   document.body.dataset.screen = v;
+  const box = $('sessionBox');
+  if(v === 'ana'){ $('homeSlot').appendChild(box); box.classList.add('compact') }
+  else if(box.parentNode !== $('nefesSlot')){ $('nefesSlot').appendChild(box); box.classList.remove('compact') }
   window.scrollTo(0, 0);
   if(v === 'ana') renderHome();
   if(v === 'istatistik') renderWeek();
@@ -50,10 +53,15 @@ function greet(){
 }
 
 /* ---------- home ---------- */
-function renderHome(){ greet(); renderExercises(); renderHomeNext() }
+function renderHome(){ greet(); renderExercises(); renderHomeNext(); renderSessName() }
+function renderSessName(){
+  const c = N.getCfg();
+  const p = N.getPresets().find(p => ['inhale','hold','exhale','hold2'].every(k => p.cfg[k] === c[k]));
+  $('sessName').textContent = p ? p.name : 'Özel düzen';
+}
 
 const GRIP = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>';
-const CHEV = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>';
+const CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
 function renderExercises(){
   if(drag) return;
   const c = N.getCfg();
@@ -62,11 +70,11 @@ function renderExercises(){
     const len = (p.cfg.inhale + p.cfg.hold + p.cfg.exhale + p.cfg.hold2) * c.rounds;
     return `<div class="ex${active ? ' active' : ''}" data-id="${esc(p.id)}">
       <button class="grip" aria-label="${esc(p.name)} sırasını değiştir (yukarı/aşağı ok tuşları)">${GRIP}</button>
-      <button class="e-main" aria-label="${esc(p.name)} egzersizini seç">
+      <button class="e-main" aria-pressed="${active}" aria-label="${esc(p.name)} egzersizini seç">
         <span class="e-txt"><b>${esc(p.name)}</b>
           <span class="meta"><span class="pill num">${esc(patt(p.cfg))}</span><span class="num">${c.rounds} tur · ${fmtLen(len)} dk</span></span>
         </span>
-        <span class="go" aria-hidden="true">${CHEV}</span>
+        <span class="go" aria-hidden="true">${active ? CHECK : ''}</span>
       </button>
     </div>`;
   }).join('');
@@ -74,8 +82,9 @@ function renderExercises(){
 $('exList').addEventListener('click', e => {
   const b = e.target.closest('.e-main'); if(!b || justDragged) return;
   const id = b.closest('.ex').dataset.id;
-  if(!N.isRunning()) N.applyPreset(id);
-  location.hash = '#nefes';
+  if(N.isRunning()){ window.scrollTo({ top: 0, behavior: 'smooth' }); return }
+  N.applyPreset(id);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
 /* sürükleyerek sıralama (dokunmatik ve fare) */
@@ -167,7 +176,7 @@ $('sNext').addEventListener('click', () => { if(sOff < 0){ sOff++; renderWeek() 
 /* ---------- events from core ---------- */
 const refresh = () => { const v = document.body.dataset.screen; if(v === 'ana') renderHome(); if(v === 'istatistik') renderWeek() };
 document.addEventListener('nefes:stats', refresh);
-document.addEventListener('nefes:cfg', () => { if(document.body.dataset.screen === 'ana') renderExercises() });
+document.addEventListener('nefes:cfg', () => { renderSessName(); if(document.body.dataset.screen === 'ana') renderExercises() });
 document.addEventListener('nefes:rem', () => { if(document.body.dataset.screen === 'ana') renderHomeNext(); else $('bellDot').hidden = !N.getNext().on });
 document.addEventListener('nefes:play', () => document.body.classList.toggle('running', N.isRunning()));
 

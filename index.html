@@ -206,6 +206,26 @@ body.dragging-list{user-select:none;-webkit-user-select:none}
 .seg.active small{color:inherit;opacity:.7}
 .seg.active .fill{background:var(--hero-ink)}
 .controls{display:flex;align-items:center;justify-content:center;gap:18px;padding:4px 0}
+.session{display:flex;flex-direction:column;gap:14px}
+.compact-name{display:none}
+/* ana sayfadaki küçük sürüm */
+.session.compact{gap:0;background:var(--surface);border-radius:26px;box-shadow:var(--shadow);overflow:hidden}
+.session.compact .breath{display:grid;grid-template-columns:150px minmax(0,1fr);grid-template-areas:"stage head" "stage foot";column-gap:12px;row-gap:10px;align-items:center;padding:12px 16px 4px 10px;box-shadow:none;border-radius:0;background:transparent}
+.session.compact .breath::before{opacity:.6}
+.session.compact .b-head{grid-area:head;flex-direction:column;align-items:flex-start;gap:6px;align-self:end}
+.session.compact .compact-name{display:block;font-family:var(--f-display);font-size:18px;font-weight:500;line-height:1.2}
+.session.compact .stage{grid-area:stage;width:150px;margin:0}
+.session.compact .b-foot{grid-area:foot;margin:0;gap:18px;justify-content:flex-start;align-self:start}
+.session.compact .b-foot .r{text-align:left}
+.session.compact .b-foot .v{font-size:17px}
+.session.compact .count{font-size:30px}
+.session.compact .phase-name{font-size:11px;margin-top:2px}
+.session.compact .strip{display:none}
+.session.compact .controls{gap:12px;padding:6px 16px 14px;justify-content:flex-end;margin-top:-6px}
+.session.compact .controls button{width:42px;height:42px;box-shadow:none;background:var(--soft)}
+.session.compact .controls button svg{width:18px;height:18px}
+.session.compact .controls .play{width:54px;height:54px;background:var(--green);box-shadow:0 6px 16px rgba(110,150,60,.25)}
+.session.compact .controls .play svg{width:22px;height:22px}
 .controls button{width:56px;height:56px;border-radius:50%;background:var(--surface);display:grid;place-items:center;box-shadow:var(--shadow)}
 .controls button svg{width:22px;height:22px}
 .controls .play{width:76px;height:76px;background:var(--green);color:#16181A;box-shadow:0 8px 20px rgba(110,150,60,.28)}
@@ -379,8 +399,9 @@ body.running .nav .center span.c::after{content:"";position:absolute;inset:-6px;
     </div>
 
     <div class="col">
+      <div id="homeSlot"></div>
       <div class="sec-h"><h2>Egzersizler</h2><a href="#nefes">Süreleri ayarla</a></div>
-      <p class="hint" style="margin:-4px 2px 2px">Bir egzersize dokun, Nefes ekranında Başlat'a bas. Sırayı değiştirmek için soldaki tutamaktan sürükle.</p>
+      <p class="hint" style="margin:-4px 2px 2px">Bir egzersize dokunarak seç, yukarıdaki kartta başlat. Sırayı değiştirmek için soldaki tutamaktan sürükle.</p>
       <div class="ex-list" id="exList"></div>
       <a class="card next-card" href="#hatirlatici">
         <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></span>
@@ -401,8 +422,9 @@ body.running .nav .center span.c::after{content:"";position:absolute;inset:-6px;
     </div>
     <div class="col">
       <nav class="presets" id="presets" aria-label="Hazır egzersizler"></nav>
+      <div id="nefesSlot"><div class="session" id="sessionBox">
       <section class="breath" aria-live="polite">
-        <div class="b-head"><span class="lbl" id="status">Hazır</span><span class="tag2" id="pattern">4 · 7 · 8</span></div>
+        <div class="b-head"><span class="lbl" id="status">Hazır</span><span class="compact-name" id="sessName">Rahatla</span><span class="tag2" id="pattern">4 · 7 · 8</span></div>
         <div class="stage">
           <svg class="ringp" viewBox="0 0 100 100" aria-hidden="true">
             <circle class="trk" cx="50" cy="50" r="47" fill="none" stroke-width="2.5"/>
@@ -422,6 +444,7 @@ body.running .nav .center span.c::after{content:"";position:absolute;inset:-6px;
         <button class="play" id="playBtn" aria-label="Başlat"></button>
         <button id="skipBtn" aria-label="Sonraki aşama"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 4 10 8-10 8z"/><path d="M19 5v14"/></svg></button>
       </div>
+      </div></div>
     </div>
     <div class="col">
       <section class="card">
@@ -1276,6 +1299,9 @@ function route(){
   document.querySelectorAll('section.view[data-view]').forEach(s => s.hidden = s.dataset.view !== v);
   document.querySelectorAll('[data-nav]').forEach(a => { a.classList.toggle('active', a.dataset.nav === v); if(a.dataset.nav === v) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current') });
   document.body.dataset.screen = v;
+  const box = $('sessionBox');
+  if(v === 'ana'){ $('homeSlot').appendChild(box); box.classList.add('compact') }
+  else if(box.parentNode !== $('nefesSlot')){ $('nefesSlot').appendChild(box); box.classList.remove('compact') }
   window.scrollTo(0, 0);
   if(v === 'ana') renderHome();
   if(v === 'istatistik') renderWeek();
@@ -1292,10 +1318,15 @@ function greet(){
 }
 
 /* ---------- home ---------- */
-function renderHome(){ greet(); renderExercises(); renderHomeNext() }
+function renderHome(){ greet(); renderExercises(); renderHomeNext(); renderSessName() }
+function renderSessName(){
+  const c = N.getCfg();
+  const p = N.getPresets().find(p => ['inhale','hold','exhale','hold2'].every(k => p.cfg[k] === c[k]));
+  $('sessName').textContent = p ? p.name : 'Özel düzen';
+}
 
 const GRIP = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>';
-const CHEV = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>';
+const CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
 function renderExercises(){
   if(drag) return;
   const c = N.getCfg();
@@ -1304,11 +1335,11 @@ function renderExercises(){
     const len = (p.cfg.inhale + p.cfg.hold + p.cfg.exhale + p.cfg.hold2) * c.rounds;
     return `<div class="ex${active ? ' active' : ''}" data-id="${esc(p.id)}">
       <button class="grip" aria-label="${esc(p.name)} sırasını değiştir (yukarı/aşağı ok tuşları)">${GRIP}</button>
-      <button class="e-main" aria-label="${esc(p.name)} egzersizini seç">
+      <button class="e-main" aria-pressed="${active}" aria-label="${esc(p.name)} egzersizini seç">
         <span class="e-txt"><b>${esc(p.name)}</b>
           <span class="meta"><span class="pill num">${esc(patt(p.cfg))}</span><span class="num">${c.rounds} tur · ${fmtLen(len)} dk</span></span>
         </span>
-        <span class="go" aria-hidden="true">${CHEV}</span>
+        <span class="go" aria-hidden="true">${active ? CHECK : ''}</span>
       </button>
     </div>`;
   }).join('');
@@ -1316,8 +1347,9 @@ function renderExercises(){
 $('exList').addEventListener('click', e => {
   const b = e.target.closest('.e-main'); if(!b || justDragged) return;
   const id = b.closest('.ex').dataset.id;
-  if(!N.isRunning()) N.applyPreset(id);
-  location.hash = '#nefes';
+  if(N.isRunning()){ window.scrollTo({ top: 0, behavior: 'smooth' }); return }
+  N.applyPreset(id);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
 /* sürükleyerek sıralama (dokunmatik ve fare) */
@@ -1409,7 +1441,7 @@ $('sNext').addEventListener('click', () => { if(sOff < 0){ sOff++; renderWeek() 
 /* ---------- events from core ---------- */
 const refresh = () => { const v = document.body.dataset.screen; if(v === 'ana') renderHome(); if(v === 'istatistik') renderWeek() };
 document.addEventListener('nefes:stats', refresh);
-document.addEventListener('nefes:cfg', () => { if(document.body.dataset.screen === 'ana') renderExercises() });
+document.addEventListener('nefes:cfg', () => { renderSessName(); if(document.body.dataset.screen === 'ana') renderExercises() });
 document.addEventListener('nefes:rem', () => { if(document.body.dataset.screen === 'ana') renderHomeNext(); else $('bellDot').hidden = !N.getNext().on });
 document.addEventListener('nefes:play', () => document.body.classList.toggle('running', N.isRunning()));
 
