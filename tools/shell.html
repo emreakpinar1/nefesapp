@@ -287,7 +287,7 @@ body.dragging-list{user-select:none;-webkit-user-select:none}
 .session{display:flex;flex-direction:column;gap:14px}
 .compact-name{display:none}
 /* ana sayfadaki küçük sürüm: daire solda; ad, süre ve düğmeler sağda */
-.session.compact{display:grid;grid-template-columns:148px minmax(0,1fr);grid-template-areas:"stage head" "stage foot" "stage ctrl";column-gap:14px;row-gap:10px;align-items:center;
+.session.compact{display:grid;grid-template-columns:148px minmax(0,1fr);grid-template-areas:"stage head" "stage foot" "stage ctrl" "strip strip";column-gap:14px;row-gap:10px;align-items:center;
   padding:14px 16px 14px 10px;background:var(--breath-bg);color:var(--breath-ink);border-radius:26px;box-shadow:var(--shadow);overflow:hidden;position:relative}
 .session.compact::before{content:"";position:absolute;inset:0;background:repeating-radial-gradient(circle at 84px 50%,transparent 0 22px,rgba(255,255,255,.04) 22px 23px);pointer-events:none}
 .session.compact .breath{display:contents}
@@ -300,7 +300,14 @@ body.dragging-list{user-select:none;-webkit-user-select:none}
 .session.compact .b-foot .v{font-size:17px}
 .session.compact .count{font-size:30px}
 .session.compact .phase-name{font-size:11px;margin-top:2px}
-.session.compact .strip{display:none}
+.session.compact .strip{grid-area:strip;position:relative;gap:6px;margin-top:4px}
+.session.compact .seg{background:rgba(255,255,255,.08);box-shadow:none;color:var(--breath-ink);border-radius:12px;padding:7px 4px}
+.session.compact .seg b{font-size:14px}
+.session.compact .seg small{color:var(--breath-muted)}
+.session.compact .seg .fill{background:var(--breath-lime)}
+.session.compact .seg.active{background:var(--breath-lime);color:#1F2B17}
+.session.compact .seg.active small{color:#3A4D25;opacity:1}
+.session.compact .seg.active .fill{background:#1F2B17}
 .session.compact .controls{grid-area:ctrl;gap:10px;padding:0;justify-content:flex-start;position:relative;align-self:start}
 .session.compact .controls button{width:42px;height:42px;box-shadow:none;background:rgba(255,255,255,.12);color:var(--breath-ink)}
 .session.compact .controls button svg{width:18px;height:18px}
