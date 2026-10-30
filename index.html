@@ -317,7 +317,7 @@ input[type=range]{width:100%;accent-color:var(--lime-deep)}
       <div class="txt"><div class="k" id="nextK">Hatırlatıcı kapalı</div><div class="v" id="nextV">Açmak için düğmeye dokun</div></div>
       <button class="small-btn" id="rTest">Dene</button>
     </div>
-    <p class="hint">Hatırlatıcı bu sayfa açıkken çalışır. Sekme arka planda kalabilir ama kapatılmamalı.</p>
+    <p class="hint" id="remHint">Hatırlatıcı bu sayfa açıkken çalışır. Sekme arka planda kalabilir ama kapatılmamalı.</p>
     <div class="r-body">
       <div class="r-block">
         <span class="lbl2">Saat aralığı</span>
@@ -356,7 +356,7 @@ input[type=range]{width:100%;accent-color:var(--lime-deep)}
           <button data-t="bird" aria-pressed="false">Kuş</button>
         </div>
       </div>
-      <div class="r-block">
+      <div class="r-block" id="notifBlock">
         <span class="lbl2">Sistem bildirimi</span>
         <p class="hint" id="notifHint"></p>
         <button class="small-btn" id="notifBtn" style="align-self:flex-start" hidden>Bildirimlere izin ver</button>
@@ -606,6 +606,7 @@ function enterPhase(i, now){
   const ph = activePhases()[i];
   S.idx = i; S.phaseStart = now; S.lastSec = null;
   play(ph.key); say(ph.voice);
+  if(window.__nefesNative) window.__nefesNative.haptic(ph.key === 'inhale' || ph.key === 'exhale' ? 'MEDIUM' : 'LIGHT');
   $('phaseName').textContent = ph.name;
   $('status').textContent = 'Egzersiz sürüyor';
 }
@@ -761,7 +762,7 @@ let rem = Object.assign({on:false,start:'09:00',end:'21:00',int:60,days:[1,2,3,4
 const INTS = [5,10,15,20,30,45,60,90,120,180,240];
 const DAYV = [1,2,3,4,5,6,0], DAYN = ['Pt','Sa','Ça','Pe','Cu','Ct','Pz'];
 const DAYFULL = ['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
-const canVib = 'vibrate' in navigator;
+const canVib = () => !!window.__nefesNative || ('vibrate' in navigator);
 const baseTitle = document.title;
 let due = null, alarmLoop = 0, vibLoop = 0, titleFlash = 0;
 
@@ -791,6 +792,20 @@ function schedule(){
     if(rem.snooze > Date.now() && (!due || rem.snooze < due)) due = rem.snooze;
   }
   renderNext();
+  nativeSync();
+}
+let nsT = 0, nsSig = '';
+function nativeSync(force){
+  if(!window.__nefesNative) return;
+  const r = { on: rem.on, start: rem.start, end: rem.end, int: rem.int, days: rem.days.slice().sort(), mode: rem.mode, body: `${patternText()} düzeninde ${cfg.rounds} tur` };
+  const sig = JSON.stringify(r);
+  if(sig === nsSig && !force) return;
+  clearTimeout(nsT);
+  nsT = setTimeout(async () => {
+    nsSig = sig;
+    const res = await window.__nefesNative.sync(r);
+    if(res === 'denied') toast('Bildirim izni verilmedi. Telefon ayarlarından NefesApp bildirimlerini açabilirsin.');
+  }, 700);
 }
 function whenText(t){
   const d = new Date(t), today0 = new Date(); today0.setHours(0,0,0,0);
@@ -829,7 +844,7 @@ function ring(){
   else if(rem.tone === 'soft'){ [523,659,784].forEach((f,i) => tone(f, f, 1.3, 'sine', .3, i*.35, alarmG)) }
   else { [0,.16,.32,.9,1.06,1.22].forEach(d => tone(2300, 3300, .11, 'sine', .18, d, alarmG)) }
 }
-function vib(){ try{ return canVib ? navigator.vibrate([500,250,500,250,800]) : false }catch(e){ return false } }
+function vib(){ if(window.__nefesNative){ window.__nefesNative.vibrate(800); return true } try{ return ('vibrate' in navigator) ? navigator.vibrate([500,250,500,250,800]) : false }catch(e){ return false } }
 function notifState(){ return ('Notification' in window) ? Notification.permission : 'none' }
 function notify(){
   if(notifState() !== 'granted') return;
@@ -851,6 +866,7 @@ function fireAlarm(){
   $('alarmP').textContent = `${patternText()} düzeninde ${cfg.rounds} tur, yaklaşık ${fmt(cycleLen()*cfg.rounds)} dakika.`;
   $('alarm').hidden = false;
   clearInterval(alarmLoop); clearInterval(vibLoop); clearInterval(titleFlash);
+  if(window.__nefesNative && !fireAlarm.test){ $('aStart').focus(); return }
   if(rem.mode === 'sound'){
     ring(); let n = 0;
     alarmLoop = setInterval(() => { if(++n >= 20){ clearInterval(alarmLoop); return } ring() }, 3000);
@@ -867,7 +883,7 @@ function fireAlarm(){
 function stopAlarm(){
   clearInterval(alarmLoop); clearInterval(vibLoop); clearInterval(titleFlash);
   document.title = baseTitle;
-  try{ canVib && navigator.vibrate(0) }catch(e){}
+  try{ ('vibrate' in navigator) && navigator.vibrate(0) }catch(e){}
   $('alarm').hidden = true;
 }
 
@@ -894,9 +910,15 @@ function renderRem(){
   $('tonePick').hidden = rem.mode !== 'sound';
   $('modeHint').textContent =
     rem.mode === 'sound' ? 'Alarm sesi, sen kapatana kadar yaklaşık 1 dakika çalar. Sayfayı açtıktan sonra bir kez dokunman sesin çalmasını sağlar.'
-    : rem.mode === 'vibrate' ? (canVib ? 'Telefon titrer, ses çalmaz. Titreşim Android tarayıcılarda çalışır.' : 'Bu cihaz titreşimi desteklemiyor (iPhone ve bilgisayarlarda tarayıcı titreşimi yok). Ekranda sessiz bildirim gösterilir.')
+    : rem.mode === 'vibrate' ? (canVib() ? 'Telefon titrer, ses çalmaz. Titreşim Android tarayıcılarda çalışır.' : 'Bu cihaz titreşimi desteklemiyor (iPhone ve bilgisayarlarda tarayıcı titreşimi yok). Ekranda sessiz bildirim gösterilir.')
     : 'Ses ve titreşim yok. Ekranda bildirim ve sekme başlığında yanıp sönen uyarı görünür.';
-  renderNotif(); schedule();
+  renderNotif();
+  if(window.__nefesNative){
+    $('remHint').textContent = 'Hatırlatmalar telefonun bildirim sistemiyle gelir; uygulama kapalıyken de çalışır.';
+    $('notifBlock').hidden = true;
+    $('modeHint').textContent = rem.mode === 'sound' ? 'Telefonun bildirim sesiyle çalar ve titrer.' : rem.mode === 'vibrate' ? 'Telefon titrer, ses çalmaz.' : 'Ses ve titreşim olmadan bildirim gösterilir.';
+  }
+  schedule();
 }
 
 $('rOn').addEventListener('change', e => {
@@ -934,7 +956,7 @@ $('rTone').addEventListener('click', e => {
   rem.tone = b.dataset.t; saveRem(); renderRem(); ring();
 });
 $('notifBtn').addEventListener('click', askNotif);
-$('rTest').addEventListener('click', () => { audio(); fireAlarm() });
+$('rTest').addEventListener('click', () => { audio(); fireAlarm.test = true; fireAlarm(); fireAlarm.test = false });
 $('aStart').addEventListener('click', () => { stopAlarm(); window.scrollTo({top:0, behavior:'smooth'}); if(!S.running) start() });
 $('aSnooze').addEventListener('click', () => {
   stopAlarm(); rem.snooze = Date.now() + 10*60000; saveRem(); schedule();
@@ -963,6 +985,8 @@ window.__nefes = {
       saveOpts(); refreshAll(); renderRem(); renderStats();
     }finally{ window.__nefesApplying = false }
   },
+  onNativeReady(){ renderRem(); nativeSync(true) },
+  onNativeAlarm(){ if($('alarm').hidden && !S.running) fireAlarm() },
   setRemoteConfig(c){
     if(!c) return;
     store.set('nefes-remote', c);
@@ -999,7 +1023,8 @@ renderRows(); refreshAll(); renderStats(); setPlayIcon(); saveOpts(); renderRem(
 })();
 </script>
 
-<script type="module" src="sync.js?v=4"></script>
+<script type="module" src="native.js?v=5"></script>
+<script type="module" src="sync.js?v=5"></script>
 <script>if('serviceWorker' in navigator) addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));</script>
 </body>
 </html>

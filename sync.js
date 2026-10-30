@@ -1,5 +1,5 @@
 // NefesApp hesap ve eşitleme (Firebase Auth + Firestore)
-import { firebaseConfig } from './firebase-config.js?v=4';
+import { firebaseConfig } from './firebase-config.js?v=5';
 
 const $ = id => document.getElementById(id);
 const panel = $('accPanel');
@@ -50,6 +50,11 @@ async function init(){
   const B = 'https://www.gstatic.com/firebasejs/10.12.2/';
   let A, AU, FS;
   panel.hidden = false;
+  // Google, uygulama içi tarayıcılarda (WebView) girişe izin vermiyor; Android uygulamasında e-posta girişi kullanılır
+  if(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()){
+    $('gBtn').hidden = true;
+    const or = panel.querySelector('.or'); if(or) or.hidden = true;
+  }
   try{
     [A, AU, FS] = await Promise.all([import(B + 'firebase-app.js'), import(B + 'firebase-auth.js'), import(B + 'firebase-firestore.js')]);
   }catch(e){

@@ -1,0 +1,18 @@
+{
+  "appId": "com.emreakpinar.nefesapp",
+  "appName": "NefesApp",
+  "webDir": "www",
+  "server": {
+    "url": "https://emreakpinar1.github.io/nefesapp/",
+    "androidScheme": "https",
+    "allowNavigation": ["emreakpinar1.github.io", "*.firebaseapp.com", "*.googleapis.com", "www.gstatic.com"]
+  },
+  "android": {
+    "backgroundColor": "#EEF6DC"
+  },
+  "plugins": {
+    "LocalNotifications": {
+      "iconColor": "#A9D04A"
+    }
+  }
+}

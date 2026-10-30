@@ -1,5 +1,5 @@
-const CACHE='nefesapp-v4';
-const CORE=['./','./index.html','./sync.js?v=4','./firebase-config.js?v=4','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png'];
+const CACHE='nefesapp-v5';
+const CORE=['./','./index.html','./native.js?v=5','./sync.js?v=5','./firebase-config.js?v=5','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
 const put=(req,res)=>{if(res&&(res.ok||res.type==='opaque')){const c=res.clone();caches.open(CACHE).then(x=>x.put(req,c))}return res};
@@ -10,7 +10,7 @@ self.addEventListener('fetch',e=>{
   if(r.mode==='navigate'){e.respondWith(fetch(r,{cache:'no-cache'}).then(res=>put('./index.html',res)).catch(()=>caches.match('./index.html')));return}
   if(url.origin===location.origin){e.respondWith(fetch(r,{cache:'no-cache'}).then(res=>put(r,res)).catch(()=>caches.match(r)));return}
   // Yazı tipleri ve Firebase kütüphanesi: sürümlü, önbellekten
-  if(/(^|\.)fonts\.(googleapis|gstatic)\.com$/.test(url.host)||(url.host==='www.gstatic.com'&&url.pathname.startsWith('/firebasejs/'))){
+  if(/(^|\.)fonts\.(googleapis|gstatic)\.com$/.test(url.host)||(url.host==='www.gstatic.com'&&url.pathname.startsWith('/firebasejs/'))||(url.host==='cdn.jsdelivr.net'&&url.pathname.startsWith('/npm/@capacitor/'))){
     e.respondWith(caches.match(r).then(hit=>hit||fetch(r).then(res=>put(r,res))));
   }
 });
