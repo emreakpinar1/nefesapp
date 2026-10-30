@@ -1,11 +1,16 @@
 {
   "appId": "com.emreakpinar.nefesapp",
-  "appName": "NefesApp",
+  "appName": "Ferah",
   "webDir": "www",
   "server": {
     "url": "https://emreakpinar1.github.io/nefesapp/",
     "androidScheme": "https",
-    "allowNavigation": ["emreakpinar1.github.io", "*.firebaseapp.com", "*.googleapis.com", "www.gstatic.com"]
+    "allowNavigation": [
+      "emreakpinar1.github.io",
+      "*.firebaseapp.com",
+      "*.googleapis.com",
+      "www.gstatic.com"
+    ]
   },
   "android": {
     "backgroundColor": "#EEF6DC"

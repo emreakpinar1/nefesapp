@@ -1,4 +1,4 @@
-# NefesApp
+# Ferah: Nefes Egzersizleri
 
 Ayarlanabilir süreli nefes egzersizleri (4-7-8, kutu nefesi ve daha fazlası), faz geçiş sesleri ve hatırlatıcı içeren web uygulaması.
 

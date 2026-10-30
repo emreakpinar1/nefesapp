@@ -1,7 +1,7 @@
 {
-  "name": "NefesApp",
-  "short_name": "NefesApp",
-  "description": "Ayarlanabilir nefes egzersizleri ve hatırlatıcı",
+  "name": "Ferah: Nefes Egzersizleri",
+  "short_name": "Ferah",
+  "description": "Nefes egzersizleri, hatırlatıcı ve istatistikler",
   "lang": "tr",
   "start_url": "./",
   "scope": "./",

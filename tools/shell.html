@@ -9,16 +9,16 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="NefesApp">
+<meta name="apple-mobile-web-app-title" content="Ferah">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<title>NefesApp</title>
-<script src="defaults.js?v=9"></script>
-<script src="i18n.js?v=8"></script>
+<title>Ferah</title>
+<script src="defaults.js?v=10"></script>
+<script src="i18n.js?v=10"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Figtree:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
 <style>
 /* Layout: telefonda tek sütun + alt sekme çubuğu; 960px üstünde solda dikey menü ve iki sütunlu içerik */
 :root{
@@ -30,8 +30,8 @@
   --hatch:#C9D0C0; --bad:#A63D0C;
   --breath-bg:linear-gradient(160deg,#3F5C42 0%,#2D4532 100%); --breath-ink:#EEF4E6; --breath-muted:#B3C4AC; --breath-lime:#C6E39A;
   --shadow:0 1px 2px rgba(40,48,38,.05), 0 6px 18px rgba(40,48,38,.06);
-  --f-display:"Lexend",ui-rounded,"SF Pro Rounded",system-ui,sans-serif;
-  --f-body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-display:"Lexend","IBM Plex Sans Arabic",ui-rounded,"SF Pro Rounded",system-ui,sans-serif;
+  --f-body:"Figtree","IBM Plex Sans Arabic",system-ui,-apple-system,"Segoe UI",sans-serif;
   --nav-h:76px;
   color-scheme:light;
 }
@@ -455,6 +455,32 @@ body.running .nav .center span.c::after{content:"";position:absolute;inset:-6px;
   .view.cols > .span{grid-column:1/-1}
   .view.cols > .col{display:flex;flex-direction:column;gap:14px;min-width:0}
 }
+.lang-menu{position:absolute;top:52px;inset-inline-end:0;z-index:12;background:var(--surface);border-radius:18px;box-shadow:0 12px 32px rgba(40,48,38,.18);padding:6px;display:flex;flex-direction:column;min-width:160px}
+.lang-menu button{text-align:start;padding:11px 14px;border-radius:12px;font-weight:600;font-size:14px}
+.lang-menu button[aria-pressed="true"]{background:var(--hero);color:var(--hero-ink)}
+.lang-menu button:hover{background:var(--soft)}
+
+/* ---------- sağdan sola (Arapça) ---------- */
+[dir="rtl"] body{font-family:"IBM Plex Sans Arabic",var(--f-body)}
+[dir="rtl"] h1,[dir="rtl"] h2,[dir="rtl"] h3{font-family:"IBM Plex Sans Arabic",var(--f-display);letter-spacing:0}
+[dir="rtl"] .b-head .lbl,[dir="rtl"] .field label,[dir="rtl"] .ex-sum span{letter-spacing:0}
+[dir="rtl"] .ex .e-main,[dir="rtl"] .plan,[dir="rtl"] .learn{text-align:right}
+[dir="rtl"] .b-foot .r{text-align:left}
+[dir="rtl"] .session.compact .b-foot .r{text-align:right}
+[dir="rtl"] .plan .price{text-align:left}
+[dir="rtl"] .chev,[dir="rtl"] .link-btn svg,[dir="rtl"] #wPrev svg,[dir="rtl"] #wNext svg,[dir="rtl"] #sPrev svg,[dir="rtl"] #sNext svg,[dir="rtl"] #skipBtn svg{transform:scaleX(-1)}
+[dir="rtl"] .toggle i::after{left:auto;right:3px}
+[dir="rtl"] .toggle input:checked + i::after{transform:translateX(-20px)}
+[dir="rtl"] .seg .fill{left:auto;right:0}
+[dir="rtl"] .preset-d summary::before{transform:scaleX(-1)}
+[dir="rtl"] .ex-more summary{direction:rtl}
+[dir="rtl"] .pw-list li::before{margin-top:3px}
+[dir="rtl"] .num,[dir="rtl"] .pill,[dir="rtl"] .tag2,[dir="rtl"] .count,[dir="rtl"] .chip span,[dir="rtl"] .b-foot .v,[dir="rtl"] .ex-sum b,[dir="rtl"] .seg b,[dir="rtl"] .stepper output,[dir="rtl"] .next .v,[dir="rtl"] .ring .rt b{direction:ltr;unicode-bidi:isolate}
+[dir="rtl"] .plan .tag{right:auto;left:16px}
+@media (min-width:960px){
+  [dir="rtl"] .main{padding-left:32px;padding-right:calc(112px + 32px)}
+  [dir="rtl"] .nav{left:auto;right:0;border-radius:28px 0 0 28px}
+}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -470,8 +496,13 @@ body.running .nav .center span.c::after{content:"";position:absolute;inset:-6px;
         <h1 id="topName">Misafir</h1>
         <a class="trial-chip" id="trialChip" href="#premium" hidden></a>
       </div>
-      <div class="acts">
+      <div class="acts" style="position:relative">
         <button class="round lang-btn" id="langBtn" aria-label="Dili değiştir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg><span id="langCode" data-no-i18n>TR</span></button>
+        <div class="lang-menu" id="langMenu" hidden data-no-i18n role="menu">
+          <button data-l="tr" role="menuitemradio">Türkçe</button>
+          <button data-l="en" role="menuitemradio">English</button>
+          <button data-l="ar" role="menuitemradio" lang="ar" dir="rtl">العربية</button>
+        </div>
         <a class="round" href="#istatistik" aria-label="İstatistik"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg></a>
         <a class="round" href="#hatirlatici" aria-label="Hatırlatıcı" id="bellBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="dot" id="bellDot" hidden></span></a>
       </div>
@@ -657,7 +688,7 @@ body.running .nav .center span.c::after{content:"";position:absolute;inset:-6px;
     <div class="page-top"><h1>Premium</h1><a class="round" href="#ana" aria-label="Kapat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></a></div>
     <div class="pw-hero">
       <span class="pw-badge" id="pwStatus">Ücretsiz deneme</span>
-      <h2>NefesApp Premium</h2>
+      <h2>Ferah Premium</h2>
       <p>Tüm egzersizlerin kilidini aç</p>
       <ul class="pw-list">
         <li>Tüm egzersizler ve programlar</li>
@@ -678,7 +709,7 @@ body.running .nav .center span.c::after{content:"";position:absolute;inset:-6px;
     <div class="col">
       <a class="card prem-card" href="#premium">
         <span class="ico" style="background:var(--hero);color:var(--hero-ink)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17l-6.1 3.4 1.5-6.8L2.2 9l6.9-.7z"/></svg></span>
-        <span class="txt"><b>NefesApp Premium</b><small id="premState">Ücretsiz deneme</small></span>
+        <span class="txt"><b>Ferah Premium</b><small id="premState">Ücretsiz deneme</small></span>
         <span class="small-btn" id="premBtn">Planları gör</span>
       </a>
       <section class="card" id="accPanel" hidden>
@@ -709,7 +740,7 @@ body.running .nav .center span.c::after{content:"";position:absolute;inset:-6px;
       </section>
       <section class="card about">
         <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 9h11a3 3 0 1 0-3-3"/><path d="M3 14h15a3 3 0 1 1-3 3"/><path d="M3 19h6"/></svg></span>
-        <span class="lab"><b>NefesApp</b><br><small class="note">Ayarların bu cihazda saklanır. Giriş yaparsan tüm cihazlarında eşitlenir.</small></span>
+        <span class="lab"><b>Ferah: Nefes Egzersizleri</b><br><small class="note">Ayarların bu cihazda saklanır. Giriş yaparsan tüm cihazlarında eşitlenir.</small></span>
       </section>
     </div>
     <div class="col">
@@ -803,8 +834,8 @@ body.running .nav .center span.c::after{content:"";position:absolute;inset:-6px;
 <script>
 {{UI}}
 </script>
-<script type="module" src="native.js?v=8"></script>
-<script type="module" src="sync.js?v=8"></script>
+<script type="module" src="native.js?v=10"></script>
+<script type="module" src="sync.js?v=10"></script>
 <script>if('serviceWorker' in navigator) addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));</script>
 </body>
 </html>

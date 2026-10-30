@@ -19,7 +19,7 @@ async function init(){
   async function channels(){
     if(channelsReady) return;
     for(const c of Object.values(CH)){
-      try{ await LN.createChannel({ ...c, description: 'NefesApp nefes hatırlatmaları', visibility: 1, lights: false }) }catch(e){}
+      try{ await LN.createChannel({ ...c, description: 'Ferah nefes hatırlatmaları', visibility: 1, lights: false }) }catch(e){}
     }
     channelsReady = true;
   }
