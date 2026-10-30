@@ -164,6 +164,15 @@ async function init(){
     try{ await AU.signInWithPopup(auth, new AU.GoogleAuthProvider()) }
     catch(e){ setMsg(trErr(e), true) }
   });
+  window.__nefesSignup = () => {
+    if(me) return;
+    signup = true;
+    $('accSubmit').textContent = 'Hesap oluştur';
+    $('accMode').textContent = 'Zaten hesabın var mı? Giriş yap';
+    $('accPass').autocomplete = 'new-password';
+    panel.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    setTimeout(() => { try{ $('accEmail').focus({ preventScroll: true }) }catch(e){} }, 400);
+  };
   $('accMode').addEventListener('click', () => {
     signup = !signup;
     $('accSubmit').textContent = signup ? 'Hesap oluştur' : 'Giriş yap';

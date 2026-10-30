@@ -439,6 +439,8 @@ input[type=range]{width:100%;accent-color:var(--green-strong)}
 .legal-c{justify-content:center;margin-top:0}
 .consent{font-size:12px;text-align:center;margin:2px 0 0}
 .pw-restore{align-self:center;font-size:13px}
+.pw-trial{display:flex;flex-direction:column;gap:8px;text-align:center}
+.pw-trial .hint{margin:0}
 .consent a{color:var(--green-strong);font-weight:600}
 .about{display:flex;align-items:center;gap:12px}
 .about .lab{flex:1;min-width:0}
@@ -723,6 +725,10 @@ body.running .nav .center span.c::after{content:"";position:absolute;inset:-6px;
         <li>Sınırsız özel düzen ve tüm istatistikler</li>
       </ul>
     </div>
+    <div class="pw-trial" id="pwTrial" hidden data-no-i18n>
+      <button class="btn-main" id="pwTrialBtn" type="button"></button>
+      <p class="hint" id="pwTrialTxt"></p>
+    </div>
     <div class="plans" id="plans" role="radiogroup" aria-label="Planlar"></div>
     <button class="btn-main" id="pwBuy">Abone ol</button>
     <button class="link-btn pw-restore" id="pwRestore" type="button" hidden>Satın alımları geri yükle</button>
@@ -882,7 +888,7 @@ body.running .nav .center span.c::after{content:"";position:absolute;inset:-6px;
 {{UI}}
 </script>
 <script type="module" src="native.js?v=18"></script>
-<script type="module" src="sync.js?v=15"></script>
+<script type="module" src="sync.js?v=16"></script>
 <script>if('serviceWorker' in navigator) addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));</script>
 </body>
 </html>
