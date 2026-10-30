@@ -28,4 +28,4 @@ Canlı site: https://ferah.tikvera.com/ (GitHub Pages, özel alan adı; CNAME do
 Karşılama akışı, iOS derlemesi, mağaza satın alımının Firestore'a (web Premium) yazılması.
 
 ## Erişim kuralı
-Hesapsız: yalnızca ilk egzersiz, 3 tamamlanan seans. Hesap açılınca 30 günlük deneme başlar (`opts.trialStart`, hesapla eşitlenir). Sonra Premium (Android'de RevenueCat → `ferah_pro`).
+Hesapsız: yalnızca ilk egzersiz, `billing.previewSessions` (varsayılan 3) tamamlanan seans. Panelde "Herkese açık" işaretli egzersizler (`presets[].open`) herkese her zaman ücretsiz. `billing.needAccount` (varsayılan true) açıksa 30 günlük deneme hesap açılınca başlar (`opts.trialStart`, hesapla eşitlenir); kapalıysa ilk açılışta. Sonra Premium (Android'de RevenueCat → `ferah_pro`).

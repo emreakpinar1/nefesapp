@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#161813">
 <title>Ferah Yönetim</title>
-<script src="defaults.js?v=17"></script>
+<script src="defaults.js?v=18"></script>
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -200,6 +200,7 @@ tr:last-child td{border-bottom:0}
 .bc strong{font-family:var(--f-display);font-weight:600}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(24px + env(safe-area-inset-bottom,0px));background:var(--card);color:var(--card-ink);padding:10px 18px;border-radius:999px;font-size:14px;z-index:9;max-width:calc(100% - 32px);text-align:center}
 @media (prefers-reduced-motion: reduce){.toggle i::after{transition:none}}
+.p-open span{display:flex;gap:8px;align-items:center;font-weight:600}.p-open input{width:18px;height:18px}.ps-open{margin-inline-start:8px;font-size:11px;padding:2px 8px;border-radius:99px;background:#d8e6c2;color:#22340d}.check-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.check-row input{width:18px;height:18px}.check-row .hint{flex-basis:100%;margin:0}
 </style>
 </head>
 <body>
@@ -409,6 +410,8 @@ tr:last-child td{border-bottom:0}
         <div class="panel-h"><h2>Abonelik</h2><span class="note">fiyatlar ve deneme</span></div>
         <div class="stack">
           <div class="field" style="max-width:220px"><label for="bTrial">Ücretsiz deneme (gün)</label><input id="bTrial" type="number" min="0" max="90"></div>
+          <label class="check-row"><input type="checkbox" id="bNeedAcc"> Deneme için hesap zorunlu <small class="hint">Kapalıysa deneme, uygulama ilk açıldığında hesapsız başlar.</small></label>
+          <div class="field" style="max-width:260px"><label for="bPreview">Hesapsız tanıtım seansı</label><input id="bPreview" type="number" min="0" max="50"><small class="hint">Hesap açmadan ilk egzersiz kaç kez tamamlanabilir (0 = kapalı). Herkese açık egzersizler bundan bağımsız; Egzersizler sekmesinden işaretlenir.</small></div>
           <div id="bCur"></div>
           <div class="field"><label for="bRcKey">RevenueCat Android API anahtarı (goog_…)</label><input id="bRcKey" type="text" autocomplete="off" spellcheck="false" placeholder="goog_..."></div>
           <div class="field" style="max-width:260px"><label for="bRcEnt">RevenueCat yetki (entitlement) kimliği</label><input id="bRcEnt" type="text" autocomplete="off" spellcheck="false" placeholder="ferah_pro"></div>
@@ -688,11 +691,12 @@ const CATS = window.NEFES_CATEGORIES;
 const catName = id => (CATS.find(c => c.id === id) || {}).tr || id;
 const sumTxt = p => `${[p.inhale, p.hold, p.exhale, p.hold2].filter((v, i) => v || i % 2 === 0).join(' · ')} · ${catName(p.cat)}`;
 let openRows = new Set();
+function pCountTxt(){ const no = draft.filter(p => p.open).length; return no ? `${draft.length} egzersiz · ${no} tanesi herkese açık` : `${draft.length} egzersiz · deneme bitince hepsi Premium` }
 function renderPresets(){
   $('pList').innerHTML = draft.map((p, i) => `
     <details class="preset-d" data-i="${i}" ${openRows.has(p.id) ? 'open' : ''}>
       <summary>
-        <b data-sum="name">${esc(p.name)}</b>
+        <b data-sum="name">${esc(p.name)}</b>${p.open ? '<span class="ps-open">Açık</span>' : ''}
         <span class="ps-meta" data-sum="meta">${esc(sumTxt(p))}</span>
       </summary>
       <div class="preset">
@@ -706,6 +710,7 @@ function renderPresets(){
         <div class="field f-half"><label for="pne${i}">Ad (EN)</label><input id="pne${i}" data-k="name_en" maxlength="28" value="${esc(p.name_en || '')}" placeholder="${esc(p.name)}"></div>
         <div class="field f-half"><label for="pna${i}">Ad (AR)</label><input id="pna${i}" data-k="name_ar" dir="rtl" maxlength="28" value="${esc(p.name_ar || '')}"></div>
         <div class="field f-half"><label for="pnd${i}">Ad (DE)</label><input id="pnd${i}" data-k="name_de" maxlength="28" value="${esc(p.name_de || '')}"></div>
+        <label class="field f-half p-open"><span><input type="checkbox" data-k="open" ${p.open ? 'checked' : ''}> Herkese açık</span><small class="hint">Hesapsız ve deneme bitince de ücretsiz</small></label>
         <div class="field f-half"><label for="pc${i}">Kategori</label><select id="pc${i}" data-k="cat">${CATS.map(c => `<option value="${c.id}" ${p.cat === c.id ? 'selected' : ''}>${esc(c.tr)}</option>`).join('')}</select></div>
         <div class="field f-wide"><label for="ps${i}">Kısa açıklama (TR)</label><input id="ps${i}" data-k="short" maxlength="90" value="${esc(p.short || '')}"></div>
         <div class="field f-wide"><label for="pse${i}">Kısa açıklama (EN)</label><input id="pse${i}" data-k="short_en" maxlength="90" value="${esc(p.short_en || '')}"></div>
@@ -718,18 +723,18 @@ function renderPresets(){
       </div>
     </details>`).join('');
   $('pAdd').disabled = draft.length >= 60;
-  $('pCount').textContent = `${draft.length} egzersiz · deneme bitince hepsi Premium`;
+  $('pCount').textContent = pCountTxt();
 }
 const TXT = ['name','name_en','name_ar','name_de','short','short_en','short_ar','short_de','desc','desc_en','desc_ar','desc_de','cat'];
 function onPresetEdit(e){
   const row = e.target.closest('.preset-d'); if(!row || !e.target.dataset.k) return;
   const p = draft[+row.dataset.i], k = e.target.dataset.k;
-  if(k === 'free') p.free = e.target.checked;
+  if(k === 'open'){ p.open = e.target.checked; renderPresets(); return }
   else if(TXT.includes(k)) p[k] = e.target.value;
   else p[k] = Math.max(0, Math.min(60, parseInt(e.target.value, 10) || 0));
   row.querySelector('[data-sum="name"]').textContent = p.name;
   row.querySelector('[data-sum="meta"]').textContent = sumTxt(p);
-  $('pCount').textContent = `${draft.length} egzersiz · deneme bitince hepsi Premium`;
+  $('pCount').textContent = pCountTxt();
 }
 $('pList').addEventListener('input', onPresetEdit);
 $('pList').addEventListener('change', onPresetEdit);
@@ -749,7 +754,7 @@ $('pSave').addEventListener('click', async () => {
   const bad = draft.find(p => !p.name.trim() || p.inhale < 1 || p.exhale < 1);
   if(bad){ msg.textContent = `"${bad.name || 'Adsız'}" için ad boş olamaz; nefes al ve ver en az 1 saniye olmalı.`; return }
   const T = v => String(v || '').trim();
-  const clean = draft.map(p => ({ id: p.id, name: T(p.name), name_en: T(p.name_en), name_ar: T(p.name_ar), name_de: T(p.name_de), cat: p.cat || 'calm', free: false, short: T(p.short), short_en: T(p.short_en), short_ar: T(p.short_ar), short_de: T(p.short_de), desc: T(p.desc), desc_en: T(p.desc_en), desc_ar: T(p.desc_ar), desc_de: T(p.desc_de), inhale: p.inhale, hold: p.hold, exhale: p.exhale, hold2: p.hold2 }));
+  const clean = draft.map(p => ({ id: p.id, name: T(p.name), name_en: T(p.name_en), name_ar: T(p.name_ar), name_de: T(p.name_de), cat: p.cat || 'calm', free: false, open: !!p.open, short: T(p.short), short_en: T(p.short_en), short_ar: T(p.short_ar), short_de: T(p.short_de), desc: T(p.desc), desc_en: T(p.desc_en), desc_ar: T(p.desc_ar), desc_de: T(p.desc_de), inhale: p.inhale, hold: p.hold, exhale: p.exhale, hold2: p.hold2 }));
   try{ await FS.setDoc(cfgRef, { presets: clean, presetsVersion: 2, updatedAt: FS.serverTimestamp() }, { merge: true }); toast('Hazır egzersizler yayınlandı') }
   catch(e){ msg.textContent = saveErr(e) }
 });
@@ -878,7 +883,7 @@ $('bCur').innerHTML = CURS.map(([c, sym, lab]) => `
   </div>`).join('');
 const readBill = () => {
   const n = id => Math.max(0, parseFloat($(id).value) || 0);
-  const out = { trialDays: Math.max(0, Math.min(90, parseInt($('bTrial').value, 10) || 0)) };
+  const out = { trialDays: Math.max(0, Math.min(90, parseInt($('bTrial').value, 10) || 0)), needAccount: $('bNeedAcc').checked, previewSessions: Math.max(0, Math.min(50, parseInt($('bPreview').value, 10) || 0)) };
   CURS.forEach(([c]) => out[c] = Object.fromEntries(PLANS.map(pl => [pl, n(`b_${c}_${pl}`)])));
   out.rcAndroid = $('bRcKey').value.trim();
   out.rcEntitlement = $('bRcEnt').value.trim() || ND.billing.rcEntitlement || 'premium';
@@ -886,6 +891,8 @@ const readBill = () => {
 };
 function fillBill(b){
   $('bTrial').value = b.trialDays;
+  $('bNeedAcc').checked = b.needAccount !== false;
+  $('bPreview').value = b.previewSessions ?? ND.billing.previewSessions ?? 3;
   CURS.forEach(([c]) => PLANS.forEach(pl => $(`b_${c}_${pl}`).value = (b[c] || {})[pl] ?? ''));
   $('bRcKey').value = b.rcAndroid || ND.billing.rcAndroid || ''; $('bRcEnt').value = b.rcEntitlement || ND.billing.rcEntitlement || 'premium';
   bCheck();
@@ -900,7 +907,8 @@ function bCheck(){
       Yıllık, aylığa göre <strong>%${save}</strong> tasarruf (ayda ${sym}${(P.yearly / 12).toFixed(2)}) ${y ? '✓' : '⚠️ Yıllık, 12 aylıktan ucuz olmalı'}<br>
       Ömür boyu = <strong>${yrs}</strong> yıllık fiyatı ${l ? '✓' : '⚠️ Ömür boyu, yıllıktan pahalı olmalı'}</div>`;
   }
-  html += `<p class="hint">Deneme: ${b.trialDays} gün. Deneme süresince tüm egzersizler açık; deneme bitince hiçbir egzersiz ücretsiz kalmaz, devam etmek için plan gerekir.</p>`;
+  const nOpen = draft.filter(p => p.open).length;
+  html += `<p class="hint">Deneme: ${b.trialDays} gün${b.needAccount ? ', hesap açınca başlar' : ', ilk açılışta başlar'}. Hesapsız: ilk egzersiz ${b.previewSessions} seans. Herkese açık egzersiz: ${nOpen}. Deneme bitince yalnızca herkese açık egzersizler ücretsiz kalır.</p>`;
   $('bCheck').innerHTML = html;
   return ok;
 }
@@ -918,7 +926,7 @@ $('bReset').addEventListener('click', async () => {
 });
 
 function fillForms(){
-  { const b = conf.billing || {}, o = { trialDays: b.trialDays ?? ND.billing.trialDays, rcAndroid: b.rcAndroid || '', rcEntitlement: b.rcEntitlement || 'premium' }; CURS.forEach(([c]) => o[c] = { ...(ND.billing[c] || {}), ...(b[c] || {}) }); fillBill(o) }
+  { const b = conf.billing || {}, o = { trialDays: b.trialDays ?? ND.billing.trialDays, needAccount: b.needAccount, previewSessions: b.previewSessions, rcAndroid: b.rcAndroid || '', rcEntitlement: b.rcEntitlement || 'premium' }; CURS.forEach(([c]) => o[c] = { ...(ND.billing[c] || {}), ...(b[c] || {}) }); fillBill(o) }
   fillContent();
   const lk = nefesMerge(ND.look, conf.look);
   $('lBreath').value = lk.breath; $('lAccent').value = lk.accent; lTheme = lk.theme; lPreview();

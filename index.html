@@ -14,7 +14,7 @@
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>Ferah</title>
-<script src="defaults.js?v=17"></script>
+<script src="defaults.js?v=18"></script>
 <script src="i18n.js?v=18"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -906,7 +906,7 @@ function presetsFromRemote(list){
   const pick = (p, k) => (sfx && p[k + sfx]) || (sfx ? p[k + '_en'] : '') || p[k] || '';
   const out = list.filter(p => p && p.name && p.inhale >= 1 && p.exhale >= 1).slice(0, 60)
     .map(p => ({ id: String(p.id || p.name), name: String((sfx && (p['name' + sfx] || p.name_en)) || p.name).slice(0, 28), short: String(sfx ? (p['short' + sfx] || '') : (p.short || '')).slice(0, 90), desc: String(sfx ? (p['desc' + sfx] || '') : (p.desc || '')).slice(0, 800),
-      cat: p.cat || 'calm', free: p.free !== false, name_tr: p.name, cfg: { inhale: +p.inhale, hold: +p.hold || 0, exhale: +p.exhale, hold2: +p.hold2 || 0 } }));
+      cat: p.cat || 'calm', free: p.free !== false, open: p.open === true, name_tr: p.name, cfg: { inhale: +p.inhale, hold: +p.hold || 0, exhale: +p.exhale, hold2: +p.hold2 || 0 } }));
   return out.length ? out : null;
 }
 function buildPresets(remote){
@@ -1879,27 +1879,31 @@ applyTheme(document.documentElement.dataset.pref || 'light');
 
 /* ---------- abonelik: deneme, premium, planlar ---------- */
 try{ if(!window.__nefesEnt) window.__nefesEnt = JSON.parse(localStorage.getItem('nefes-ent') || 'null') }catch(e){}
-const bill = () => { const b = REMOTE.billing || {}, d = DEF.billing, out = { trialDays: +b.trialDays || d.trialDays }; (window.NEFES_CURRENCIES || ['TRY','USD']).forEach(c => out[c] = { ...(d[c] || d.USD), ...(b[c] || {}) }); return out };
+const bill = () => { const b = REMOTE.billing || {}, d = DEF.billing, out = { trialDays: b.trialDays != null ? +b.trialDays : d.trialDays, needAccount: (b.needAccount ?? d.needAccount) !== false, previewSessions: +(b.previewSessions ?? d.previewSessions ?? 3) }; (window.NEFES_CURRENCIES || ['TRY','USD']).forEach(c => out[c] = { ...(d[c] || d.USD), ...(b[c] || {}) }); return out };
 // Ücretsiz deneme hesaba bağlıdır: hesap açılınca başlar (opts.trialStart hesapla eşitlenir).
 // Hesapsız kullanıcı yalnızca tanıtım egzersizini birkaç kez deneyebilir.
-const PREVIEW_SESSIONS = 3;
 let signedIn = (() => { try{ return !!localStorage.getItem('nefes-uid') }catch(e){ return false } })();
-function trialStart(){ return +N.getOpt('trialStart') || 0 }
-function trialLeft(){ const t = trialStart(); if(!t) return signedIn ? bill().trialDays : 0; return Math.max(0, Math.ceil((t + bill().trialDays * 864e5 - Date.now()) / 864e5)) }
-function trialNotStarted(){ return !signedIn && !isPremium() }
+function trialStart(){
+  let t = +N.getOpt('trialStart') || 0;
+  if(!t && !bill().needAccount){ t = Date.now(); N.setOpt('trialStart', t) }   // panelden "hesap zorunlu" kapatılırsa eski davranış
+  return t;
+}
+function trialLeft(){ const t = trialStart(); if(!t) return signedIn ? bill().trialDays : 0; if(!signedIn && bill().needAccount) return 0; return Math.max(0, Math.ceil((t + bill().trialDays * 864e5 - Date.now()) / 864e5)) }
 const previewId = () => (N.getPresets()[0] || {}).id;
-function previewLeft(){ const s = (N.getState().stats || {}).sessions || 0; return Math.max(0, PREVIEW_SESSIONS - s) }
+function previewLeft(){ const s = (N.getState().stats || {}).sessions || 0; return Math.max(0, bill().previewSessions - s) }
+const needAcc = () => bill().needAccount && !signedIn;
 const entOk = e => !!(e && e.plan && (e.plan === 'lifetime' || !e.until || e.until > Date.now()));
 function isPremium(){ return entOk(window.__nefesEnt) || entOk(window.__nefesStoreEnt) }
-function hasAccess(){ return isPremium() || (signedIn && trialLeft() > 0) }
+function hasAccess(){ return isPremium() || ((signedIn || !bill().needAccount) && trialLeft() > 0) }
 function canUse(p){
+  if(p && p.open) return true;          // panelden "herkese açık" işaretlenen egzersiz
   if(hasAccess()) return true;
   // hesapsız: tanıtım egzersizi, birkaç seans
-  return !signedIn && !!p && p.id === previewId() && previewLeft() > 0;
+  return needAcc() && !!p && p.id === previewId() && previewLeft() > 0;
 }
 window.__nefesLocked = p => !!p && !canUse(p);
 window.__nefesNoAccess = () => !canUse(currentPreset());
-window.__nefesPaywall = () => { location.hash = signedIn ? '#premium' : '#premium' };
+window.__nefesPaywall = () => { location.hash = '#premium' };
 document.addEventListener('nefes:user', e => {
   const was = signedIn; signedIn = !!(e.detail && e.detail.signedIn);
   try{ signedIn ? localStorage.setItem('nefes-uid', e.detail.uid || '1') : localStorage.removeItem('nefes-uid') }catch(err){}
@@ -1913,7 +1917,7 @@ let plan = 'yearly', buying = false;
 function renderAccess(){
   const prem = isPremium(), left = trialLeft(), td = bill().trialDays;
   const txt = prem ? T3('Premium üyesin', "You're a Premium member", 'أنت مشترك في Premium', 'Du bist Premium-Mitglied')
-    : !signedIn ? T3(`Ücretsiz hesap aç, ${td} gün tüm egzersizler açık`, `Create a free account to unlock everything for ${td} days`, `أنشئ حسابًا مجانيًا لفتح كل شيء لمدة ${td} يومًا`, `Kostenloses Konto: ${td} Tage alles freischalten`)
+    : needAcc() ? T3(`Ücretsiz hesap aç, ${td} gün tüm egzersizler açık`, `Create a free account to unlock everything for ${td} days`, `أنشئ حسابًا مجانيًا لفتح كل شيء لمدة ${td} يومًا`, `Kostenloses Konto: ${td} Tage alles freischalten`)
     : left > 0 ? T3(`Ücretsiz deneme · ${left} gün kaldı`, `Free trial · ${left} days left`, `تجربة مجانية · متبقٍ ${left} يومًا`, `Kostenlose Testphase · noch ${left} Tage`)
     : T3('Deneme süren bitti', 'Your trial has ended', 'انتهت الفترة التجريبية', 'Deine Testphase ist beendet');
   $('premState').textContent = txt; $('premState').setAttribute('data-no-i18n', '');
@@ -1921,8 +1925,8 @@ function renderAccess(){
   const chip = $('trialChip');
   chip.hidden = prem;
   chip.setAttribute('data-no-i18n', '');
-  chip.setAttribute('href', signedIn ? '#premium' : '#profil');
-  chip.textContent = !signedIn ? T3(`${td} gün ücretsiz dene`, `Try free for ${td} days`, `جرّب مجانًا ${td} يومًا`, `${td} Tage gratis testen`)
+  chip.setAttribute('href', needAcc() ? '#profil' : '#premium');
+  chip.textContent = needAcc() ? T3(`${td} gün ücretsiz dene`, `Try free for ${td} days`, `جرّب مجانًا ${td} يومًا`, `${td} Tage gratis testen`)
     : left > 0 ? T3(`Deneme: ${left} gün kaldı`, `Trial: ${left} days left`, `التجربة: متبقٍ ${left} يومًا`, `Test: noch ${left} Tage`) : T3("Premium'a geç", 'Go Premium', 'اشترك في Premium', 'Premium holen');
   const acc = document.querySelector('.acc-intro');
   if(acc){ acc.setAttribute('data-no-i18n', ''); acc.textContent = T3(`Ücretsiz hesap aç: ${td} gün boyunca tüm egzersizler açık olur; ayarların, hatırlatıcıların ve istatistiklerin tüm cihazlarında eşitlenir.`, `Create a free account: all exercises are unlocked for ${td} days, and your settings, reminders and stats sync across your devices.`, `أنشئ حسابًا مجانيًا: تُفتح جميع التمارين لمدة ${td} يومًا، وتتزامن إعداداتك وتذكيراتك وإحصاءاتك على جميع أجهزتك.`, `Erstelle ein kostenloses Konto: ${td} Tage lang sind alle Übungen offen, und Einstellungen, Erinnerungen und Statistiken werden auf all deinen Geräten synchronisiert.`) }
@@ -1937,10 +1941,10 @@ function renderPaywall(){
   const save = Math.max(0, Math.round((1 - P.yearly / (P.monthly * 12)) * 100));
   const years = Math.round(P.lifetime / P.yearly * 10) / 10;
   const td = b.trialDays;
-  $('pwTrial').hidden = prem || signedIn;
+  $('pwTrial').hidden = prem || !needAcc();
   $('pwTrialBtn').textContent = T3(`Ücretsiz hesap aç, ${td} gün dene`, `Create a free account, try ${td} days`, `أنشئ حسابًا مجانيًا وجرّب ${td} يومًا`, `Kostenloses Konto, ${td} Tage testen`);
   $('pwTrialTxt').textContent = T3(`Kart gerekmez. Hesabını açtığın anda ${td} gün boyunca tüm egzersizler açılır.`, `No card needed. All exercises unlock for ${td} days as soon as you sign up.`, `لا حاجة لبطاقة. تُفتح جميع التمارين لمدة ${td} يومًا فور إنشاء الحساب.`, `Keine Karte nötig. Sobald du dich registrierst, sind ${td} Tage lang alle Übungen offen.`);
-  $('pwStatus').textContent = prem ? T3('Premium aktif', 'Premium active', 'Premium مفعّل', 'Premium aktiv') : !signedIn ? T3(`${td} gün ücretsiz`, `${td} days free`, `${td} يومًا مجانًا`, `${td} Tage gratis`) : left > 0 ? T3(`Ücretsiz deneme · ${left} gün kaldı`, `Free trial · ${left} days left`, `تجربة مجانية · متبقٍ ${left} يومًا`, `Kostenlose Testphase · noch ${left} Tage`) : T3('Deneme bitti', 'Trial ended', 'انتهت التجربة', 'Testphase beendet');
+  $('pwStatus').textContent = prem ? T3('Premium aktif', 'Premium active', 'Premium مفعّل', 'Premium aktiv') : needAcc() ? T3(`${td} gün ücretsiz`, `${td} days free`, `${td} يومًا مجانًا`, `${td} Tage gratis`) : left > 0 ? T3(`Ücretsiz deneme · ${left} gün kaldı`, `Free trial · ${left} days left`, `تجربة مجانية · متبقٍ ${left} يومًا`, `Kostenlose Testphase · noch ${left} Tage`) : T3('Deneme bitti', 'Trial ended', 'انتهت التجربة', 'Testphase beendet');
   $('pwStatus').setAttribute('data-no-i18n', '');
   const plans = [
     { id: 'monthly', name: T3('Aylık', 'Monthly', 'شهري', 'Monatlich'), sub: T3('İstediğin zaman iptal', 'Cancel anytime', 'إلغاء في أي وقت', 'Jederzeit kündbar'), price: money2(P.monthly, 'monthly'), per: T3('/ ay', '/ month', '/ شهر', '/ Monat') },
@@ -1957,13 +1961,13 @@ function renderPaywall(){
   $('pwBuy').disabled = prem || buying;
   $('pwRestore').hidden = !window.__nefesStore;
   const total = N.getPresets().length;
-  $('pwFree').textContent = prem ? '' : !signedIn ? T3(`Hesap açmadan "${(N.getPresets()[0]||{}).name}" egzersizini ${PREVIEW_SESSIONS} kez deneyebilirsin.`, `Without an account you can try "${(N.getPresets()[0]||{}).name}" ${PREVIEW_SESSIONS} times.`, `بدون حساب يمكنك تجربة "${(N.getPresets()[0]||{}).name}" ${PREVIEW_SESSIONS} مرات.`, `Ohne Konto kannst du „${(N.getPresets()[0]||{}).name}“ ${PREVIEW_SESSIONS}-mal ausprobieren.`) : left > 0
+  $('pwFree').textContent = prem ? '' : needAcc() ? (!bill().previewSessions ? '' :  T3(`Hesap açmadan "${(N.getPresets()[0]||{}).name}" egzersizini ${bill().previewSessions} kez deneyebilirsin.`, `Without an account you can try "${(N.getPresets()[0]||{}).name}" ${bill().previewSessions} times.`, `بدون حساب يمكنك تجربة "${(N.getPresets()[0]||{}).name}" ${bill().previewSessions} مرات.`, `Ohne Konto kannst du „${(N.getPresets()[0]||{}).name}“ ${bill().previewSessions}-mal ausprobieren.`)) : left > 0
     ? T3(`Deneme süresince ${total} egzersizin hepsi açık. Deneme bitince egzersizlere devam etmek için bir plan gerekir.`, `All ${total} exercises are open during your trial. After it ends, a plan is needed to keep breathing with Ferah.`, `جميع التمارين الـ${total} متاحة خلال الفترة التجريبية. بعد انتهائها تحتاج إلى خطة لمواصلة التنفس مع Ferah.`, `Während der Testphase sind alle ${total} Übungen offen. Danach brauchst du einen Plan, um mit Ferah weiterzuatmen.`)
     : T3(`Deneme süren bitti. ${total} egzersizin kilidini açmak için bir plan seç.`, `Your trial has ended. Choose a plan to unlock all ${total} exercises.`, `انتهت الفترة التجريبية. اختر خطة لفتح جميع التمارين الـ${total}.`, `Deine Testphase ist beendet. Wähle einen Plan, um alle ${total} Übungen freizuschalten.`);
   $('pwFree').setAttribute('data-no-i18n', '');
 }
 $('pwTrialBtn').addEventListener('click', () => { location.hash = '#profil'; setTimeout(() => window.__nefesSignup && window.__nefesSignup(), 300) });
-$('trialChip').addEventListener('click', () => { if(!signedIn) setTimeout(() => window.__nefesSignup && window.__nefesSignup(), 300) });
+$('trialChip').addEventListener('click', () => { if(needAcc()) setTimeout(() => window.__nefesSignup && window.__nefesSignup(), 300) });
 $('plans').addEventListener('click', e => { const b = e.target.closest('.plan'); if(b){ plan = b.dataset.p; renderPaywall() } });
 const storeErr = e => (e && (e.userCancelled || e.code === '1' || e.code === 1 || /cancel/i.test(e.message || ''))) ? null
   : (e && e.code === 'not-configured') ? T3('Satın alma henüz hazır değil. Biraz sonra tekrar dene.', 'Purchases are not ready yet. Please try again later.', 'الشراء غير متاح بعد. حاول لاحقًا.', 'Käufe sind noch nicht verfügbar. Bitte versuche es später erneut.')
