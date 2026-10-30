@@ -984,9 +984,11 @@ function say(text){
   if(!opts.voice || opts.muted || !('speechSynthesis' in window)) return;
   try{
     speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'tr-TR'; u.rate = .9; u.volume = Math.min(1, opts.vol/100 + .2);
-    const v = speechSynthesis.getVoices().find(v => v.lang && v.lang.toLowerCase().startsWith('tr'));
+    const L = window.nefesLang || 'tr';
+    const u = new SpeechSynthesisUtterance(window.nefesT ? window.nefesT(text) : text);
+    u.lang = { tr: 'tr-TR', en: 'en-US', de: 'de-DE', ar: 'ar-SA' }[L] || 'tr-TR'; u.rate = .9; u.volume = Math.min(1, opts.vol/100 + .2);
+    const vs = speechSynthesis.getVoices().filter(v => v.lang && v.lang.toLowerCase().replace('_', '-').startsWith(L));
+    const v = vs.find(v => v.lang.toLowerCase().replace('_', '-') === u.lang.toLowerCase()) || vs[0];
     if(v) u.voice = v;
     speechSynthesis.speak(u);
   }catch(e){}
