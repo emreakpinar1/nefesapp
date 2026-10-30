@@ -14,8 +14,8 @@
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>Ferah</title>
-<script src="defaults.js?v=13"></script>
-<script src="i18n.js?v=13"></script>
+<script src="defaults.js?v=15"></script>
+<script src="i18n.js?v=15"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
@@ -436,6 +436,7 @@ input[type=range]{width:100%;accent-color:var(--green-strong)}
 .legal a{color:var(--green-strong);font-weight:600;text-decoration:none}
 .legal-c{justify-content:center;margin-top:0}
 .consent{font-size:12px;text-align:center;margin:2px 0 0}
+.pw-restore{align-self:center;font-size:13px}
 .consent a{color:var(--green-strong);font-weight:600}
 .about{display:flex;align-items:center;gap:12px}
 .about .lab{flex:1;min-width:0}
@@ -729,6 +730,7 @@ body.running .nav .center span.c::after{content:"";position:absolute;inset:-6px;
     </div>
     <div class="plans" id="plans" role="radiogroup" aria-label="Planlar"></div>
     <button class="btn-main" id="pwBuy">Abone ol</button>
+    <button class="link-btn pw-restore" id="pwRestore" type="button" hidden>Satın alımları geri yükle</button>
     <p class="hint" id="pwNote" style="text-align:center">İptal etmek kolay; istediğin zaman mağaza ayarlarından iptal edebilirsin.</p>
     <p class="hint" id="pwFree" style="text-align:center"></p>
     <p class="hint legal legal-c"><a href="kosullar.html">Kullanım koşulları</a><a href="gizlilik.html">Gizlilik politikası</a></p>
@@ -1870,14 +1872,15 @@ try{ if(!window.__nefesEnt) window.__nefesEnt = JSON.parse(localStorage.getItem(
 const bill = () => { const b = REMOTE.billing || {}, d = DEF.billing, out = { trialDays: +b.trialDays || d.trialDays }; (window.NEFES_CURRENCIES || ['TRY','USD']).forEach(c => out[c] = { ...(d[c] || d.USD), ...(b[c] || {}) }); return out };
 function trialStart(){ let t = +N.getOpt('trialStart'); if(!t){ t = Date.now(); N.setOpt('trialStart', t) } return t }
 function trialLeft(){ return Math.max(0, Math.ceil((trialStart() + bill().trialDays * 864e5 - Date.now()) / 864e5)) }
-function isPremium(){ const e = window.__nefesEnt; return !!(e && e.plan && (e.plan === 'lifetime' || !e.until || e.until > Date.now())) }
+const entOk = e => !!(e && e.plan && (e.plan === 'lifetime' || !e.until || e.until > Date.now()));
+function isPremium(){ return entOk(window.__nefesEnt) || entOk(window.__nefesStoreEnt) }
 function hasAccess(){ return isPremium() || trialLeft() > 0 }
 window.__nefesLocked = p => !!p && !hasAccess();
 window.__nefesNoAccess = () => !hasAccess();
 window.__nefesPaywall = () => { location.hash = '#premium' };
 const cur = () => window.nefesCurrency ? window.nefesCurrency() : (LANG === 'tr' ? 'TRY' : 'USD');
-const money = v => new Intl.NumberFormat({ tr: 'tr-TR', de: 'de-DE' }[LANG] || 'en-US', { style: 'currency', currency: cur(), maximumFractionDigits: v % 1 ? 2 : 0 }).format(v);
-let plan = 'yearly';
+const money = (v, c) => new Intl.NumberFormat({ tr: 'tr-TR', de: 'de-DE' }[LANG] || 'en-US', { style: 'currency', currency: c || cur(), maximumFractionDigits: v % 1 ? 2 : 0 }).format(v);
+let plan = 'yearly', buying = false;
 function renderAccess(){
   const prem = isPremium(), left = trialLeft();
   const txt = prem ? T3('Premium üyesin', "You're a Premium member", 'أنت مشترك في Premium', 'Du bist Premium-Mitglied')
@@ -1891,15 +1894,20 @@ function renderAccess(){
   chip.textContent = left > 0 ? T3(`Deneme: ${left} gün kaldı`, `Trial: ${left} days left`, `التجربة: متبقٍ ${left} يومًا`, `Test: noch ${left} Tage`) : T3("Premium'a geç", 'Go Premium', 'اشترك في Premium', 'Premium holen');
 }
 function renderPaywall(){
-  const b = bill(), P = b[cur()], prem = isPremium(), left = trialLeft();
+  const b = bill(), prem = isPremium(), left = trialLeft();
+  // Android'de Google Play'in gösterdiği gerçek fiyatlar; yoksa panel fiyatları
+  const SP = window.__nefesStorePrices, store = !!(SP && SP.monthly && SP.yearly && SP.lifetime);
+  const P = store ? { monthly: SP.monthly.amount, yearly: SP.yearly.amount, lifetime: SP.lifetime.amount } : b[cur()];
+  const PC = store ? SP.yearly.currency : undefined;
+  const money2 = (v, k) => store && k ? SP[k].text : money(v, PC);
   const save = Math.max(0, Math.round((1 - P.yearly / (P.monthly * 12)) * 100));
   const years = Math.round(P.lifetime / P.yearly * 10) / 10;
   $('pwStatus').textContent = prem ? T3('Premium aktif', 'Premium active', 'Premium مفعّل', 'Premium aktiv') : left > 0 ? T3(`Ücretsiz deneme · ${left} gün kaldı`, `Free trial · ${left} days left`, `تجربة مجانية · متبقٍ ${left} يومًا`, `Kostenlose Testphase · noch ${left} Tage`) : T3('Deneme bitti', 'Trial ended', 'انتهت التجربة', 'Testphase beendet');
   $('pwStatus').setAttribute('data-no-i18n', '');
   const plans = [
-    { id: 'monthly', name: T3('Aylık', 'Monthly', 'شهري', 'Monatlich'), sub: T3('İstediğin zaman iptal', 'Cancel anytime', 'إلغاء في أي وقت', 'Jederzeit kündbar'), price: money(P.monthly), per: T3('/ ay', '/ month', '/ شهر', '/ Monat') },
-    { id: 'yearly', name: T3('Yıllık', 'Yearly', 'سنوي', 'Jährlich'), sub: T3(`Ayda ${money(P.yearly / 12)} · %${save} tasarruf`, `${money(P.yearly / 12)} per month · save ${save}%`, `${money(P.yearly / 12)} شهريًا · وفّر ${save}%`, `${money(P.yearly / 12)} pro Monat · ${save} % sparen`), price: money(P.yearly), per: T3('/ yıl', '/ year', '/ سنة', '/ Jahr'), tag: T3('En popüler', 'Most popular', 'الأكثر شيوعًا', 'Am beliebtesten') },
-    { id: 'lifetime', name: T3('Ömür boyu', 'Lifetime', 'مدى الحياة', 'Lebenslang'), sub: T3('Tek ödeme, abonelik yok', 'One payment, no subscription', 'دفعة واحدة، بلا اشتراك', 'Einmal zahlen, kein Abo'), price: money(P.lifetime), per: T3('tek seferlik', 'one-time', 'مرة واحدة', 'einmalig'), tag: T3('En avantajlı', 'Best value', 'الأفضل قيمة', 'Bester Wert'), alt: true },
+    { id: 'monthly', name: T3('Aylık', 'Monthly', 'شهري', 'Monatlich'), sub: T3('İstediğin zaman iptal', 'Cancel anytime', 'إلغاء في أي وقت', 'Jederzeit kündbar'), price: money2(P.monthly, 'monthly'), per: T3('/ ay', '/ month', '/ شهر', '/ Monat') },
+    { id: 'yearly', name: T3('Yıllık', 'Yearly', 'سنوي', 'Jährlich'), sub: T3(`Ayda ${money(P.yearly / 12, PC)} · %${save} tasarruf`, `${money(P.yearly / 12, PC)} per month · save ${save}%`, `${money(P.yearly / 12, PC)} شهريًا · وفّر ${save}%`, `${money(P.yearly / 12, PC)} pro Monat · ${save} % sparen`), price: money2(P.yearly, 'yearly'), per: T3('/ yıl', '/ year', '/ سنة', '/ Jahr'), tag: T3('En popüler', 'Most popular', 'الأكثر شيوعًا', 'Am beliebtesten') },
+    { id: 'lifetime', name: T3('Ömür boyu', 'Lifetime', 'مدى الحياة', 'Lebenslang'), sub: T3('Tek ödeme, abonelik yok', 'One payment, no subscription', 'دفعة واحدة، بلا اشتراك', 'Einmal zahlen, kein Abo'), price: money2(P.lifetime, 'lifetime'), per: T3('tek seferlik', 'one-time', 'مرة واحدة', 'einmalig'), tag: T3('En avantajlı', 'Best value', 'الأفضل قيمة', 'Bester Wert'), alt: true },
   ];
   $('plans').innerHTML = plans.map(p => `<button class="plan" role="radio" data-p="${p.id}" aria-checked="${plan === p.id}" data-no-i18n>
       ${p.tag ? `<span class="tag${p.alt ? ' alt' : ''}">${p.tag}</span>` : ''}
@@ -1908,7 +1916,8 @@ function renderPaywall(){
       <span class="price">${p.price}<small>${p.per}</small></span>
     </button>`).join('');
   $('pwBuy').textContent = prem ? T3('Zaten Premium üyesin', 'You already have Premium', 'لديك Premium بالفعل', 'Du hast bereits Premium') : plan === 'lifetime' ? T3('Satın al', 'Buy', 'شراء', 'Kaufen') : T3('Abone ol', 'Subscribe', 'اشترك', 'Abonnieren');
-  $('pwBuy').disabled = prem;
+  $('pwBuy').disabled = prem || buying;
+  $('pwRestore').hidden = !window.__nefesStore;
   const total = N.getPresets().length;
   $('pwFree').textContent = prem ? '' : left > 0
     ? T3(`Deneme süresince ${total} egzersizin hepsi açık. Deneme bitince egzersizlere devam etmek için bir plan gerekir.`, `All ${total} exercises are open during your trial. After it ends, a plan is needed to keep breathing with Ferah.`, `جميع التمارين الـ${total} متاحة خلال الفترة التجريبية. بعد انتهائها تحتاج إلى خطة لمواصلة التنفس مع Ferah.`, `Während der Testphase sind alle ${total} Übungen offen. Danach brauchst du einen Plan, um mit Ferah weiterzuatmen.`)
@@ -1916,7 +1925,29 @@ function renderPaywall(){
   $('pwFree').setAttribute('data-no-i18n', '');
 }
 $('plans').addEventListener('click', e => { const b = e.target.closest('.plan'); if(b){ plan = b.dataset.p; renderPaywall() } });
-$('pwBuy').addEventListener('click', () => toast2(T3("Satın alma, uygulama Google Play ve App Store'da yayınlandığında açılacak.", 'Purchases will open when the app launches on Google Play and the App Store.', 'سيتاح الشراء عند إطلاق التطبيق على Google Play وApp Store.', 'Käufe sind möglich, sobald die App bei Google Play und im App Store erscheint.')));
+const storeErr = e => (e && (e.userCancelled || e.code === '1' || e.code === 1 || /cancel/i.test(e.message || ''))) ? null
+  : (e && e.code === 'not-configured') ? T3('Satın alma henüz hazır değil. Biraz sonra tekrar dene.', 'Purchases are not ready yet. Please try again later.', 'الشراء غير متاح بعد. حاول لاحقًا.', 'Käufe sind noch nicht verfügbar. Bitte versuche es später erneut.')
+  : (e && e.code === 'no-product') ? T3('Bu plan şu an satın alınamıyor.', 'This plan is not available right now.', 'هذه الخطة غير متاحة حاليًا.', 'Dieser Plan ist gerade nicht verfügbar.')
+  : T3('Satın alma tamamlanamadı. Tekrar dene.', 'The purchase could not be completed. Please try again.', 'تعذّر إتمام الشراء. حاول مرة أخرى.', 'Der Kauf konnte nicht abgeschlossen werden. Bitte versuche es erneut.');
+$('pwBuy').addEventListener('click', async () => {
+  if(!window.__nefesStore){
+    toast2(T3("Satın alma, uygulama Google Play ve App Store'da yayınlandığında açılacak.", 'Purchases will open when the app launches on Google Play and the App Store.', 'سيتاح الشراء عند إطلاق التطبيق على Google Play وApp Store.', 'Käufe sind möglich, sobald die App bei Google Play und im App Store erscheint.'));
+    return;
+  }
+  buying = true; renderPaywall();
+  try{
+    if(await window.__nefesStore.buy(plan)) toast2(T3('Teşekkürler! Premium açıldı.', 'Thank you! Premium is now active.', 'شكرًا! تم تفعيل Premium.', 'Danke! Premium ist jetzt aktiv.'));
+  }catch(e){ const m = storeErr(e); if(m) toast2(m); console.warn(e) }
+  buying = false; renderPaywall();
+});
+$('pwRestore').addEventListener('click', async () => {
+  if(!window.__nefesStore) return;
+  try{
+    const ok = await window.__nefesStore.restore();
+    toast2(ok ? T3('Satın alımın geri yüklendi.', 'Your purchase has been restored.', 'تمت استعادة مشترياتك.', 'Dein Kauf wurde wiederhergestellt.') : T3('Bu Google hesabında etkin bir satın alım bulunamadı.', 'No active purchase was found for this Google account.', 'لم يتم العثور على عملية شراء نشطة لهذا الحساب.', 'Für dieses Google-Konto wurde kein aktiver Kauf gefunden.'));
+  }catch(e){ const m = storeErr(e); if(m) toast2(m) }
+});
+document.addEventListener('nefes:prices', () => { if(document.body.dataset.screen === 'premium') renderPaywall() });
 function accessChanged(){ renderAccess(); N.rerender(); refresh(); if(document.body.dataset.screen === 'premium') renderPaywall() }
 document.addEventListener('nefes:ent', accessChanged);
 setInterval(renderAccess, 60 * 60 * 1000);
@@ -1969,8 +2000,8 @@ route();
 })();
 
 </script>
-<script type="module" src="native.js?v=14"></script>
-<script type="module" src="sync.js?v=13"></script>
+<script type="module" src="native.js?v=15"></script>
+<script type="module" src="sync.js?v=15"></script>
 <script>if('serviceWorker' in navigator) addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));</script>
 </body>
 </html>

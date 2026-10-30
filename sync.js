@@ -1,5 +1,5 @@
 // NefesApp hesap ve eşitleme (Firebase Auth + Firestore)
-import { firebaseConfig } from './firebase-config.js?v=13';
+import { firebaseConfig } from './firebase-config.js?v=15';
 
 const $ = id => document.getElementById(id);
 const panel = $('accPanel');
@@ -104,7 +104,8 @@ async function init(){
   function renderUser(u){
     $('accOut').hidden = !!u; $('accIn').hidden = !u;
     if($('delBox')){ $('delBox').hidden = true; $('delOpen').hidden = false; const g = $('delGo'); g.disabled = false; g.textContent = 'Kalıcı olarak sil' }
-    document.dispatchEvent(new CustomEvent('nefes:user', { detail: { signedIn: !!u } }));
+    window.__nefesUid = u ? u.uid : null;
+    document.dispatchEvent(new CustomEvent('nefes:user', { detail: { signedIn: !!u, uid: u ? u.uid : null } }));
     const al = $('adminLink'); if(al) al.hidden = !(u && u.email === 'emreakpinar46@gmail.com');
     const hello = $('topHello'), logo = $('topLogo');
     if(!u){

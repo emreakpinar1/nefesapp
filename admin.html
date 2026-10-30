@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#161813">
 <title>Ferah Yönetim</title>
-<script src="defaults.js?v=13"></script>
+<script src="defaults.js?v=15"></script>
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -410,7 +410,9 @@ tr:last-child td{border-bottom:0}
         <div class="stack">
           <div class="field" style="max-width:220px"><label for="bTrial">Ücretsiz deneme (gün)</label><input id="bTrial" type="number" min="0" max="90"></div>
           <div id="bCur"></div>
-          <p class="hint">Mağazada gerçek ödeme açıldığında fiyatlar Google Play ve App Store'da da aynı tutulmalı. Kullanıcılara elle premium vermek için Kullanıcılar sekmesindeki Abonelik sütununu kullan.</p>
+          <div class="field"><label for="bRcKey">RevenueCat Android API anahtarı (goog_…)</label><input id="bRcKey" type="text" autocomplete="off" spellcheck="false" placeholder="goog_..."></div>
+          <div class="field" style="max-width:260px"><label for="bRcEnt">RevenueCat yetki (entitlement) kimliği</label><input id="bRcEnt" type="text" autocomplete="off" spellcheck="false" placeholder="premium"></div>
+          <p class="hint">Android uygulamasında kullanıcı, Google Play'de tanımlı fiyatı görür ve öder; buradaki fiyatlar web'de ve uygulama mağazaya bağlanamazsa gösterilir, Play'dekilerle aynı tut. Kullanıcılara elle premium vermek için Kullanıcılar sekmesindeki Abonelik sütununu kullan.</p>
         </div>
         <div class="row-actions"><button class="btn primary" id="bSave">Kaydet ve yayınla</button><button class="btn ghost" id="bReset">Varsayılan fiyatlara dön</button></div>
         <p class="msg" id="bMsg"></p>
@@ -456,7 +458,7 @@ tr:last-child td{border-bottom:0}
 <div class="toast" id="toast" hidden></div>
 
 <script type="module">
-import { firebaseConfig } from './firebase-config.js?v=13';
+import { firebaseConfig } from './firebase-config.js?v=15';
 
 const ADMIN_EMAIL = 'emreakpinar46@gmail.com';
 const BUILTIN = window.NEFES_DEFAULTS.exercises;
@@ -878,11 +880,14 @@ const readBill = () => {
   const n = id => Math.max(0, parseFloat($(id).value) || 0);
   const out = { trialDays: Math.max(0, Math.min(90, parseInt($('bTrial').value, 10) || 0)) };
   CURS.forEach(([c]) => out[c] = Object.fromEntries(PLANS.map(pl => [pl, n(`b_${c}_${pl}`)])));
+  out.rcAndroid = $('bRcKey').value.trim();
+  out.rcEntitlement = $('bRcEnt').value.trim() || 'premium';
   return out;
 };
 function fillBill(b){
   $('bTrial').value = b.trialDays;
   CURS.forEach(([c]) => PLANS.forEach(pl => $(`b_${c}_${pl}`).value = (b[c] || {})[pl] ?? ''));
+  $('bRcKey').value = b.rcAndroid || ''; $('bRcEnt').value = b.rcEntitlement || 'premium';
   bCheck();
 }
 function bCheck(){
@@ -913,7 +918,7 @@ $('bReset').addEventListener('click', async () => {
 });
 
 function fillForms(){
-  { const b = conf.billing || {}, o = { trialDays: b.trialDays ?? ND.billing.trialDays }; CURS.forEach(([c]) => o[c] = { ...(ND.billing[c] || {}), ...(b[c] || {}) }); fillBill(o) }
+  { const b = conf.billing || {}, o = { trialDays: b.trialDays ?? ND.billing.trialDays, rcAndroid: b.rcAndroid || '', rcEntitlement: b.rcEntitlement || 'premium' }; CURS.forEach(([c]) => o[c] = { ...(ND.billing[c] || {}), ...(b[c] || {}) }); fillBill(o) }
   fillContent();
   const lk = nefesMerge(ND.look, conf.look);
   $('lBreath').value = lk.breath; $('lAccent').value = lk.accent; lTheme = lk.theme; lPreview();

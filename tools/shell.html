@@ -14,8 +14,8 @@
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>Ferah</title>
-<script src="defaults.js?v=13"></script>
-<script src="i18n.js?v=13"></script>
+<script src="defaults.js?v=15"></script>
+<script src="i18n.js?v=15"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
@@ -436,6 +436,7 @@ input[type=range]{width:100%;accent-color:var(--green-strong)}
 .legal a{color:var(--green-strong);font-weight:600;text-decoration:none}
 .legal-c{justify-content:center;margin-top:0}
 .consent{font-size:12px;text-align:center;margin:2px 0 0}
+.pw-restore{align-self:center;font-size:13px}
 .consent a{color:var(--green-strong);font-weight:600}
 .about{display:flex;align-items:center;gap:12px}
 .about .lab{flex:1;min-width:0}
@@ -729,6 +730,7 @@ body.running .nav .center span.c::after{content:"";position:absolute;inset:-6px;
     </div>
     <div class="plans" id="plans" role="radiogroup" aria-label="Planlar"></div>
     <button class="btn-main" id="pwBuy">Abone ol</button>
+    <button class="link-btn pw-restore" id="pwRestore" type="button" hidden>Satın alımları geri yükle</button>
     <p class="hint" id="pwNote" style="text-align:center">İptal etmek kolay; istediğin zaman mağaza ayarlarından iptal edebilirsin.</p>
     <p class="hint" id="pwFree" style="text-align:center"></p>
     <p class="hint legal legal-c"><a href="kosullar.html">Kullanım koşulları</a><a href="gizlilik.html">Gizlilik politikası</a></p>
@@ -875,8 +877,8 @@ body.running .nav .center span.c::after{content:"";position:absolute;inset:-6px;
 <script>
 {{UI}}
 </script>
-<script type="module" src="native.js?v=14"></script>
-<script type="module" src="sync.js?v=13"></script>
+<script type="module" src="native.js?v=15"></script>
+<script type="module" src="sync.js?v=15"></script>
 <script>if('serviceWorker' in navigator) addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));</script>
 </body>
 </html>
