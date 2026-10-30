@@ -1,6 +1,6 @@
 # Ferah: Nefes Egzersizleri — geliştirici rehberi
 
-Canlı site: https://emreakpinar1.github.io/nefesapp/ · Yönetim paneli: `/admin.html` (yalnızca emreakpinar46@gmail.com)
+Canlı site: https://ferah.tikvera.com/ (GitHub Pages, özel alan adı; CNAME dosyası. Eski adres emreakpinar1.github.io/nefesapp/ buraya yönlenir) · Yönetim paneli: `/admin.html` (yalnızca emreakpinar46@gmail.com)
 
 ## Yapı
 - **index.html** — uygulama. Elle düzenlenmez; `python3 tools/build.py` ile üretilir:

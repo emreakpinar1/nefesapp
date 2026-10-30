@@ -3,9 +3,10 @@
   "appName": "Ferah",
   "webDir": "www",
   "server": {
-    "url": "https://emreakpinar1.github.io/nefesapp/",
+    "url": "https://ferah.tikvera.com/",
     "androidScheme": "https",
     "allowNavigation": [
+      "ferah.tikvera.com",
       "emreakpinar1.github.io",
       "*.firebaseapp.com",
       "*.googleapis.com",
