@@ -5,7 +5,7 @@ if(cap && typeof cap.isNativePlatform === 'function' && cap.isNativePlatform()) 
 
 async function init(){
   let registerPlugin;
-  try{ ({ registerPlugin } = await import('https://cdn.jsdelivr.net/npm/@capacitor/core@6.2.3/dist/index.js')) }
+  try{ ({ registerPlugin } = await import('https://cdn.jsdelivr.net/npm/@capacitor/core@8.5.3/dist/index.js')) }
   catch(e){ console.warn('Capacitor çekirdeği yüklenemedi', e); return }
   const LN = registerPlugin('LocalNotifications');
   const H = registerPlugin('Haptics');
@@ -47,6 +47,7 @@ async function init(){
           channelId: (CH[mode] || CH.sound).id,
           // Capacitor'da haftanın günleri 1 = Pazar ... 7 = Cumartesi
           schedule: { on: { weekday: d + 1, hour: Math.floor(m / 60), minute: m % 60 }, allowWhileIdle: true },
+          isExactNotification: false, // kesin alarm izni istemeden kur (birkaç dakika sapabilir)
           extra: { nefes: true },
         });
       }

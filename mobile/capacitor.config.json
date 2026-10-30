@@ -18,6 +18,10 @@
   "plugins": {
     "LocalNotifications": {
       "iconColor": "#A9D04A"
+    },
+    "SystemBars": {
+      "insetsHandling": "native",
+      "initialViewportFitValueHint": "cover"
     }
   }
 }
