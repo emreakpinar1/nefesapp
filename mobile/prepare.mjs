@@ -116,6 +116,27 @@ const gb = 'android/app/build.gradle';
 let g = readFileSync(gb, 'utf8');
 const vc = parseInt(process.env.VERSION_CODE || '1', 10) || 1, vn = process.env.VERSION_NAME || '1.0.' + vc;
 g = g.replace(/versionCode \d+/, 'versionCode ' + vc).replace(/versionName "[^"]*"/, 'versionName "' + vn + '"');
+// Sürüm derlemesinde R8: kod küçültme + karartma + kullanılmayan kaynakları atma (Play "DEX kodu optimizasyonu" önerisi).
+// Eşleme dosyası AAB'ye kendiliğinden eklenir; Play çökme raporlarını okunur gösterir.
+g = g.replace(/minifyEnabled false\s*\n(\s*)proguardFiles getDefaultProguardFile\('proguard-android\.txt'\)/,
+  "minifyEnabled true\n$1shrinkResources true\n$1proguardFiles getDefaultProguardFile('proguard-android-optimize.txt')");
+if(!g.includes('minifyEnabled true')) throw new Error('build.gradle: release minify ayarı bulunamadı');
 writeFileSync(gb, g);
+// Ek koruma kuralları (Capacitor, eklentiler ve RevenueCat kendi kurallarıyla gelir; bunlar emniyet payı)
+writeFileSync('android/app/proguard-rules.pro', `# Ferah — R8 koruma kuralları
+-keepattributes *Annotation*,Signature,InnerClasses,EnclosingMethod,SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile
+# Capacitor köprüsü ve eklentiler yansıma ile çağrılır
+-keep class com.getcapacitor.** { *; }
+-keep class com.capacitorjs.plugins.** { *; }
+-keep public class * extends com.getcapacitor.Plugin { *; }
+-keepclassmembers class * { @android.webkit.JavascriptInterface <methods>; }
+# Uygulamanın kendi sınıfları (MainActivity, FerahWindow eklentisi)
+-keep class com.emreakpinar.nefesapp.** { *; }
+# RevenueCat ve Google Play faturalandırma
+-keep class com.revenuecat.purchases.** { *; }
+-keep class com.android.billingclient.** { *; }
+-dontwarn com.revenuecat.purchases.**
+`);
 
 run('npx cap sync android');
